@@ -238,7 +238,7 @@ function sizeClasses(
       const mainAxis = (ctx.parentDirection ?? 'row') === 'row' ? 'horizontal' : 'vertical';
       return axis === mainAxis
         ? ['flex-1', prefix === 'w' ? 'min-w-0' : 'min-h-0']
-        : ['self-stretch'];
+        : [`${prefix}-full`];
     }
     return [`${prefix}-full`];
   }

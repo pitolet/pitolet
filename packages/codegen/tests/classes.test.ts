@@ -74,9 +74,24 @@ describe('class matching', () => {
     ).toBe('flex-1 min-w-0');
     expect(
       classes({ width: 'fill' }, { parentDisplay: 'flex', parentDirection: 'column' }),
-    ).toBe('self-stretch');
+    ).toBe('w-full');
     expect(classes({ width: 'fill' }, { parentDisplay: 'block' })).toBe('w-full');
     expect(classes({ width: '50%' as never })).toContain('w-');
+  });
+
+  it('preserves cross-axis alignment when fill is constrained', () => {
+    expect(
+      classes(
+        { width: 'fill', maxWidth: px(880), alignSelf: 'center' },
+        { parentDisplay: 'flex', parentDirection: 'column' },
+      ),
+    ).toBe('self-center w-full max-w-[880px]');
+    expect(
+      classes(
+        { height: 'fill', maxHeight: px(480), alignSelf: 'end' },
+        { parentDisplay: 'flex', parentDirection: 'row' },
+      ),
+    ).toBe('self-end h-full max-h-[480px]');
   });
 
   it('percentage widths use fractions', () => {

@@ -67,12 +67,12 @@ services:
         week_counter=0
         while true; do
           echo "[backup] $(date -u +%FT%TZ) starting nightly backup"
-          PGPASSWORD="$POSTGRES_PASSWORD" pg_dump -h postgres -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc \
+          PGPASSWORD="$$POSTGRES_PASSWORD" pg_dump -h postgres -U "$$POSTGRES_USER" -d "$$POSTGRES_DB" -Fc \
             | restic backup --stdin --stdin-filename pitolet.dump \
             && echo "[backup] db dump ok"
           restic backup /data && echo "[backup] asset volume ok"
           week_counter=$((week_counter + 1))
-          if [ "$week_counter" -ge 7 ]; then
+          if [ "$$week_counter" -ge 7 ]; then
             echo "[backup] weekly prune"
             restic forget --keep-daily 14 --keep-weekly 8 --prune || true
             week_counter=0
