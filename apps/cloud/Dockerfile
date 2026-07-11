@@ -46,7 +46,8 @@ RUN pnpm deploy --legacy --filter ./apps/cloud --prod /out \
     && cp -r apps/cloud/dist /out/dist \
     && cp -r packages/editor/dist /out/editor \
     && if [ -d apps/cloud/dashboard/dist ]; then \
-         cp -r apps/cloud/dashboard/dist /out/dashboard; \
+         rm -rf /out/dashboard \
+         && cp -r apps/cloud/dashboard/dist /out/dashboard; \
        fi
 
 # ---- runtime: minimal image serving the cloud app ----
@@ -59,6 +60,16 @@ ENV NODE_ENV=production \
     PITOLET_DASHBOARD_DIST=/app/dashboard
 
 COPY --from=build /out .
+
+# Guard the exact production dashboard shape. `pnpm deploy` includes the
+# dashboard source directory, so the build stage must replace it with Vite's
+# output rather than nesting that output at /app/dashboard/dist. Serving the
+# source index would reference /src/main.tsx and leave the browser blank.
+RUN test -f /app/dashboard/index.html \
+    && test -d /app/dashboard/assets \
+    && test ! -d /app/dashboard/src \
+    && ! grep -q '/src/main.tsx' /app/dashboard/index.html \
+    && grep -qE 'src="/assets/[^" ]+\.js"' /app/dashboard/index.html
 
 RUN mkdir -p /data && chown node:node /data
 USER node
