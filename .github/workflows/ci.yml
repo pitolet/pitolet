@@ -32,3 +32,21 @@ jobs:
             exit 1
           fi
           echo "License boundary clean"
+
+  # The cloud Dockerfile assembles artifacts from several workspace packages.
+  # Building it on every change catches runtime-image layout errors that the
+  # TypeScript and Vite builds cannot see (for example, nesting dashboard/dist
+  # under a source dashboard directory and serving the development index).
+  cloud-image-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build production cloud image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/cloud/Dockerfile
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
