@@ -167,10 +167,33 @@ describe('css conversion', () => {
       { width: 'fill' },
       { parentDisplay: 'flex', parentDirection: 'column' },
     );
-    expect(crossAxis.alignSelf).toBe('stretch');
+    expect(crossAxis.width).toBe('100%');
+    expect(crossAxis.alignSelf).toBeUndefined();
 
     const inBlock = styleToCssProps({ width: 'fill' }, { parentDisplay: 'block' });
     expect(inBlock.width).toBe('100%');
+  });
+
+  it('preserves cross-axis alignment when fill is constrained', () => {
+    const width = styleToCssProps(
+      { width: 'fill', maxWidth: px(880), alignSelf: 'center' },
+      { parentDisplay: 'flex', parentDirection: 'column' },
+    );
+    expect(width).toMatchObject({
+      width: '100%',
+      maxWidth: '880px',
+      alignSelf: 'center',
+    });
+
+    const height = styleToCssProps(
+      { height: 'fill', maxHeight: px(480), alignSelf: 'end' },
+      { parentDisplay: 'flex', parentDirection: 'row' },
+    );
+    expect(height).toMatchObject({
+      height: '100%',
+      maxHeight: '480px',
+      alignSelf: 'flex-end',
+    });
   });
 
   it('layers multiple fills with top layer first', () => {

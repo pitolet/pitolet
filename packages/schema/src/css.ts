@@ -144,8 +144,14 @@ function sizeValue(size: Size): string {
 /**
  * `fill` sizing translates by layout context:
  *  - along a flex parent's main axis  → flex: 1 1 0 (share space)
- *  - along a flex parent's cross axis → align-self: stretch
+ *  - along a flex parent's cross axis → 100% on that axis
  *  - otherwise                        → 100%
+ *
+ * Cross-axis fill must be an explicit size rather than `align-self: stretch`.
+ * Stretch overrides the parent's alignment, and a max-width/max-height can
+ * then clamp the item while leaving it stuck at the cross-start edge. A 100%
+ * preferred size still fills the parent, but lets the parent's alignment (or
+ * an explicit align-self) position the item when a min/max constraint wins.
  */
 function applySize(
   css: CssProps,
@@ -165,9 +171,10 @@ function applySize(
       css.flexGrow = 1;
       css.flexShrink = 1;
       css.flexBasis = '0%';
-      css[axis === 'horizontal' ? 'minWidth' : 'minHeight'] = css[axis === 'horizontal' ? 'minWidth' : 'minHeight'] ?? 0;
+      css[axis === 'horizontal' ? 'minWidth' : 'minHeight'] =
+        css[axis === 'horizontal' ? 'minWidth' : 'minHeight'] ?? 0;
     } else {
-      css.alignSelf = 'stretch';
+      css[prop] = '100%';
     }
     return;
   }
