@@ -1,0 +1,16 @@
+{
+  "name": "@pitolet/codegen",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@pitolet/schema": "workspace:*",
+    "tailwind-merge": "^3.0.0"
+  }
+}

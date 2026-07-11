@@ -1,0 +1,57 @@
+{
+  "name": "pitolet",
+  "version": "1.0.0",
+  "description": "Web-native design tool for AI-coding workflows. Bundles the editor, MCP server, and deterministic codegen.",
+  "type": "module",
+  "license": "AGPL-3.0-only",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pitolet/pitolet.git"
+  },
+  "homepage": "https://pitolet.com",
+  "keywords": [
+    "design",
+    "figma-alternative",
+    "mcp",
+    "codegen",
+    "react",
+    "tailwind",
+    "ai",
+    "editor",
+    "css"
+  ],
+  "bin": {
+    "pitolet": "dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "dev": "NODE_ENV=development tsx watch src/cli.ts --data ../../pitolet",
+    "build": "tsup && node scripts/bundle-editor.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "immer": "^10.2.0",
+    "nanoid": "^5.1.16",
+    "ws": "^8.18.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@pitolet/codegen": "workspace:*",
+    "@pitolet/schema": "workspace:*",
+    "@types/ws": "^8.18.0",
+    "tsup": "^8.5.0",
+    "tsx": "^4.20.0"
+  }
+}

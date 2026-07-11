@@ -1,0 +1,5316 @@
+{
+  "schemaVersion": 1,
+  "id": "pitolet-vs-figma",
+  "name": "Pitolet vs Figma",
+  "rootOrder": [
+    "n0"
+  ],
+  "nodes": {
+    "n0": {
+      "id": "n0",
+      "type": "frame",
+      "name": "Pitolet vs Figma",
+      "parent": null,
+      "children": [
+        "n1",
+        "n11",
+        "n19",
+        "n92",
+        "n96",
+        "n109",
+        "n114"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "canvas": {
+        "x": 0,
+        "y": 0,
+        "width": 1440,
+        "height": "auto"
+      },
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.background"
+              }
+            }
+          ],
+          "alignItems": "center",
+          "fontFamily": {
+            "$token": "typography.fontFamily.sans"
+          },
+          "color": {
+            "$token": "color.foreground"
+          }
+        }
+      }
+    },
+    "n1": {
+      "id": "n1",
+      "type": "element",
+      "name": "Nav Band",
+      "parent": "n0",
+      "children": [
+        "n2"
+      ],
+      "tag": "section",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "alignItems": "center",
+          "width": "fill",
+          "padding": {
+            "top": {
+              "$token": "spacing.4"
+            },
+            "right": {
+              "$token": "spacing.5"
+            },
+            "bottom": {
+              "$token": "spacing.4"
+            },
+            "left": {
+              "$token": "spacing.5"
+            }
+          },
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border"
+            },
+            "sides": {
+              "bottom": true
+            }
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "padding": {
+              "top": {
+                "$token": "spacing.6"
+              },
+              "right": {
+                "$token": "spacing.10"
+              },
+              "bottom": {
+                "$token": "spacing.6"
+              },
+              "left": {
+                "$token": "spacing.10"
+              }
+            }
+          }
+        }
+      }
+    },
+    "n2": {
+      "id": "n2",
+      "type": "element",
+      "name": "Nav",
+      "parent": "n1",
+      "children": [
+        "n3",
+        "n6"
+      ],
+      "tag": "nav",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "center",
+          "justifyContent": "between",
+          "width": "fill",
+          "maxWidth": {
+            "value": 1120,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n3": {
+      "id": "n3",
+      "type": "element",
+      "name": "Brand",
+      "parent": "n2",
+      "children": [
+        "n4",
+        "n5"
+      ],
+      "tag": "a",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "center",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.2"
+            }
+          },
+          "cursor": "pointer"
+        }
+      },
+      "attrs": {
+        "href": "/"
+      }
+    },
+    "n4": {
+      "id": "n4",
+      "type": "image",
+      "name": "BrandMark",
+      "parent": "n3",
+      "children": [],
+      "tag": "img",
+      "visible": true,
+      "locked": false,
+      "src": {
+        "url": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22oklch(0.71%200.125%20215)%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M3%2018%20L9.5%206%20L13.5%2013%20L16.5%208.5%20L21%2018%22%2F%3E%3C%2Fsvg%3E"
+      },
+      "alt": "Pitolet",
+      "styles": {
+        "base": {
+          "width": {
+            "value": 24,
+            "unit": "px"
+          },
+          "height": {
+            "value": 24,
+            "unit": "px"
+          },
+          "objectFit": "cover"
+        }
+      }
+    },
+    "n5": {
+      "id": "n5",
+      "type": "text",
+      "name": "Wordmark",
+      "parent": "n3",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Pitolet"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.lg"
+          },
+          "fontWeight": 650,
+          "letterSpacing": {
+            "value": -0.3,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n6": {
+      "id": "n6",
+      "type": "element",
+      "name": "Nav Links",
+      "parent": "n2",
+      "children": [
+        "n7",
+        "n8",
+        "n9",
+        "n10"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "center",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.6"
+            }
+          }
+        }
+      }
+    },
+    "n7": {
+      "id": "n7",
+      "type": "text",
+      "name": "Compare to Figma",
+      "parent": "n6",
+      "children": [],
+      "tag": "a",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Compare to Figma"
+        }
+      ],
+      "styles": {
+        "base": {
+          "display": "none",
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "fontWeight": 500,
+          "color": {
+            "$token": "color.muted-foreground"
+          }
+        },
+        "breakpoints": {
+          "sm": {
+            "display": "block"
+          }
+        },
+        "states": {
+          "hover": {
+            "color": {
+              "$token": "color.foreground"
+            }
+          }
+        }
+      },
+      "attrs": {
+        "href": "/vs-figma/"
+      }
+    },
+    "n8": {
+      "id": "n8",
+      "type": "text",
+      "name": "GitHub",
+      "parent": "n6",
+      "children": [],
+      "tag": "a",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "GitHub"
+        }
+      ],
+      "styles": {
+        "base": {
+          "display": "none",
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "fontWeight": 500,
+          "color": {
+            "$token": "color.muted-foreground"
+          }
+        },
+        "breakpoints": {
+          "sm": {
+            "display": "block"
+          }
+        },
+        "states": {
+          "hover": {
+            "color": {
+              "$token": "color.foreground"
+            }
+          }
+        }
+      },
+      "attrs": {
+        "href": "https://github.com/pitolet/pitolet"
+      }
+    },
+    "n9": {
+      "id": "n9",
+      "type": "text",
+      "name": "Docs",
+      "parent": "n6",
+      "children": [],
+      "tag": "a",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Docs"
+        }
+      ],
+      "styles": {
+        "base": {
+          "display": "none",
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "fontWeight": 500,
+          "color": {
+            "$token": "color.muted-foreground"
+          }
+        },
+        "breakpoints": {
+          "sm": {
+            "display": "block"
+          }
+        },
+        "states": {
+          "hover": {
+            "color": {
+              "$token": "color.foreground"
+            }
+          }
+        }
+      },
+      "attrs": {
+        "href": "https://github.com/pitolet/pitolet#readme"
+      }
+    },
+    "n10": {
+      "id": "n10",
+      "type": "text",
+      "name": "Open App",
+      "parent": "n6",
+      "children": [],
+      "tag": "a",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Open app"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "fontWeight": 600,
+          "color": {
+            "$token": "color.primary-foreground"
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.primary"
+              }
+            }
+          ],
+          "padding": {
+            "top": {
+              "$token": "spacing.2"
+            },
+            "bottom": {
+              "$token": "spacing.2"
+            },
+            "left": {
+              "$token": "spacing.4"
+            },
+            "right": {
+              "$token": "spacing.4"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.md"
+            },
+            "tr": {
+              "$token": "radius.md"
+            },
+            "br": {
+              "$token": "radius.md"
+            },
+            "bl": {
+              "$token": "radius.md"
+            }
+          },
+          "cursor": "pointer"
+        },
+        "states": {
+          "hover": {
+            "fills": [
+              {
+                "type": "solid",
+                "color": {
+                  "$token": "color.primary-strong"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "attrs": {
+        "href": "https://app.pitolet.com"
+      }
+    },
+    "n11": {
+      "id": "n11",
+      "type": "element",
+      "name": "Comparison Hero Band",
+      "parent": "n0",
+      "children": [
+        "n12"
+      ],
+      "tag": "section",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "alignItems": "center",
+          "width": "fill",
+          "padding": {
+            "top": {
+              "$token": "spacing.16"
+            },
+            "right": {
+              "$token": "spacing.5"
+            },
+            "bottom": {
+              "$token": "spacing.16"
+            },
+            "left": {
+              "$token": "spacing.5"
+            }
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "padding": {
+              "top": {
+                "$token": "spacing.24"
+              },
+              "right": {
+                "$token": "spacing.10"
+              },
+              "bottom": {
+                "$token": "spacing.20"
+              },
+              "left": {
+                "$token": "spacing.10"
+              }
+            }
+          }
+        }
+      }
+    },
+    "n12": {
+      "id": "n12",
+      "type": "element",
+      "name": "Comparison Hero",
+      "parent": "n11",
+      "children": [
+        "n13",
+        "n14",
+        "n15",
+        "n16"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "width": "fill",
+          "maxWidth": {
+            "value": 920,
+            "unit": "px"
+          },
+          "alignItems": "center",
+          "gap": {
+            "row": {
+              "$token": "spacing.6"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          }
+        }
+      }
+    },
+    "n13": {
+      "id": "n13",
+      "type": "text",
+      "name": "Comparison Eyebrow",
+      "parent": "n12",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Pitolet vs Figma · for web interface work"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "fontWeight": 600,
+          "color": {
+            "$token": "color.primary"
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.surface"
+              }
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.full"
+            },
+            "tr": {
+              "$token": "radius.full"
+            },
+            "br": {
+              "$token": "radius.full"
+            },
+            "bl": {
+              "$token": "radius.full"
+            }
+          },
+          "padding": {
+            "top": {
+              "$token": "spacing.2"
+            },
+            "bottom": {
+              "$token": "spacing.2"
+            },
+            "left": {
+              "$token": "spacing.4"
+            },
+            "right": {
+              "$token": "spacing.4"
+            }
+          }
+        }
+      }
+    },
+    "n14": {
+      "id": "n14",
+      "type": "text",
+      "name": "Comparison Headline",
+      "parent": "n12",
+      "children": [],
+      "tag": "h1",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "A Figma alternative built for shipping web UI"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.5xl"
+          },
+          "fontWeight": 700,
+          "letterSpacing": {
+            "value": -1.7,
+            "unit": "px"
+          },
+          "lineHeight": 1.05,
+          "textAlign": "center",
+          "maxWidth": {
+            "value": 880,
+            "unit": "px"
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "fontSize": {
+              "$token": "typography.fontSize.6xl"
+            },
+            "letterSpacing": {
+              "value": -2,
+              "unit": "px"
+            }
+          },
+          "lg": {
+            "fontSize": {
+              "$token": "typography.fontSize.7xl"
+            }
+          }
+        }
+      }
+    },
+    "n15": {
+      "id": "n15",
+      "type": "text",
+      "name": "Comparison Intro",
+      "parent": "n12",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Figma is a great general-purpose design tool. But web interfaces still have to cross from Figma's layout model into CSS. Pitolet starts in the browser instead: the canvas is real DOM and CSS, and the same document exports as production code."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xl"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "textAlign": "center",
+          "maxWidth": {
+            "value": 760,
+            "unit": "px"
+          },
+          "lineHeight": 1.55
+        }
+      }
+    },
+    "n16": {
+      "id": "n16",
+      "type": "element",
+      "name": "Comparison Actions",
+      "parent": "n12",
+      "children": [
+        "n17",
+        "n18"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "center",
+          "justifyContent": "center",
+          "flexWrap": "wrap",
+          "gap": {
+            "row": {
+              "$token": "spacing.3"
+            },
+            "column": {
+              "$token": "spacing.3"
+            }
+          }
+        }
+      }
+    },
+    "n17": {
+      "id": "n17",
+      "type": "text",
+      "name": "Try Pitolet",
+      "parent": "n16",
+      "children": [],
+      "tag": "a",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Try Pitolet free"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "fontWeight": 650,
+          "color": {
+            "$token": "color.primary-foreground"
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.primary"
+              }
+            }
+          ],
+          "padding": {
+            "top": {
+              "$token": "spacing.3"
+            },
+            "bottom": {
+              "$token": "spacing.3"
+            },
+            "left": {
+              "$token": "spacing.6"
+            },
+            "right": {
+              "$token": "spacing.6"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.md"
+            },
+            "tr": {
+              "$token": "radius.md"
+            },
+            "br": {
+              "$token": "radius.md"
+            },
+            "bl": {
+              "$token": "radius.md"
+            }
+          },
+          "cursor": "pointer"
+        },
+        "states": {
+          "hover": {
+            "fills": [
+              {
+                "type": "solid",
+                "color": {
+                  "$token": "color.primary-strong"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "attrs": {
+        "href": "https://app.pitolet.com"
+      }
+    },
+    "n18": {
+      "id": "n18",
+      "type": "text",
+      "name": "Self-host",
+      "parent": "n16",
+      "children": [],
+      "tag": "a",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Self-host with npx pitolet"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "fontWeight": 600,
+          "color": {
+            "$token": "color.foreground"
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.surface"
+              }
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border-strong"
+            }
+          },
+          "padding": {
+            "top": {
+              "$token": "spacing.3"
+            },
+            "bottom": {
+              "$token": "spacing.3"
+            },
+            "left": {
+              "$token": "spacing.6"
+            },
+            "right": {
+              "$token": "spacing.6"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.md"
+            },
+            "tr": {
+              "$token": "radius.md"
+            },
+            "br": {
+              "$token": "radius.md"
+            },
+            "bl": {
+              "$token": "radius.md"
+            }
+          },
+          "cursor": "pointer"
+        },
+        "states": {
+          "hover": {
+            "fills": [
+              {
+                "type": "solid",
+                "color": {
+                  "$token": "color.surface-2"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "attrs": {
+        "href": "https://github.com/pitolet/pitolet#quickstart"
+      }
+    },
+    "n19": {
+      "id": "n19",
+      "type": "element",
+      "name": "Comparison Matrix Band",
+      "parent": "n0",
+      "children": [
+        "n20"
+      ],
+      "tag": "section",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "alignItems": "center",
+          "width": "fill",
+          "padding": {
+            "top": {
+              "$token": "spacing.12"
+            },
+            "right": {
+              "$token": "spacing.5"
+            },
+            "bottom": {
+              "$token": "spacing.12"
+            },
+            "left": {
+              "$token": "spacing.5"
+            }
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.surface"
+              }
+            }
+          ]
+        },
+        "breakpoints": {
+          "md": {
+            "padding": {
+              "top": {
+                "$token": "spacing.16"
+              },
+              "right": {
+                "$token": "spacing.10"
+              },
+              "bottom": {
+                "$token": "spacing.16"
+              },
+              "left": {
+                "$token": "spacing.10"
+              }
+            }
+          }
+        }
+      }
+    },
+    "n20": {
+      "id": "n20",
+      "type": "element",
+      "name": "Comparison Matrix",
+      "parent": "n19",
+      "children": [
+        "n21",
+        "n22",
+        "n91"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "width": "fill",
+          "maxWidth": {
+            "value": 1120,
+            "unit": "px"
+          },
+          "gap": {
+            "row": {
+              "$token": "spacing.8"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          }
+        }
+      }
+    },
+    "n21": {
+      "id": "n21",
+      "type": "text",
+      "name": "Matrix Heading",
+      "parent": "n20",
+      "children": [],
+      "tag": "h2",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Different foundations, different output"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.4xl"
+          },
+          "fontWeight": 650,
+          "letterSpacing": {
+            "value": -1,
+            "unit": "px"
+          },
+          "textAlign": "center",
+          "alignSelf": "center"
+        }
+      }
+    },
+    "n22": {
+      "id": "n22",
+      "type": "element",
+      "name": "Comparison Table",
+      "parent": "n20",
+      "children": [
+        "n23",
+        "n27",
+        "n35",
+        "n43",
+        "n51",
+        "n59",
+        "n67",
+        "n75",
+        "n83"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.3"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "width": "fill"
+        }
+      }
+    },
+    "n23": {
+      "id": "n23",
+      "type": "element",
+      "name": "Comparison Header",
+      "parent": "n22",
+      "children": [
+        "n24",
+        "n25",
+        "n26"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "none",
+          "flexDirection": "column",
+          "gridTemplateColumns": [
+            {
+              "kind": "px",
+              "value": 190
+            },
+            {
+              "kind": "fr",
+              "value": 1
+            },
+            {
+              "kind": "fr",
+              "value": 1
+            }
+          ],
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.6"
+            }
+          },
+          "padding": {
+            "top": {
+              "$token": "spacing.2"
+            },
+            "bottom": {
+              "$token": "spacing.2"
+            },
+            "left": {
+              "$token": "spacing.6"
+            },
+            "right": {
+              "$token": "spacing.6"
+            }
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "display": "grid"
+          }
+        }
+      }
+    },
+    "n24": {
+      "id": "n24",
+      "type": "text",
+      "name": "Capability Header",
+      "parent": "n23",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Capability"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "fontWeight": 700,
+          "color": {
+            "$token": "color.subtle-foreground"
+          }
+        }
+      }
+    },
+    "n25": {
+      "id": "n25",
+      "type": "text",
+      "name": "Figma",
+      "parent": "n23",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Figma"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "fontWeight": 700,
+          "color": {
+            "$token": "color.subtle-foreground"
+          }
+        }
+      }
+    },
+    "n26": {
+      "id": "n26",
+      "type": "text",
+      "name": "Pitolet",
+      "parent": "n23",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Pitolet"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "fontWeight": 700,
+          "color": {
+            "$token": "color.primary"
+          }
+        }
+      }
+    },
+    "n27": {
+      "id": "n27",
+      "type": "element",
+      "name": "Layout Row",
+      "parent": "n22",
+      "children": [
+        "n28",
+        "n29",
+        "n32"
+      ],
+      "tag": "article",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "grid",
+          "flexDirection": "column",
+          "gridTemplateColumns": [
+            {
+              "kind": "fr",
+              "value": 1
+            }
+          ],
+          "gap": {
+            "row": {
+              "$token": "spacing.5"
+            },
+            "column": {
+              "$token": "spacing.6"
+            }
+          },
+          "width": "fill",
+          "padding": {
+            "top": {
+              "$token": "spacing.6"
+            },
+            "right": {
+              "$token": "spacing.6"
+            },
+            "bottom": {
+              "$token": "spacing.6"
+            },
+            "left": {
+              "$token": "spacing.6"
+            }
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.background"
+              }
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.lg"
+            },
+            "tr": {
+              "$token": "radius.lg"
+            },
+            "br": {
+              "$token": "radius.lg"
+            },
+            "bl": {
+              "$token": "radius.lg"
+            }
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "gridTemplateColumns": [
+              {
+                "kind": "px",
+                "value": 190
+              },
+              {
+                "kind": "fr",
+                "value": 1
+              },
+              {
+                "kind": "fr",
+                "value": 1
+              }
+            ]
+          }
+        }
+      }
+    },
+    "n28": {
+      "id": "n28",
+      "type": "text",
+      "name": "Capability",
+      "parent": "n27",
+      "children": [],
+      "tag": "h3",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Layout"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "fontWeight": 650,
+          "color": {
+            "$token": "color.foreground"
+          }
+        }
+      }
+    },
+    "n29": {
+      "id": "n29",
+      "type": "element",
+      "name": "Figma Cell",
+      "parent": "n27",
+      "children": [
+        "n30",
+        "n31"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.2"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "minWidth": {
+            "value": 0,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n30": {
+      "id": "n30",
+      "type": "text",
+      "name": "Figma Mobile Label",
+      "parent": "n29",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Figma"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "fontWeight": 700,
+          "color": {
+            "$token": "color.subtle-foreground"
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "display": "none"
+          }
+        }
+      }
+    },
+    "n31": {
+      "id": "n31",
+      "type": "text",
+      "name": "Figma Value",
+      "parent": "n29",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Auto layout, grid, and constraints in Figma's own rendering model."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "lineHeight": 1.55
+        }
+      }
+    },
+    "n32": {
+      "id": "n32",
+      "type": "element",
+      "name": "Pitolet Cell",
+      "parent": "n27",
+      "children": [
+        "n33",
+        "n34"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.2"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "minWidth": {
+            "value": 0,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n33": {
+      "id": "n33",
+      "type": "text",
+      "name": "Pitolet Mobile Label",
+      "parent": "n32",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Pitolet"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "fontWeight": 700,
+          "color": {
+            "$token": "color.primary"
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "display": "none"
+          }
+        }
+      }
+    },
+    "n34": {
+      "id": "n34",
+      "type": "text",
+      "name": "Pitolet Value",
+      "parent": "n32",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Real flexbox and grid rendered by the browser's layout engine."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "color": {
+            "$token": "color.foreground"
+          },
+          "lineHeight": 1.55
+        }
+      }
+    },
+    "n35": {
+      "id": "n35",
+      "type": "element",
+      "name": "Responsive design Row",
+      "parent": "n22",
+      "children": [
+        "n36",
+        "n37",
+        "n40"
+      ],
+      "tag": "article",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "grid",
+          "flexDirection": "column",
+          "gridTemplateColumns": [
+            {
+              "kind": "fr",
+              "value": 1
+            }
+          ],
+          "gap": {
+            "row": {
+              "$token": "spacing.5"
+            },
+            "column": {
+              "$token": "spacing.6"
+            }
+          },
+          "width": "fill",
+          "padding": {
+            "top": {
+              "$token": "spacing.6"
+            },
+            "right": {
+              "$token": "spacing.6"
+            },
+            "bottom": {
+              "$token": "spacing.6"
+            },
+            "left": {
+              "$token": "spacing.6"
+            }
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.background"
+              }
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.lg"
+            },
+            "tr": {
+              "$token": "radius.lg"
+            },
+            "br": {
+              "$token": "radius.lg"
+            },
+            "bl": {
+              "$token": "radius.lg"
+            }
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "gridTemplateColumns": [
+              {
+                "kind": "px",
+                "value": 190
+              },
+              {
+                "kind": "fr",
+                "value": 1
+              },
+              {
+                "kind": "fr",
+                "value": 1
+              }
+            ]
+          }
+        }
+      }
+    },
+    "n36": {
+      "id": "n36",
+      "type": "text",
+      "name": "Capability",
+      "parent": "n35",
+      "children": [],
+      "tag": "h3",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Responsive design"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "fontWeight": 650,
+          "color": {
+            "$token": "color.foreground"
+          }
+        }
+      }
+    },
+    "n37": {
+      "id": "n37",
+      "type": "element",
+      "name": "Figma Cell",
+      "parent": "n35",
+      "children": [
+        "n38",
+        "n39"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.2"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "minWidth": {
+            "value": 0,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n38": {
+      "id": "n38",
+      "type": "text",
+      "name": "Figma Mobile Label",
+      "parent": "n37",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Figma"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "fontWeight": 700,
+          "color": {
+            "$token": "color.subtle-foreground"
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "display": "none"
+          }
+        }
+      }
+    },
+    "n39": {
+      "id": "n39",
+      "type": "text",
+      "name": "Figma Value",
+      "parent": "n37",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Frames, variants, and responsive prototypes that remain design-layer constructs."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "lineHeight": 1.55
+        }
+      }
+    },
+    "n40": {
+      "id": "n40",
+      "type": "element",
+      "name": "Pitolet Cell",
+      "parent": "n35",
+      "children": [
+        "n41",
+        "n42"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.2"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "minWidth": {
+            "value": 0,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n41": {
+      "id": "n41",
+      "type": "text",
+      "name": "Pitolet Mobile Label",
+      "parent": "n40",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Pitolet"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "fontWeight": 700,
+          "color": {
+            "$token": "color.primary"
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "display": "none"
+          }
+        }
+      }
+    },
+    "n42": {
+      "id": "n42",
+      "type": "text",
+      "name": "Pitolet Value",
+      "parent": "n40",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "One frame with cascading breakpoint overrides that emit real media queries."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "color": {
+            "$token": "color.foreground"
+          },
+          "lineHeight": 1.55
+        }
+      }
+    },
+    "n43": {
+      "id": "n43",
+      "type": "element",
+      "name": "Interaction states Row",
+      "parent": "n22",
+      "children": [
+        "n44",
+        "n45",
+        "n48"
+      ],
+      "tag": "article",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "grid",
+          "flexDirection": "column",
+          "gridTemplateColumns": [
+            {
+              "kind": "fr",
+              "value": 1
+            }
+          ],
+          "gap": {
+            "row": {
+              "$token": "spacing.5"
+            },
+            "column": {
+              "$token": "spacing.6"
+            }
+          },
+          "width": "fill",
+          "padding": {
+            "top": {
+              "$token": "spacing.6"
+            },
+            "right": {
+              "$token": "spacing.6"
+            },
+            "bottom": {
+              "$token": "spacing.6"
+            },
+            "left": {
+              "$token": "spacing.6"
+            }
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.background"
+              }
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.lg"
+            },
+            "tr": {
+              "$token": "radius.lg"
+            },
+            "br": {
+              "$token": "radius.lg"
+            },
+            "bl": {
+              "$token": "radius.lg"
+            }
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "gridTemplateColumns": [
+              {
+                "kind": "px",
+                "value": 190
+              },
+              {
+                "kind": "fr",
+                "value": 1
+              },
+              {
+                "kind": "fr",
+                "value": 1
+              }
+            ]
+          }
+        }
+      }
+    },
+    "n44": {
+      "id": "n44",
+      "type": "text",
+      "name": "Capability",
+      "parent": "n43",
+      "children": [],
+      "tag": "h3",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Interaction states"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "fontWeight": 650,
+          "color": {
+            "$token": "color.foreground"
+          }
+        }
+      }
+    },
+    "n45": {
+      "id": "n45",
+      "type": "element",
+      "name": "Figma Cell",
+      "parent": "n43",
+      "children": [
+        "n46",
+        "n47"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.2"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "minWidth": {
+            "value": 0,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n46": {
+      "id": "n46",
+      "type": "text",
+      "name": "Figma Mobile Label",
+      "parent": "n45",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Figma"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "fontWeight": 700,
+          "color": {
+            "$token": "color.subtle-foreground"
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "display": "none"
+          }
+        }
+      }
+    },
+    "n47": {
+      "id": "n47",
+      "type": "text",
+      "name": "Figma Value",
+      "parent": "n45",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Prototype interactions and component variants."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "lineHeight": 1.55
+        }
+      }
+    },
+    "n48": {
+      "id": "n48",
+      "type": "element",
+      "name": "Pitolet Cell",
+      "parent": "n43",
+      "children": [
+        "n49",
+        "n50"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.2"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "minWidth": {
+            "value": 0,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n49": {
+      "id": "n49",
+      "type": "text",
+      "name": "Pitolet Mobile Label",
+      "parent": "n48",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Pitolet"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "fontWeight": 700,
+          "color": {
+            "$token": "color.primary"
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "display": "none"
+          }
+        }
+      }
+    },
+    "n50": {
+      "id": "n50",
+      "type": "text",
+      "name": "Pitolet Value",
+      "parent": "n48",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Real :hover, :focus, and :active layers that export as CSS."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "color": {
+            "$token": "color.foreground"
+          },
+          "lineHeight": 1.55
+        }
+      }
+    },
+    "n51": {
+      "id": "n51",
+      "type": "element",
+      "name": "Code path Row",
+      "parent": "n22",
+      "children": [
+        "n52",
+        "n53",
+        "n56"
+      ],
+      "tag": "article",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "grid",
+          "flexDirection": "column",
+          "gridTemplateColumns": [
+            {
+              "kind": "fr",
+              "value": 1
+            }
+          ],
+          "gap": {
+            "row": {
+              "$token": "spacing.5"
+            },
+            "column": {
+              "$token": "spacing.6"
+            }
+          },
+          "width": "fill",
+          "padding": {
+            "top": {
+              "$token": "spacing.6"
+            },
+            "right": {
+              "$token": "spacing.6"
+            },
+            "bottom": {
+              "$token": "spacing.6"
+            },
+            "left": {
+              "$token": "spacing.6"
+            }
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.background"
+              }
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.lg"
+            },
+            "tr": {
+              "$token": "radius.lg"
+            },
+            "br": {
+              "$token": "radius.lg"
+            },
+            "bl": {
+              "$token": "radius.lg"
+            }
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "gridTemplateColumns": [
+              {
+                "kind": "px",
+                "value": 190
+              },
+              {
+                "kind": "fr",
+                "value": 1
+              },
+              {
+                "kind": "fr",
+                "value": 1
+              }
+            ]
+          }
+        }
+      }
+    },
+    "n52": {
+      "id": "n52",
+      "type": "text",
+      "name": "Capability",
+      "parent": "n51",
+      "children": [],
+      "tag": "h3",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Code path"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "fontWeight": 650,
+          "color": {
+            "$token": "color.foreground"
+          }
+        }
+      }
+    },
+    "n53": {
+      "id": "n53",
+      "type": "element",
+      "name": "Figma Cell",
+      "parent": "n51",
+      "children": [
+        "n54",
+        "n55"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.2"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "minWidth": {
+            "value": 0,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n54": {
+      "id": "n54",
+      "type": "text",
+      "name": "Figma Mobile Label",
+      "parent": "n53",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Figma"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "fontWeight": 700,
+          "color": {
+            "$token": "color.subtle-foreground"
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "display": "none"
+          }
+        }
+      }
+    },
+    "n55": {
+      "id": "n55",
+      "type": "text",
+      "name": "Figma Value",
+      "parent": "n53",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Dev Mode context, Code Connect, plugins, and agents translate the design model into code."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "lineHeight": 1.55
+        }
+      }
+    },
+    "n56": {
+      "id": "n56",
+      "type": "element",
+      "name": "Pitolet Cell",
+      "parent": "n51",
+      "children": [
+        "n57",
+        "n58"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.2"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "minWidth": {
+            "value": 0,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n57": {
+      "id": "n57",
+      "type": "text",
+      "name": "Pitolet Mobile Label",
+      "parent": "n56",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Pitolet"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "fontWeight": 700,
+          "color": {
+            "$token": "color.primary"
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "display": "none"
+          }
+        }
+      }
+    },
+    "n58": {
+      "id": "n58",
+      "type": "text",
+      "name": "Pitolet Value",
+      "parent": "n56",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Deterministic React + Tailwind or HTML + CSS from the same style-resolution pipeline as the canvas."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "color": {
+            "$token": "color.foreground"
+          },
+          "lineHeight": 1.55
+        }
+      }
+    },
+    "n59": {
+      "id": "n59",
+      "type": "element",
+      "name": "File format Row",
+      "parent": "n22",
+      "children": [
+        "n60",
+        "n61",
+        "n64"
+      ],
+      "tag": "article",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "grid",
+          "flexDirection": "column",
+          "gridTemplateColumns": [
+            {
+              "kind": "fr",
+              "value": 1
+            }
+          ],
+          "gap": {
+            "row": {
+              "$token": "spacing.5"
+            },
+            "column": {
+              "$token": "spacing.6"
+            }
+          },
+          "width": "fill",
+          "padding": {
+            "top": {
+              "$token": "spacing.6"
+            },
+            "right": {
+              "$token": "spacing.6"
+            },
+            "bottom": {
+              "$token": "spacing.6"
+            },
+            "left": {
+              "$token": "spacing.6"
+            }
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.background"
+              }
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.lg"
+            },
+            "tr": {
+              "$token": "radius.lg"
+            },
+            "br": {
+              "$token": "radius.lg"
+            },
+            "bl": {
+              "$token": "radius.lg"
+            }
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "gridTemplateColumns": [
+              {
+                "kind": "px",
+                "value": 190
+              },
+              {
+                "kind": "fr",
+                "value": 1
+              },
+              {
+                "kind": "fr",
+                "value": 1
+              }
+            ]
+          }
+        }
+      }
+    },
+    "n60": {
+      "id": "n60",
+      "type": "text",
+      "name": "Capability",
+      "parent": "n59",
+      "children": [],
+      "tag": "h3",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "File format"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "fontWeight": 650,
+          "color": {
+            "$token": "color.foreground"
+          }
+        }
+      }
+    },
+    "n61": {
+      "id": "n61",
+      "type": "element",
+      "name": "Figma Cell",
+      "parent": "n59",
+      "children": [
+        "n62",
+        "n63"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.2"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "minWidth": {
+            "value": 0,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n62": {
+      "id": "n62",
+      "type": "text",
+      "name": "Figma Mobile Label",
+      "parent": "n61",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Figma"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "fontWeight": 700,
+          "color": {
+            "$token": "color.subtle-foreground"
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "display": "none"
+          }
+        }
+      }
+    },
+    "n63": {
+      "id": "n63",
+      "type": "text",
+      "name": "Figma Value",
+      "parent": "n61",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Cloud-hosted proprietary design files."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "lineHeight": 1.55
+        }
+      }
+    },
+    "n64": {
+      "id": "n64",
+      "type": "element",
+      "name": "Pitolet Cell",
+      "parent": "n59",
+      "children": [
+        "n65",
+        "n66"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.2"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "minWidth": {
+            "value": 0,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n65": {
+      "id": "n65",
+      "type": "text",
+      "name": "Pitolet Mobile Label",
+      "parent": "n64",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Pitolet"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "fontWeight": 700,
+          "color": {
+            "$token": "color.primary"
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "display": "none"
+          }
+        }
+      }
+    },
+    "n66": {
+      "id": "n66",
+      "type": "text",
+      "name": "Pitolet Value",
+      "parent": "n64",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Readable JSON in your git repository, with normal diffs and history."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "color": {
+            "$token": "color.foreground"
+          },
+          "lineHeight": 1.55
+        }
+      }
+    },
+    "n67": {
+      "id": "n67",
+      "type": "element",
+      "name": "Coding agents Row",
+      "parent": "n22",
+      "children": [
+        "n68",
+        "n69",
+        "n72"
+      ],
+      "tag": "article",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "grid",
+          "flexDirection": "column",
+          "gridTemplateColumns": [
+            {
+              "kind": "fr",
+              "value": 1
+            }
+          ],
+          "gap": {
+            "row": {
+              "$token": "spacing.5"
+            },
+            "column": {
+              "$token": "spacing.6"
+            }
+          },
+          "width": "fill",
+          "padding": {
+            "top": {
+              "$token": "spacing.6"
+            },
+            "right": {
+              "$token": "spacing.6"
+            },
+            "bottom": {
+              "$token": "spacing.6"
+            },
+            "left": {
+              "$token": "spacing.6"
+            }
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.background"
+              }
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.lg"
+            },
+            "tr": {
+              "$token": "radius.lg"
+            },
+            "br": {
+              "$token": "radius.lg"
+            },
+            "bl": {
+              "$token": "radius.lg"
+            }
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "gridTemplateColumns": [
+              {
+                "kind": "px",
+                "value": 190
+              },
+              {
+                "kind": "fr",
+                "value": 1
+              },
+              {
+                "kind": "fr",
+                "value": 1
+              }
+            ]
+          }
+        }
+      }
+    },
+    "n68": {
+      "id": "n68",
+      "type": "text",
+      "name": "Capability",
+      "parent": "n67",
+      "children": [],
+      "tag": "h3",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Coding agents"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "fontWeight": 650,
+          "color": {
+            "$token": "color.foreground"
+          }
+        }
+      }
+    },
+    "n69": {
+      "id": "n69",
+      "type": "element",
+      "name": "Figma Cell",
+      "parent": "n67",
+      "children": [
+        "n70",
+        "n71"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.2"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "minWidth": {
+            "value": 0,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n70": {
+      "id": "n70",
+      "type": "text",
+      "name": "Figma Mobile Label",
+      "parent": "n69",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Figma"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "fontWeight": 700,
+          "color": {
+            "$token": "color.subtle-foreground"
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "display": "none"
+          }
+        }
+      }
+    },
+    "n71": {
+      "id": "n71",
+      "type": "text",
+      "name": "Figma Value",
+      "parent": "n69",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Remote MCP can read and write Figma content; write access is beta and depends on client and seat."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "lineHeight": 1.55
+        }
+      }
+    },
+    "n72": {
+      "id": "n72",
+      "type": "element",
+      "name": "Pitolet Cell",
+      "parent": "n67",
+      "children": [
+        "n73",
+        "n74"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.2"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "minWidth": {
+            "value": 0,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n73": {
+      "id": "n73",
+      "type": "text",
+      "name": "Pitolet Mobile Label",
+      "parent": "n72",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Pitolet"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "fontWeight": 700,
+          "color": {
+            "$token": "color.primary"
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "display": "none"
+          }
+        }
+      }
+    },
+    "n74": {
+      "id": "n74",
+      "type": "text",
+      "name": "Pitolet Value",
+      "parent": "n72",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Read/write MCP is built into the editor. Changes appear live, pass validation, and are undoable."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "color": {
+            "$token": "color.foreground"
+          },
+          "lineHeight": 1.55
+        }
+      }
+    },
+    "n75": {
+      "id": "n75",
+      "type": "element",
+      "name": "Design tokens Row",
+      "parent": "n22",
+      "children": [
+        "n76",
+        "n77",
+        "n80"
+      ],
+      "tag": "article",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "grid",
+          "flexDirection": "column",
+          "gridTemplateColumns": [
+            {
+              "kind": "fr",
+              "value": 1
+            }
+          ],
+          "gap": {
+            "row": {
+              "$token": "spacing.5"
+            },
+            "column": {
+              "$token": "spacing.6"
+            }
+          },
+          "width": "fill",
+          "padding": {
+            "top": {
+              "$token": "spacing.6"
+            },
+            "right": {
+              "$token": "spacing.6"
+            },
+            "bottom": {
+              "$token": "spacing.6"
+            },
+            "left": {
+              "$token": "spacing.6"
+            }
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.background"
+              }
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.lg"
+            },
+            "tr": {
+              "$token": "radius.lg"
+            },
+            "br": {
+              "$token": "radius.lg"
+            },
+            "bl": {
+              "$token": "radius.lg"
+            }
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "gridTemplateColumns": [
+              {
+                "kind": "px",
+                "value": 190
+              },
+              {
+                "kind": "fr",
+                "value": 1
+              },
+              {
+                "kind": "fr",
+                "value": 1
+              }
+            ]
+          }
+        }
+      }
+    },
+    "n76": {
+      "id": "n76",
+      "type": "text",
+      "name": "Capability",
+      "parent": "n75",
+      "children": [],
+      "tag": "h3",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Design tokens"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "fontWeight": 650,
+          "color": {
+            "$token": "color.foreground"
+          }
+        }
+      }
+    },
+    "n77": {
+      "id": "n77",
+      "type": "element",
+      "name": "Figma Cell",
+      "parent": "n75",
+      "children": [
+        "n78",
+        "n79"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.2"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "minWidth": {
+            "value": 0,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n78": {
+      "id": "n78",
+      "type": "text",
+      "name": "Figma Mobile Label",
+      "parent": "n77",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Figma"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "fontWeight": 700,
+          "color": {
+            "$token": "color.subtle-foreground"
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "display": "none"
+          }
+        }
+      }
+    },
+    "n79": {
+      "id": "n79",
+      "type": "text",
+      "name": "Figma Value",
+      "parent": "n77",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Variables and styles, with code workflows through Dev Mode, APIs, and integrations."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "lineHeight": 1.55
+        }
+      }
+    },
+    "n80": {
+      "id": "n80",
+      "type": "element",
+      "name": "Pitolet Cell",
+      "parent": "n75",
+      "children": [
+        "n81",
+        "n82"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.2"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "minWidth": {
+            "value": 0,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n81": {
+      "id": "n81",
+      "type": "text",
+      "name": "Pitolet Mobile Label",
+      "parent": "n80",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Pitolet"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "fontWeight": 700,
+          "color": {
+            "$token": "color.primary"
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "display": "none"
+          }
+        }
+      }
+    },
+    "n82": {
+      "id": "n82",
+      "type": "text",
+      "name": "Pitolet Value",
+      "parent": "n80",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Tokens emit as Tailwind @theme variables and agents can update them on the open canvas."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "color": {
+            "$token": "color.foreground"
+          },
+          "lineHeight": 1.55
+        }
+      }
+    },
+    "n83": {
+      "id": "n83",
+      "type": "element",
+      "name": "Hosting and price Row",
+      "parent": "n22",
+      "children": [
+        "n84",
+        "n85",
+        "n88"
+      ],
+      "tag": "article",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "grid",
+          "flexDirection": "column",
+          "gridTemplateColumns": [
+            {
+              "kind": "fr",
+              "value": 1
+            }
+          ],
+          "gap": {
+            "row": {
+              "$token": "spacing.5"
+            },
+            "column": {
+              "$token": "spacing.6"
+            }
+          },
+          "width": "fill",
+          "padding": {
+            "top": {
+              "$token": "spacing.6"
+            },
+            "right": {
+              "$token": "spacing.6"
+            },
+            "bottom": {
+              "$token": "spacing.6"
+            },
+            "left": {
+              "$token": "spacing.6"
+            }
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.background"
+              }
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.lg"
+            },
+            "tr": {
+              "$token": "radius.lg"
+            },
+            "br": {
+              "$token": "radius.lg"
+            },
+            "bl": {
+              "$token": "radius.lg"
+            }
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "gridTemplateColumns": [
+              {
+                "kind": "px",
+                "value": 190
+              },
+              {
+                "kind": "fr",
+                "value": 1
+              },
+              {
+                "kind": "fr",
+                "value": 1
+              }
+            ]
+          }
+        }
+      }
+    },
+    "n84": {
+      "id": "n84",
+      "type": "text",
+      "name": "Capability",
+      "parent": "n83",
+      "children": [],
+      "tag": "h3",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Hosting and price"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "fontWeight": 650,
+          "color": {
+            "$token": "color.foreground"
+          }
+        }
+      }
+    },
+    "n85": {
+      "id": "n85",
+      "type": "element",
+      "name": "Figma Cell",
+      "parent": "n83",
+      "children": [
+        "n86",
+        "n87"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.2"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "minWidth": {
+            "value": 0,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n86": {
+      "id": "n86",
+      "type": "text",
+      "name": "Figma Mobile Label",
+      "parent": "n85",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Figma"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "fontWeight": 700,
+          "color": {
+            "$token": "color.subtle-foreground"
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "display": "none"
+          }
+        }
+      }
+    },
+    "n87": {
+      "id": "n87",
+      "type": "text",
+      "name": "Figma Value",
+      "parent": "n85",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Free starter; paid full design seats currently range from $16 to $90 per month."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "lineHeight": 1.55
+        }
+      }
+    },
+    "n88": {
+      "id": "n88",
+      "type": "element",
+      "name": "Pitolet Cell",
+      "parent": "n83",
+      "children": [
+        "n89",
+        "n90"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.2"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "minWidth": {
+            "value": 0,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n89": {
+      "id": "n89",
+      "type": "text",
+      "name": "Pitolet Mobile Label",
+      "parent": "n88",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Pitolet"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "fontWeight": 700,
+          "color": {
+            "$token": "color.primary"
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "display": "none"
+          }
+        }
+      }
+    },
+    "n90": {
+      "id": "n90",
+      "type": "text",
+      "name": "Pitolet Value",
+      "parent": "n88",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Free hosted tier, Pro at $12 per seat, or self-host the AGPL core for free."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "color": {
+            "$token": "color.foreground"
+          },
+          "lineHeight": 1.55
+        }
+      }
+    },
+    "n91": {
+      "id": "n91",
+      "type": "text",
+      "name": "Comparison Sources",
+      "parent": "n20",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Figma capabilities and USD pricing checked July 2026. Sources: "
+        },
+        {
+          "text": "Figma pricing",
+          "marks": {
+            "link": "https://www.figma.com/pricing/"
+          }
+        },
+        {
+          "text": " and "
+        },
+        {
+          "text": "Figma MCP documentation",
+          "marks": {
+            "link": "https://developers.figma.com/docs/figma-mcp-server/"
+          }
+        },
+        {
+          "text": "."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "color": {
+            "$token": "color.subtle-foreground"
+          },
+          "textAlign": "center",
+          "alignSelf": "center"
+        }
+      }
+    },
+    "n92": {
+      "id": "n92",
+      "type": "element",
+      "name": "Figma Wins Band",
+      "parent": "n0",
+      "children": [
+        "n93"
+      ],
+      "tag": "section",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "alignItems": "center",
+          "width": "fill",
+          "padding": {
+            "top": {
+              "$token": "spacing.12"
+            },
+            "right": {
+              "$token": "spacing.5"
+            },
+            "bottom": {
+              "$token": "spacing.12"
+            },
+            "left": {
+              "$token": "spacing.5"
+            }
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "padding": {
+              "top": {
+                "$token": "spacing.16"
+              },
+              "right": {
+                "$token": "spacing.10"
+              },
+              "bottom": {
+                "$token": "spacing.16"
+              },
+              "left": {
+                "$token": "spacing.10"
+              }
+            }
+          }
+        }
+      }
+    },
+    "n93": {
+      "id": "n93",
+      "type": "element",
+      "name": "Figma Wins",
+      "parent": "n92",
+      "children": [
+        "n94",
+        "n95"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "width": "fill",
+          "maxWidth": {
+            "value": 900,
+            "unit": "px"
+          },
+          "gap": {
+            "row": {
+              "$token": "spacing.4"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "padding": {
+            "top": {
+              "$token": "spacing.8"
+            },
+            "right": {
+              "$token": "spacing.8"
+            },
+            "bottom": {
+              "$token": "spacing.8"
+            },
+            "left": {
+              "$token": "spacing.8"
+            }
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.surface"
+              }
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.lg"
+            },
+            "tr": {
+              "$token": "radius.lg"
+            },
+            "br": {
+              "$token": "radius.lg"
+            },
+            "bl": {
+              "$token": "radius.lg"
+            }
+          }
+        }
+      }
+    },
+    "n94": {
+      "id": "n94",
+      "type": "text",
+      "name": "Figma Wins Heading",
+      "parent": "n93",
+      "children": [],
+      "tag": "h2",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "When Figma is still the better tool"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.3xl"
+          },
+          "fontWeight": 650,
+          "letterSpacing": {
+            "value": -0.7,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n95": {
+      "id": "n95",
+      "type": "text",
+      "name": "Figma Wins Body",
+      "parent": "n93",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Choose Figma for brand and illustration work, advanced vector editing, rich prototyping, mature multiplayer across large organizations, or its enormous plugin ecosystem. Pitolet is narrower by design: it is for the part of the job where the deliverable is a working web interface."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.lg"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "lineHeight": 1.65
+        }
+      }
+    },
+    "n96": {
+      "id": "n96",
+      "type": "element",
+      "name": "Use Cases Band",
+      "parent": "n0",
+      "children": [
+        "n97"
+      ],
+      "tag": "section",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "alignItems": "center",
+          "width": "fill",
+          "padding": {
+            "top": {
+              "$token": "spacing.12"
+            },
+            "right": {
+              "$token": "spacing.5"
+            },
+            "bottom": {
+              "$token": "spacing.12"
+            },
+            "left": {
+              "$token": "spacing.5"
+            }
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "padding": {
+              "top": {
+                "$token": "spacing.16"
+              },
+              "right": {
+                "$token": "spacing.10"
+              },
+              "bottom": {
+                "$token": "spacing.16"
+              },
+              "left": {
+                "$token": "spacing.10"
+              }
+            }
+          }
+        }
+      }
+    },
+    "n97": {
+      "id": "n97",
+      "type": "element",
+      "name": "Use Cases",
+      "parent": "n96",
+      "children": [
+        "n98",
+        "n99"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "width": "fill",
+          "maxWidth": {
+            "value": 1120,
+            "unit": "px"
+          },
+          "gap": {
+            "row": {
+              "$token": "spacing.8"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          }
+        }
+      }
+    },
+    "n98": {
+      "id": "n98",
+      "type": "text",
+      "name": "Use Cases Heading",
+      "parent": "n97",
+      "children": [],
+      "tag": "h2",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "How teams use Pitolet"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.4xl"
+          },
+          "fontWeight": 650,
+          "letterSpacing": {
+            "value": -1,
+            "unit": "px"
+          },
+          "textAlign": "center"
+        }
+      }
+    },
+    "n99": {
+      "id": "n99",
+      "type": "element",
+      "name": "Use Case Cards",
+      "parent": "n97",
+      "children": [
+        "n100",
+        "n103",
+        "n106"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "alignItems": "stretch",
+          "gap": {
+            "row": {
+              "$token": "spacing.5"
+            },
+            "column": {
+              "$token": "spacing.5"
+            }
+          },
+          "width": "fill"
+        },
+        "breakpoints": {
+          "md": {
+            "flexDirection": "row"
+          }
+        }
+      }
+    },
+    "n100": {
+      "id": "n100",
+      "type": "element",
+      "name": "Design engineers",
+      "parent": "n99",
+      "children": [
+        "n101",
+        "n102"
+      ],
+      "tag": "article",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.3"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "width": "fill",
+          "padding": {
+            "top": {
+              "$token": "spacing.6"
+            },
+            "right": {
+              "$token": "spacing.6"
+            },
+            "bottom": {
+              "$token": "spacing.6"
+            },
+            "left": {
+              "$token": "spacing.6"
+            }
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.surface"
+              }
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.lg"
+            },
+            "tr": {
+              "$token": "radius.lg"
+            },
+            "br": {
+              "$token": "radius.lg"
+            },
+            "bl": {
+              "$token": "radius.lg"
+            }
+          }
+        }
+      }
+    },
+    "n101": {
+      "id": "n101",
+      "type": "text",
+      "name": "Use Case Title",
+      "parent": "n100",
+      "children": [],
+      "tag": "h3",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Design engineers"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xl"
+          },
+          "fontWeight": 650
+        }
+      }
+    },
+    "n102": {
+      "id": "n102",
+      "type": "text",
+      "name": "Use Case Body",
+      "parent": "n100",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Design with the same stacks, tokens, and breakpoints you ship. Export is a component, not a visual reference to rebuild."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "lineHeight": 1.6
+        }
+      }
+    },
+    "n103": {
+      "id": "n103",
+      "type": "element",
+      "name": "AI-assisted teams",
+      "parent": "n99",
+      "children": [
+        "n104",
+        "n105"
+      ],
+      "tag": "article",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.3"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "width": "fill",
+          "padding": {
+            "top": {
+              "$token": "spacing.6"
+            },
+            "right": {
+              "$token": "spacing.6"
+            },
+            "bottom": {
+              "$token": "spacing.6"
+            },
+            "left": {
+              "$token": "spacing.6"
+            }
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.surface"
+              }
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.lg"
+            },
+            "tr": {
+              "$token": "radius.lg"
+            },
+            "br": {
+              "$token": "radius.lg"
+            },
+            "bl": {
+              "$token": "radius.lg"
+            }
+          }
+        }
+      }
+    },
+    "n104": {
+      "id": "n104",
+      "type": "text",
+      "name": "Use Case Title",
+      "parent": "n103",
+      "children": [],
+      "tag": "h3",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "AI-assisted teams"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xl"
+          },
+          "fontWeight": 650
+        }
+      }
+    },
+    "n105": {
+      "id": "n105",
+      "type": "text",
+      "name": "Use Case Body",
+      "parent": "n103",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Let Claude Code or Codex make the first pass, then review every live, undoable change on the canvas."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "lineHeight": 1.6
+        }
+      }
+    },
+    "n106": {
+      "id": "n106",
+      "type": "element",
+      "name": "Design in code review",
+      "parent": "n99",
+      "children": [
+        "n107",
+        "n108"
+      ],
+      "tag": "article",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.3"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "width": "fill",
+          "padding": {
+            "top": {
+              "$token": "spacing.6"
+            },
+            "right": {
+              "$token": "spacing.6"
+            },
+            "bottom": {
+              "$token": "spacing.6"
+            },
+            "left": {
+              "$token": "spacing.6"
+            }
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.surface"
+              }
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.lg"
+            },
+            "tr": {
+              "$token": "radius.lg"
+            },
+            "br": {
+              "$token": "radius.lg"
+            },
+            "bl": {
+              "$token": "radius.lg"
+            }
+          }
+        }
+      }
+    },
+    "n107": {
+      "id": "n107",
+      "type": "text",
+      "name": "Use Case Title",
+      "parent": "n106",
+      "children": [],
+      "tag": "h3",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Design in code review"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xl"
+          },
+          "fontWeight": 650
+        }
+      }
+    },
+    "n108": {
+      "id": "n108",
+      "type": "text",
+      "name": "Use Case Body",
+      "parent": "n106",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Keep the readable design document beside the code, and use drift checks to flag when either side changes."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "lineHeight": 1.6
+        }
+      }
+    },
+    "n109": {
+      "id": "n109",
+      "type": "element",
+      "name": "Comparison CTA Band",
+      "parent": "n0",
+      "children": [
+        "n110"
+      ],
+      "tag": "section",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "alignItems": "center",
+          "width": "fill",
+          "padding": {
+            "top": {
+              "$token": "spacing.12"
+            },
+            "right": {
+              "$token": "spacing.5"
+            },
+            "bottom": {
+              "$token": "spacing.16"
+            },
+            "left": {
+              "$token": "spacing.5"
+            }
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "padding": {
+              "top": {
+                "$token": "spacing.16"
+              },
+              "right": {
+                "$token": "spacing.10"
+              },
+              "bottom": {
+                "$token": "spacing.20"
+              },
+              "left": {
+                "$token": "spacing.10"
+              }
+            }
+          }
+        }
+      }
+    },
+    "n110": {
+      "id": "n110",
+      "type": "element",
+      "name": "Comparison CTA",
+      "parent": "n109",
+      "children": [
+        "n111",
+        "n112",
+        "n113"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "width": "fill",
+          "maxWidth": {
+            "value": 900,
+            "unit": "px"
+          },
+          "alignItems": "center",
+          "gap": {
+            "row": {
+              "$token": "spacing.5"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "padding": {
+            "top": {
+              "$token": "spacing.10"
+            },
+            "right": {
+              "$token": "spacing.10"
+            },
+            "bottom": {
+              "$token": "spacing.10"
+            },
+            "left": {
+              "$token": "spacing.10"
+            }
+          },
+          "fills": [
+            {
+              "type": "radial",
+              "stops": [
+                {
+                  "color": {
+                    "space": "oklch",
+                    "l": 0.27,
+                    "c": 0.055,
+                    "h": 215
+                  },
+                  "position": 0
+                },
+                {
+                  "color": {
+                    "space": "oklch",
+                    "l": 0.165,
+                    "c": 0.008,
+                    "h": 250
+                  },
+                  "position": 1
+                }
+              ]
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border-strong"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.lg"
+            },
+            "tr": {
+              "$token": "radius.lg"
+            },
+            "br": {
+              "$token": "radius.lg"
+            },
+            "bl": {
+              "$token": "radius.lg"
+            }
+          }
+        }
+      }
+    },
+    "n111": {
+      "id": "n111",
+      "type": "text",
+      "name": "CTA Heading",
+      "parent": "n110",
+      "children": [],
+      "tag": "h2",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Try the browser-native path"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.4xl"
+          },
+          "fontWeight": 700,
+          "letterSpacing": {
+            "value": -1,
+            "unit": "px"
+          },
+          "textAlign": "center"
+        }
+      }
+    },
+    "n112": {
+      "id": "n112",
+      "type": "text",
+      "name": "CTA Body",
+      "parent": "n110",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Start free in the hosted app, or run npx pitolet locally. This comparison page is itself a Pitolet document exported by Pitolet’s code generator."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.lg"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "textAlign": "center",
+          "lineHeight": 1.6,
+          "maxWidth": {
+            "value": 680,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n113": {
+      "id": "n113",
+      "type": "text",
+      "name": "CTA Action",
+      "parent": "n110",
+      "children": [],
+      "tag": "a",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Start free →"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "fontWeight": 650,
+          "color": {
+            "$token": "color.primary-foreground"
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.primary"
+              }
+            }
+          ],
+          "padding": {
+            "top": {
+              "$token": "spacing.3"
+            },
+            "bottom": {
+              "$token": "spacing.3"
+            },
+            "left": {
+              "$token": "spacing.6"
+            },
+            "right": {
+              "$token": "spacing.6"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.md"
+            },
+            "tr": {
+              "$token": "radius.md"
+            },
+            "br": {
+              "$token": "radius.md"
+            },
+            "bl": {
+              "$token": "radius.md"
+            }
+          },
+          "cursor": "pointer"
+        },
+        "states": {
+          "hover": {
+            "fills": [
+              {
+                "type": "solid",
+                "color": {
+                  "$token": "color.primary-strong"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "attrs": {
+        "href": "https://app.pitolet.com"
+      }
+    },
+    "n114": {
+      "id": "n114",
+      "type": "element",
+      "name": "Footer Band",
+      "parent": "n0",
+      "children": [
+        "n115"
+      ],
+      "tag": "section",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "alignItems": "center",
+          "width": "fill",
+          "padding": {
+            "top": {
+              "$token": "spacing.8"
+            },
+            "right": {
+              "$token": "spacing.5"
+            },
+            "bottom": {
+              "$token": "spacing.8"
+            },
+            "left": {
+              "$token": "spacing.5"
+            }
+          },
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border"
+            },
+            "sides": {
+              "top": true
+            }
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "padding": {
+              "top": {
+                "$token": "spacing.8"
+              },
+              "right": {
+                "$token": "spacing.10"
+              },
+              "bottom": {
+                "$token": "spacing.8"
+              },
+              "left": {
+                "$token": "spacing.10"
+              }
+            }
+          }
+        }
+      }
+    },
+    "n115": {
+      "id": "n115",
+      "type": "element",
+      "name": "Footer",
+      "parent": "n114",
+      "children": [
+        "n116",
+        "n117"
+      ],
+      "tag": "footer",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "center",
+          "justifyContent": "between",
+          "flexWrap": "wrap",
+          "gap": {
+            "row": {
+              "$token": "spacing.3"
+            },
+            "column": {
+              "$token": "spacing.4"
+            }
+          },
+          "width": "fill",
+          "maxWidth": {
+            "value": 1120,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n116": {
+      "id": "n116",
+      "type": "text",
+      "name": "Copyright",
+      "parent": "n115",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "© 2026 Pitolet · AGPL-3.0 core"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.subtle-foreground"
+          }
+        }
+      }
+    },
+    "n117": {
+      "id": "n117",
+      "type": "element",
+      "name": "Footer Links",
+      "parent": "n115",
+      "children": [
+        "n118",
+        "n119",
+        "n120"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "center",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.5"
+            }
+          }
+        }
+      }
+    },
+    "n118": {
+      "id": "n118",
+      "type": "text",
+      "name": "Terms",
+      "parent": "n117",
+      "children": [],
+      "tag": "a",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Terms"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          }
+        },
+        "states": {
+          "hover": {
+            "color": {
+              "$token": "color.foreground"
+            }
+          }
+        }
+      },
+      "attrs": {
+        "href": "/terms.html"
+      }
+    },
+    "n119": {
+      "id": "n119",
+      "type": "text",
+      "name": "Privacy",
+      "parent": "n117",
+      "children": [],
+      "tag": "a",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Privacy"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          }
+        },
+        "states": {
+          "hover": {
+            "color": {
+              "$token": "color.foreground"
+            }
+          }
+        }
+      },
+      "attrs": {
+        "href": "/privacy.html"
+      }
+    },
+    "n120": {
+      "id": "n120",
+      "type": "text",
+      "name": "GitHub",
+      "parent": "n117",
+      "children": [],
+      "tag": "a",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "GitHub"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          }
+        },
+        "states": {
+          "hover": {
+            "color": {
+              "$token": "color.foreground"
+            }
+          }
+        }
+      },
+      "attrs": {
+        "href": "https://github.com/pitolet/pitolet"
+      }
+    }
+  },
+  "components": {},
+  "tokens": {
+    "color": {
+      "background": {
+        "$value": {
+          "space": "oklch",
+          "l": 0.13,
+          "c": 0.006,
+          "h": 250
+        },
+        "$description": "Page canvas"
+      },
+      "surface": {
+        "$value": {
+          "space": "oklch",
+          "l": 0.165,
+          "c": 0.008,
+          "h": 250
+        },
+        "$description": "Raised surface"
+      },
+      "surface-2": {
+        "$value": {
+          "space": "oklch",
+          "l": 0.2,
+          "c": 0.009,
+          "h": 250
+        },
+        "$description": "Card surface"
+      },
+      "foreground": {
+        "$value": {
+          "space": "oklch",
+          "l": 0.95,
+          "c": 0.006,
+          "h": 250
+        },
+        "$description": "Primary text"
+      },
+      "muted-foreground": {
+        "$value": {
+          "space": "oklch",
+          "l": 0.7,
+          "c": 0.012,
+          "h": 250
+        },
+        "$description": "Secondary text"
+      },
+      "subtle-foreground": {
+        "$value": {
+          "space": "oklch",
+          "l": 0.55,
+          "c": 0.014,
+          "h": 250
+        },
+        "$description": "Tertiary text"
+      },
+      "primary": {
+        "$value": {
+          "space": "oklch",
+          "l": 0.71,
+          "c": 0.125,
+          "h": 215
+        },
+        "$description": "Glacial accent"
+      },
+      "primary-strong": {
+        "$value": {
+          "space": "oklch",
+          "l": 0.6,
+          "c": 0.14,
+          "h": 222
+        },
+        "$description": "Accent (pressed)"
+      },
+      "primary-foreground": {
+        "$value": {
+          "space": "oklch",
+          "l": 0.14,
+          "c": 0.02,
+          "h": 222
+        },
+        "$description": "Text on accent"
+      },
+      "border": {
+        "$value": {
+          "space": "oklch",
+          "l": 1,
+          "c": 0,
+          "h": 0,
+          "alpha": 0.09
+        },
+        "$description": "Hairline border"
+      },
+      "border-strong": {
+        "$value": {
+          "space": "oklch",
+          "l": 1,
+          "c": 0,
+          "h": 0,
+          "alpha": 0.16
+        },
+        "$description": "Stronger border"
+      }
+    },
+    "spacing": {
+      "1": {
+        "$value": {
+          "value": 4,
+          "unit": "px"
+        }
+      },
+      "2": {
+        "$value": {
+          "value": 8,
+          "unit": "px"
+        }
+      },
+      "3": {
+        "$value": {
+          "value": 12,
+          "unit": "px"
+        }
+      },
+      "4": {
+        "$value": {
+          "value": 16,
+          "unit": "px"
+        }
+      },
+      "5": {
+        "$value": {
+          "value": 20,
+          "unit": "px"
+        }
+      },
+      "6": {
+        "$value": {
+          "value": 24,
+          "unit": "px"
+        }
+      },
+      "8": {
+        "$value": {
+          "value": 32,
+          "unit": "px"
+        }
+      },
+      "10": {
+        "$value": {
+          "value": 40,
+          "unit": "px"
+        }
+      },
+      "12": {
+        "$value": {
+          "value": 48,
+          "unit": "px"
+        }
+      },
+      "16": {
+        "$value": {
+          "value": 64,
+          "unit": "px"
+        }
+      },
+      "20": {
+        "$value": {
+          "value": 80,
+          "unit": "px"
+        }
+      },
+      "24": {
+        "$value": {
+          "value": 96,
+          "unit": "px"
+        }
+      }
+    },
+    "radius": {
+      "sm": {
+        "$value": {
+          "value": 4,
+          "unit": "px"
+        }
+      },
+      "md": {
+        "$value": {
+          "value": 8,
+          "unit": "px"
+        }
+      },
+      "lg": {
+        "$value": {
+          "value": 12,
+          "unit": "px"
+        }
+      },
+      "xl": {
+        "$value": {
+          "value": 16,
+          "unit": "px"
+        }
+      },
+      "full": {
+        "$value": {
+          "value": 9999,
+          "unit": "px"
+        }
+      }
+    },
+    "shadow": {
+      "sm": {
+        "$value": [
+          {
+            "x": 0,
+            "y": 1,
+            "blur": 2,
+            "spread": 0,
+            "color": {
+              "space": "oklch",
+              "l": 0.2,
+              "c": 0.02,
+              "h": 250,
+              "alpha": 0.08
+            }
+          }
+        ]
+      },
+      "md": {
+        "$value": [
+          {
+            "x": 0,
+            "y": 2,
+            "blur": 8,
+            "spread": -1,
+            "color": {
+              "space": "oklch",
+              "l": 0.2,
+              "c": 0.02,
+              "h": 250,
+              "alpha": 0.1
+            }
+          },
+          {
+            "x": 0,
+            "y": 1,
+            "blur": 2,
+            "spread": 0,
+            "color": {
+              "space": "oklch",
+              "l": 0.2,
+              "c": 0.02,
+              "h": 250,
+              "alpha": 0.06
+            }
+          }
+        ]
+      },
+      "lg": {
+        "$value": [
+          {
+            "x": 0,
+            "y": 12,
+            "blur": 32,
+            "spread": -4,
+            "color": {
+              "space": "oklch",
+              "l": 0.2,
+              "c": 0.02,
+              "h": 250,
+              "alpha": 0.14
+            }
+          },
+          {
+            "x": 0,
+            "y": 2,
+            "blur": 6,
+            "spread": -1,
+            "color": {
+              "space": "oklch",
+              "l": 0.2,
+              "c": 0.02,
+              "h": 250,
+              "alpha": 0.08
+            }
+          }
+        ]
+      }
+    },
+    "typography": {
+      "fontFamily": {
+        "sans": {
+          "$value": "Inter"
+        },
+        "mono": {
+          "$value": "JetBrains Mono"
+        }
+      },
+      "fontSize": {
+        "xs": {
+          "$value": {
+            "value": 12,
+            "unit": "px"
+          }
+        },
+        "sm": {
+          "$value": {
+            "value": 14,
+            "unit": "px"
+          }
+        },
+        "base": {
+          "$value": {
+            "value": 16,
+            "unit": "px"
+          }
+        },
+        "lg": {
+          "$value": {
+            "value": 18,
+            "unit": "px"
+          }
+        },
+        "xl": {
+          "$value": {
+            "value": 20,
+            "unit": "px"
+          }
+        },
+        "2xl": {
+          "$value": {
+            "value": 24,
+            "unit": "px"
+          }
+        },
+        "3xl": {
+          "$value": {
+            "value": 30,
+            "unit": "px"
+          }
+        },
+        "4xl": {
+          "$value": {
+            "value": 36,
+            "unit": "px"
+          }
+        },
+        "5xl": {
+          "$value": {
+            "value": 48,
+            "unit": "px"
+          }
+        },
+        "6xl": {
+          "$value": {
+            "value": 60,
+            "unit": "px"
+          }
+        },
+        "7xl": {
+          "$value": {
+            "value": 72,
+            "unit": "px"
+          }
+        }
+      }
+    }
+  },
+  "breakpoints": [
+    {
+      "id": "sm",
+      "name": "Small",
+      "minWidth": 640
+    },
+    {
+      "id": "md",
+      "name": "Medium",
+      "minWidth": 768
+    },
+    {
+      "id": "lg",
+      "name": "Large",
+      "minWidth": 1024
+    },
+    {
+      "id": "xl",
+      "name": "X-Large",
+      "minWidth": 1280
+    }
+  ],
+  "assets": {},
+  "comments": {}
+}

@@ -1,0 +1,68 @@
+/** Global base styles for the editor application (not for canvas content). */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--ptl-bg-0);
+  color: var(--ptl-text-1);
+  font-family: var(--ptl-font-ui);
+  font-size: var(--ptl-text-md);
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overscroll-behavior: none;
+}
+
+#root {
+  height: 100%;
+}
+
+/* Subtle scrollbars everywhere in chrome */
+.ptl-app *::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.ptl-app *::-webkit-scrollbar-track {
+  background: transparent;
+}
+.ptl-app *::-webkit-scrollbar-thumb {
+  background: oklch(1 0 0 / 0.12);
+  border-radius: 4px;
+  background-clip: padding-box;
+  border: 2px solid transparent;
+}
+.ptl-app *::-webkit-scrollbar-thumb:hover {
+  background: oklch(1 0 0 / 0.2);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+}
+
+::selection {
+  background: oklch(0.71 0.125 215 / 0.35);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus {
+  outline: none;
+}
+:focus-visible {
+  box-shadow: var(--ptl-ring);
+}

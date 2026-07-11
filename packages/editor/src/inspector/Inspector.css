@@ -1,0 +1,46 @@
+.ptl-inspector {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.ptl-inspector .ptl-insp-select {
+  flex: 1;
+  min-width: 0;
+}
+
+.ptl-inspector .ptl-weight-select {
+  width: 72px;
+  flex-shrink: 0;
+}
+
+.ptl-inspector .ptl-name-input {
+  flex: 1;
+}
+
+.ptl-insp-hint {
+  font-size: var(--ptl-text-xs);
+  color: var(--ptl-text-3);
+}
+
+.ptl-auto-height {
+  border: none;
+  background: var(--ptl-bg-2);
+  color: var(--ptl-text-2);
+  font-size: var(--ptl-text-sm);
+  height: var(--ptl-control-height);
+  padding: 0 var(--ptl-space-2);
+  border-radius: var(--ptl-radius-md);
+  flex: 1;
+}
+
+.ptl-auto-height:hover {
+  color: var(--ptl-text-1);
+}
+
+.ptl-auto-height--on {
+  background: var(--ptl-accent-muted);
+  color: var(--ptl-accent);
+}

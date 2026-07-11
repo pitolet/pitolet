@@ -1,0 +1,113 @@
+.ptl-activity-popover {
+  padding: var(--ptl-space-1);
+}
+
+.ptl-activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  width: 280px;
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.ptl-activity-empty {
+  width: 240px;
+  padding: var(--ptl-space-3);
+  text-align: center;
+  color: var(--ptl-text-3);
+  font-size: var(--ptl-text-sm);
+}
+
+.ptl-activity-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ptl-space-2);
+  padding: 6px var(--ptl-space-2);
+  border: none;
+  background: transparent;
+  border-radius: var(--ptl-radius-md);
+  text-align: left;
+  cursor: default;
+}
+
+.ptl-activity-row:hover {
+  background: var(--ptl-bg-3);
+}
+
+.ptl-activity-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--ptl-radius-full);
+  background: var(--ptl-bg-3);
+  color: var(--ptl-text-2);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.ptl-activity-row--agent .ptl-activity-icon {
+  background: var(--ptl-accent-muted);
+  color: var(--ptl-accent);
+}
+
+.ptl-activity-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.ptl-activity-label {
+  font-size: var(--ptl-text-sm);
+  color: var(--ptl-text-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ptl-activity-actor {
+  font-weight: 600;
+  color: var(--ptl-text-1);
+}
+
+.ptl-activity-meta {
+  font-size: var(--ptl-text-xs);
+  color: var(--ptl-text-3);
+}
+
+.ptl-activity-row--agent .ptl-activity-meta {
+  color: var(--ptl-accent);
+  opacity: 0.85;
+}
+
+/* --- topbar badge --- */
+
+.ptl-agent-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 22px;
+  padding: 0 9px;
+  margin-left: var(--ptl-space-2);
+  border-radius: var(--ptl-radius-full);
+  background: var(--ptl-accent-muted);
+  color: var(--ptl-accent);
+  font-size: var(--ptl-text-xs);
+  font-weight: 600;
+  white-space: nowrap;
+  animation: ptl-agent-badge-pulse 1.4s ease-in-out infinite;
+  user-select: none;
+}
+
+@keyframes ptl-agent-badge-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}

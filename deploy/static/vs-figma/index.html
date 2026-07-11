@@ -1,0 +1,1453 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>Pitolet vs Figma — a Figma alternative for developers</title>
+  <meta name="description" content="Compare Pitolet and Figma for web interface work: real browser layout, code export, git-native files, agent workflows, self-hosting, and pricing." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2232%22%20height%3D%2232%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22oklch(0.165%200.008%20250)%22%2F%3E%3Cpath%20d%3D%22M5%2022%20L11%208%20L15%2015%20L18%2010%20L27%2022%22%20fill%3D%22none%22%20stroke%3D%22oklch(0.71%200.125%20215)%22%20stroke-width%3D%222.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Pitolet" />
+  <meta property="og:title" content="Pitolet vs Figma — a Figma alternative for developers" />
+  <meta property="og:description" content="Compare Pitolet and Figma for web interface work: real browser layout, code export, git-native files, agent workflows, self-hosting, and pricing." />
+  <meta property="og:url" content="https://pitolet.com/vs-figma/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Pitolet vs Figma — a Figma alternative for developers" />
+  <meta name="twitter:description" content="Compare Pitolet and Figma for web interface work: real browser layout, code export, git-native files, agent workflows, self-hosting, and pricing." />
+  <style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; border: 0 solid; font: inherit; color: inherit; }
+html, body { min-height: 100%; }
+body { font-family: system-ui, sans-serif; font-size: 16px; line-height: 1.5; color: oklch(0.21 0.02 250); background: white; }
+ul, ol { list-style: none; }
+img, video, svg { display: block; max-width: 100%; }
+a { text-decoration: inherit; }
+button, input, select, textarea { background: transparent; appearance: none; }
+.pitolet-vs-figma {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: Inter, system-ui, sans-serif;
+  color: oklch(0.95 0.006 250);
+  background-color: oklch(0.13 0.006 250);
+}
+
+.nav-band {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 16px;
+  padding-right: 20px;
+  padding-bottom: 16px;
+  padding-left: 20px;
+  align-self: stretch;
+  border-bottom: 1px solid oklch(1 0 0 / 0.09);
+}
+
+@media (min-width: 768px) {
+  .nav-band {
+    padding-top: 24px;
+    padding-right: 40px;
+    padding-bottom: 24px;
+    padding-left: 40px;
+  }
+}
+
+.nav {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  align-self: stretch;
+  max-width: 1120px;
+}
+
+.brand {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0px 8px;
+  cursor: pointer;
+}
+
+.brandmark {
+  width: 24px;
+  height: 24px;
+  object-fit: cover;
+}
+
+.wordmark {
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: -0.3px;
+}
+
+.nav-links {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0px 24px;
+}
+
+.compare-to-figma {
+  display: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: oklch(0.7 0.012 250);
+}
+
+@media (min-width: 640px) {
+  .compare-to-figma {
+    display: block;
+  }
+}
+
+.compare-to-figma:hover {
+  color: oklch(0.95 0.006 250);
+}
+
+.github {
+  display: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: oklch(0.7 0.012 250);
+}
+
+@media (min-width: 640px) {
+  .github {
+    display: block;
+  }
+}
+
+.github:hover {
+  color: oklch(0.95 0.006 250);
+}
+
+.docs {
+  display: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: oklch(0.7 0.012 250);
+}
+
+@media (min-width: 640px) {
+  .docs {
+    display: block;
+  }
+}
+
+.docs:hover {
+  color: oklch(0.95 0.006 250);
+}
+
+.open-app {
+  padding-top: 8px;
+  padding-right: 16px;
+  padding-bottom: 8px;
+  padding-left: 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: oklch(0.14 0.02 222);
+  background-color: oklch(0.71 0.125 215);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.open-app:hover {
+  background-color: oklch(0.6 0.14 222);
+}
+
+.comparison-hero-band {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 64px;
+  padding-right: 20px;
+  padding-bottom: 64px;
+  padding-left: 20px;
+  align-self: stretch;
+}
+
+@media (min-width: 768px) {
+  .comparison-hero-band {
+    padding-top: 96px;
+    padding-right: 40px;
+    padding-bottom: 80px;
+    padding-left: 40px;
+  }
+}
+
+.comparison-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px 0px;
+  align-self: stretch;
+  max-width: 920px;
+}
+
+.comparison-eyebrow {
+  padding-top: 8px;
+  padding-right: 16px;
+  padding-bottom: 8px;
+  padding-left: 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: oklch(0.71 0.125 215);
+  background-color: oklch(0.165 0.008 250);
+  border: 1px solid oklch(1 0 0 / 0.09);
+  border-radius: 9999px;
+}
+
+.comparison-headline {
+  max-width: 880px;
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -1.7px;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .comparison-headline {
+    font-size: 60px;
+    letter-spacing: -2px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .comparison-headline {
+    font-size: 72px;
+  }
+}
+
+.comparison-intro {
+  max-width: 760px;
+  font-size: 20px;
+  line-height: 1.55;
+  text-align: center;
+  color: oklch(0.7 0.012 250);
+}
+
+.comparison-actions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.try-pitolet {
+  padding-top: 12px;
+  padding-right: 24px;
+  padding-bottom: 12px;
+  padding-left: 24px;
+  font-size: 16px;
+  font-weight: 650;
+  color: oklch(0.14 0.02 222);
+  background-color: oklch(0.71 0.125 215);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.try-pitolet:hover {
+  background-color: oklch(0.6 0.14 222);
+}
+
+.self-host {
+  padding-top: 12px;
+  padding-right: 24px;
+  padding-bottom: 12px;
+  padding-left: 24px;
+  font-size: 16px;
+  font-weight: 600;
+  color: oklch(0.95 0.006 250);
+  background-color: oklch(0.165 0.008 250);
+  border: 1px solid oklch(1 0 0 / 0.16);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.self-host:hover {
+  background-color: oklch(0.2 0.009 250);
+}
+
+.comparison-matrix-band {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 48px;
+  padding-right: 20px;
+  padding-bottom: 48px;
+  padding-left: 20px;
+  align-self: stretch;
+  background-color: oklch(0.165 0.008 250);
+}
+
+@media (min-width: 768px) {
+  .comparison-matrix-band {
+    padding-top: 64px;
+    padding-right: 40px;
+    padding-bottom: 64px;
+    padding-left: 40px;
+  }
+}
+
+.comparison-matrix {
+  display: flex;
+  flex-direction: column;
+  gap: 32px 0px;
+  align-self: stretch;
+  max-width: 1120px;
+}
+
+.matrix-heading {
+  align-self: center;
+  font-size: 36px;
+  font-weight: 650;
+  letter-spacing: -1px;
+  text-align: center;
+}
+
+.comparison-table {
+  display: flex;
+  flex-direction: column;
+  gap: 12px 0px;
+  align-self: stretch;
+}
+
+.comparison-header {
+  display: none;
+  gap: 0px 24px;
+  grid-template-columns: 190px 1fr 1fr;
+  padding-top: 8px;
+  padding-right: 24px;
+  padding-bottom: 8px;
+  padding-left: 24px;
+}
+
+@media (min-width: 768px) {
+  .comparison-header {
+    display: grid;
+  }
+}
+
+.capability-header {
+  font-size: 14px;
+  font-weight: 700;
+  color: oklch(0.55 0.014 250);
+}
+
+.figma {
+  font-size: 14px;
+  font-weight: 700;
+  color: oklch(0.55 0.014 250);
+}
+
+.pitolet {
+  font-size: 14px;
+  font-weight: 700;
+  color: oklch(0.71 0.125 215);
+}
+
+.layout-row {
+  display: grid;
+  gap: 20px 24px;
+  grid-template-columns: 1fr;
+  padding-top: 24px;
+  padding-right: 24px;
+  padding-bottom: 24px;
+  padding-left: 24px;
+  align-self: stretch;
+  background-color: oklch(0.13 0.006 250);
+  border: 1px solid oklch(1 0 0 / 0.09);
+  border-radius: 12px;
+}
+
+@media (min-width: 768px) {
+  .layout-row {
+    grid-template-columns: 190px 1fr 1fr;
+  }
+}
+
+.capability {
+  font-size: 16px;
+  font-weight: 650;
+  color: oklch(0.95 0.006 250);
+}
+
+.figma-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 8px 0px;
+  min-width: 0px;
+}
+
+.figma-mobile-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: oklch(0.55 0.014 250);
+}
+
+@media (min-width: 768px) {
+  .figma-mobile-label {
+    display: none;
+  }
+}
+
+.figma-value {
+  font-size: 16px;
+  line-height: 1.55;
+  color: oklch(0.7 0.012 250);
+}
+
+.pitolet-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 8px 0px;
+  min-width: 0px;
+}
+
+.pitolet-mobile-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: oklch(0.71 0.125 215);
+}
+
+@media (min-width: 768px) {
+  .pitolet-mobile-label {
+    display: none;
+  }
+}
+
+.pitolet-value {
+  font-size: 16px;
+  line-height: 1.55;
+  color: oklch(0.95 0.006 250);
+}
+
+.responsive-design-row {
+  display: grid;
+  gap: 20px 24px;
+  grid-template-columns: 1fr;
+  padding-top: 24px;
+  padding-right: 24px;
+  padding-bottom: 24px;
+  padding-left: 24px;
+  align-self: stretch;
+  background-color: oklch(0.13 0.006 250);
+  border: 1px solid oklch(1 0 0 / 0.09);
+  border-radius: 12px;
+}
+
+@media (min-width: 768px) {
+  .responsive-design-row {
+    grid-template-columns: 190px 1fr 1fr;
+  }
+}
+
+.capability-2 {
+  font-size: 16px;
+  font-weight: 650;
+  color: oklch(0.95 0.006 250);
+}
+
+.figma-cell-2 {
+  display: flex;
+  flex-direction: column;
+  gap: 8px 0px;
+  min-width: 0px;
+}
+
+.figma-mobile-label-2 {
+  font-size: 12px;
+  font-weight: 700;
+  color: oklch(0.55 0.014 250);
+}
+
+@media (min-width: 768px) {
+  .figma-mobile-label-2 {
+    display: none;
+  }
+}
+
+.figma-value-2 {
+  font-size: 16px;
+  line-height: 1.55;
+  color: oklch(0.7 0.012 250);
+}
+
+.pitolet-cell-2 {
+  display: flex;
+  flex-direction: column;
+  gap: 8px 0px;
+  min-width: 0px;
+}
+
+.pitolet-mobile-label-2 {
+  font-size: 12px;
+  font-weight: 700;
+  color: oklch(0.71 0.125 215);
+}
+
+@media (min-width: 768px) {
+  .pitolet-mobile-label-2 {
+    display: none;
+  }
+}
+
+.pitolet-value-2 {
+  font-size: 16px;
+  line-height: 1.55;
+  color: oklch(0.95 0.006 250);
+}
+
+.interaction-states-row {
+  display: grid;
+  gap: 20px 24px;
+  grid-template-columns: 1fr;
+  padding-top: 24px;
+  padding-right: 24px;
+  padding-bottom: 24px;
+  padding-left: 24px;
+  align-self: stretch;
+  background-color: oklch(0.13 0.006 250);
+  border: 1px solid oklch(1 0 0 / 0.09);
+  border-radius: 12px;
+}
+
+@media (min-width: 768px) {
+  .interaction-states-row {
+    grid-template-columns: 190px 1fr 1fr;
+  }
+}
+
+.capability-3 {
+  font-size: 16px;
+  font-weight: 650;
+  color: oklch(0.95 0.006 250);
+}
+
+.figma-cell-3 {
+  display: flex;
+  flex-direction: column;
+  gap: 8px 0px;
+  min-width: 0px;
+}
+
+.figma-mobile-label-3 {
+  font-size: 12px;
+  font-weight: 700;
+  color: oklch(0.55 0.014 250);
+}
+
+@media (min-width: 768px) {
+  .figma-mobile-label-3 {
+    display: none;
+  }
+}
+
+.figma-value-3 {
+  font-size: 16px;
+  line-height: 1.55;
+  color: oklch(0.7 0.012 250);
+}
+
+.pitolet-cell-3 {
+  display: flex;
+  flex-direction: column;
+  gap: 8px 0px;
+  min-width: 0px;
+}
+
+.pitolet-mobile-label-3 {
+  font-size: 12px;
+  font-weight: 700;
+  color: oklch(0.71 0.125 215);
+}
+
+@media (min-width: 768px) {
+  .pitolet-mobile-label-3 {
+    display: none;
+  }
+}
+
+.pitolet-value-3 {
+  font-size: 16px;
+  line-height: 1.55;
+  color: oklch(0.95 0.006 250);
+}
+
+.code-path-row {
+  display: grid;
+  gap: 20px 24px;
+  grid-template-columns: 1fr;
+  padding-top: 24px;
+  padding-right: 24px;
+  padding-bottom: 24px;
+  padding-left: 24px;
+  align-self: stretch;
+  background-color: oklch(0.13 0.006 250);
+  border: 1px solid oklch(1 0 0 / 0.09);
+  border-radius: 12px;
+}
+
+@media (min-width: 768px) {
+  .code-path-row {
+    grid-template-columns: 190px 1fr 1fr;
+  }
+}
+
+.capability-4 {
+  font-size: 16px;
+  font-weight: 650;
+  color: oklch(0.95 0.006 250);
+}
+
+.figma-cell-4 {
+  display: flex;
+  flex-direction: column;
+  gap: 8px 0px;
+  min-width: 0px;
+}
+
+.figma-mobile-label-4 {
+  font-size: 12px;
+  font-weight: 700;
+  color: oklch(0.55 0.014 250);
+}
+
+@media (min-width: 768px) {
+  .figma-mobile-label-4 {
+    display: none;
+  }
+}
+
+.figma-value-4 {
+  font-size: 16px;
+  line-height: 1.55;
+  color: oklch(0.7 0.012 250);
+}
+
+.pitolet-cell-4 {
+  display: flex;
+  flex-direction: column;
+  gap: 8px 0px;
+  min-width: 0px;
+}
+
+.pitolet-mobile-label-4 {
+  font-size: 12px;
+  font-weight: 700;
+  color: oklch(0.71 0.125 215);
+}
+
+@media (min-width: 768px) {
+  .pitolet-mobile-label-4 {
+    display: none;
+  }
+}
+
+.pitolet-value-4 {
+  font-size: 16px;
+  line-height: 1.55;
+  color: oklch(0.95 0.006 250);
+}
+
+.file-format-row {
+  display: grid;
+  gap: 20px 24px;
+  grid-template-columns: 1fr;
+  padding-top: 24px;
+  padding-right: 24px;
+  padding-bottom: 24px;
+  padding-left: 24px;
+  align-self: stretch;
+  background-color: oklch(0.13 0.006 250);
+  border: 1px solid oklch(1 0 0 / 0.09);
+  border-radius: 12px;
+}
+
+@media (min-width: 768px) {
+  .file-format-row {
+    grid-template-columns: 190px 1fr 1fr;
+  }
+}
+
+.capability-5 {
+  font-size: 16px;
+  font-weight: 650;
+  color: oklch(0.95 0.006 250);
+}
+
+.figma-cell-5 {
+  display: flex;
+  flex-direction: column;
+  gap: 8px 0px;
+  min-width: 0px;
+}
+
+.figma-mobile-label-5 {
+  font-size: 12px;
+  font-weight: 700;
+  color: oklch(0.55 0.014 250);
+}
+
+@media (min-width: 768px) {
+  .figma-mobile-label-5 {
+    display: none;
+  }
+}
+
+.figma-value-5 {
+  font-size: 16px;
+  line-height: 1.55;
+  color: oklch(0.7 0.012 250);
+}
+
+.pitolet-cell-5 {
+  display: flex;
+  flex-direction: column;
+  gap: 8px 0px;
+  min-width: 0px;
+}
+
+.pitolet-mobile-label-5 {
+  font-size: 12px;
+  font-weight: 700;
+  color: oklch(0.71 0.125 215);
+}
+
+@media (min-width: 768px) {
+  .pitolet-mobile-label-5 {
+    display: none;
+  }
+}
+
+.pitolet-value-5 {
+  font-size: 16px;
+  line-height: 1.55;
+  color: oklch(0.95 0.006 250);
+}
+
+.coding-agents-row {
+  display: grid;
+  gap: 20px 24px;
+  grid-template-columns: 1fr;
+  padding-top: 24px;
+  padding-right: 24px;
+  padding-bottom: 24px;
+  padding-left: 24px;
+  align-self: stretch;
+  background-color: oklch(0.13 0.006 250);
+  border: 1px solid oklch(1 0 0 / 0.09);
+  border-radius: 12px;
+}
+
+@media (min-width: 768px) {
+  .coding-agents-row {
+    grid-template-columns: 190px 1fr 1fr;
+  }
+}
+
+.capability-6 {
+  font-size: 16px;
+  font-weight: 650;
+  color: oklch(0.95 0.006 250);
+}
+
+.figma-cell-6 {
+  display: flex;
+  flex-direction: column;
+  gap: 8px 0px;
+  min-width: 0px;
+}
+
+.figma-mobile-label-6 {
+  font-size: 12px;
+  font-weight: 700;
+  color: oklch(0.55 0.014 250);
+}
+
+@media (min-width: 768px) {
+  .figma-mobile-label-6 {
+    display: none;
+  }
+}
+
+.figma-value-6 {
+  font-size: 16px;
+  line-height: 1.55;
+  color: oklch(0.7 0.012 250);
+}
+
+.pitolet-cell-6 {
+  display: flex;
+  flex-direction: column;
+  gap: 8px 0px;
+  min-width: 0px;
+}
+
+.pitolet-mobile-label-6 {
+  font-size: 12px;
+  font-weight: 700;
+  color: oklch(0.71 0.125 215);
+}
+
+@media (min-width: 768px) {
+  .pitolet-mobile-label-6 {
+    display: none;
+  }
+}
+
+.pitolet-value-6 {
+  font-size: 16px;
+  line-height: 1.55;
+  color: oklch(0.95 0.006 250);
+}
+
+.design-tokens-row {
+  display: grid;
+  gap: 20px 24px;
+  grid-template-columns: 1fr;
+  padding-top: 24px;
+  padding-right: 24px;
+  padding-bottom: 24px;
+  padding-left: 24px;
+  align-self: stretch;
+  background-color: oklch(0.13 0.006 250);
+  border: 1px solid oklch(1 0 0 / 0.09);
+  border-radius: 12px;
+}
+
+@media (min-width: 768px) {
+  .design-tokens-row {
+    grid-template-columns: 190px 1fr 1fr;
+  }
+}
+
+.capability-7 {
+  font-size: 16px;
+  font-weight: 650;
+  color: oklch(0.95 0.006 250);
+}
+
+.figma-cell-7 {
+  display: flex;
+  flex-direction: column;
+  gap: 8px 0px;
+  min-width: 0px;
+}
+
+.figma-mobile-label-7 {
+  font-size: 12px;
+  font-weight: 700;
+  color: oklch(0.55 0.014 250);
+}
+
+@media (min-width: 768px) {
+  .figma-mobile-label-7 {
+    display: none;
+  }
+}
+
+.figma-value-7 {
+  font-size: 16px;
+  line-height: 1.55;
+  color: oklch(0.7 0.012 250);
+}
+
+.pitolet-cell-7 {
+  display: flex;
+  flex-direction: column;
+  gap: 8px 0px;
+  min-width: 0px;
+}
+
+.pitolet-mobile-label-7 {
+  font-size: 12px;
+  font-weight: 700;
+  color: oklch(0.71 0.125 215);
+}
+
+@media (min-width: 768px) {
+  .pitolet-mobile-label-7 {
+    display: none;
+  }
+}
+
+.pitolet-value-7 {
+  font-size: 16px;
+  line-height: 1.55;
+  color: oklch(0.95 0.006 250);
+}
+
+.hosting-and-price-row {
+  display: grid;
+  gap: 20px 24px;
+  grid-template-columns: 1fr;
+  padding-top: 24px;
+  padding-right: 24px;
+  padding-bottom: 24px;
+  padding-left: 24px;
+  align-self: stretch;
+  background-color: oklch(0.13 0.006 250);
+  border: 1px solid oklch(1 0 0 / 0.09);
+  border-radius: 12px;
+}
+
+@media (min-width: 768px) {
+  .hosting-and-price-row {
+    grid-template-columns: 190px 1fr 1fr;
+  }
+}
+
+.capability-8 {
+  font-size: 16px;
+  font-weight: 650;
+  color: oklch(0.95 0.006 250);
+}
+
+.figma-cell-8 {
+  display: flex;
+  flex-direction: column;
+  gap: 8px 0px;
+  min-width: 0px;
+}
+
+.figma-mobile-label-8 {
+  font-size: 12px;
+  font-weight: 700;
+  color: oklch(0.55 0.014 250);
+}
+
+@media (min-width: 768px) {
+  .figma-mobile-label-8 {
+    display: none;
+  }
+}
+
+.figma-value-8 {
+  font-size: 16px;
+  line-height: 1.55;
+  color: oklch(0.7 0.012 250);
+}
+
+.pitolet-cell-8 {
+  display: flex;
+  flex-direction: column;
+  gap: 8px 0px;
+  min-width: 0px;
+}
+
+.pitolet-mobile-label-8 {
+  font-size: 12px;
+  font-weight: 700;
+  color: oklch(0.71 0.125 215);
+}
+
+@media (min-width: 768px) {
+  .pitolet-mobile-label-8 {
+    display: none;
+  }
+}
+
+.pitolet-value-8 {
+  font-size: 16px;
+  line-height: 1.55;
+  color: oklch(0.95 0.006 250);
+}
+
+.comparison-sources {
+  align-self: center;
+  font-size: 12px;
+  text-align: center;
+  color: oklch(0.55 0.014 250);
+}
+
+.figma-wins-band {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 48px;
+  padding-right: 20px;
+  padding-bottom: 48px;
+  padding-left: 20px;
+  align-self: stretch;
+}
+
+@media (min-width: 768px) {
+  .figma-wins-band {
+    padding-top: 64px;
+    padding-right: 40px;
+    padding-bottom: 64px;
+    padding-left: 40px;
+  }
+}
+
+.figma-wins {
+  display: flex;
+  flex-direction: column;
+  gap: 16px 0px;
+  padding-top: 32px;
+  padding-right: 32px;
+  padding-bottom: 32px;
+  padding-left: 32px;
+  align-self: stretch;
+  max-width: 900px;
+  background-color: oklch(0.165 0.008 250);
+  border: 1px solid oklch(1 0 0 / 0.09);
+  border-radius: 12px;
+}
+
+.figma-wins-heading {
+  font-size: 30px;
+  font-weight: 650;
+  letter-spacing: -0.7px;
+}
+
+.figma-wins-body {
+  font-size: 18px;
+  line-height: 1.65;
+  color: oklch(0.7 0.012 250);
+}
+
+.use-cases-band {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 48px;
+  padding-right: 20px;
+  padding-bottom: 48px;
+  padding-left: 20px;
+  align-self: stretch;
+}
+
+@media (min-width: 768px) {
+  .use-cases-band {
+    padding-top: 64px;
+    padding-right: 40px;
+    padding-bottom: 64px;
+    padding-left: 40px;
+  }
+}
+
+.use-cases {
+  display: flex;
+  flex-direction: column;
+  gap: 32px 0px;
+  align-self: stretch;
+  max-width: 1120px;
+}
+
+.use-cases-heading {
+  font-size: 36px;
+  font-weight: 650;
+  letter-spacing: -1px;
+  text-align: center;
+}
+
+.use-case-cards {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 20px;
+  align-self: stretch;
+}
+
+.design-engineers {
+  display: flex;
+  flex-direction: column;
+  gap: 12px 0px;
+  padding-top: 24px;
+  padding-right: 24px;
+  padding-bottom: 24px;
+  padding-left: 24px;
+  align-self: stretch;
+  background-color: oklch(0.165 0.008 250);
+  border: 1px solid oklch(1 0 0 / 0.09);
+  border-radius: 12px;
+}
+
+.use-case-title {
+  font-size: 20px;
+  font-weight: 650;
+}
+
+.use-case-body {
+  font-size: 16px;
+  line-height: 1.6;
+  color: oklch(0.7 0.012 250);
+}
+
+.ai-assisted-teams {
+  display: flex;
+  flex-direction: column;
+  gap: 12px 0px;
+  padding-top: 24px;
+  padding-right: 24px;
+  padding-bottom: 24px;
+  padding-left: 24px;
+  align-self: stretch;
+  background-color: oklch(0.165 0.008 250);
+  border: 1px solid oklch(1 0 0 / 0.09);
+  border-radius: 12px;
+}
+
+.use-case-title-2 {
+  font-size: 20px;
+  font-weight: 650;
+}
+
+.use-case-body-2 {
+  font-size: 16px;
+  line-height: 1.6;
+  color: oklch(0.7 0.012 250);
+}
+
+.design-in-code-review {
+  display: flex;
+  flex-direction: column;
+  gap: 12px 0px;
+  padding-top: 24px;
+  padding-right: 24px;
+  padding-bottom: 24px;
+  padding-left: 24px;
+  align-self: stretch;
+  background-color: oklch(0.165 0.008 250);
+  border: 1px solid oklch(1 0 0 / 0.09);
+  border-radius: 12px;
+}
+
+.use-case-title-3 {
+  font-size: 20px;
+  font-weight: 650;
+}
+
+.use-case-body-3 {
+  font-size: 16px;
+  line-height: 1.6;
+  color: oklch(0.7 0.012 250);
+}
+
+.comparison-cta-band {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 48px;
+  padding-right: 20px;
+  padding-bottom: 64px;
+  padding-left: 20px;
+  align-self: stretch;
+}
+
+@media (min-width: 768px) {
+  .comparison-cta-band {
+    padding-top: 64px;
+    padding-right: 40px;
+    padding-bottom: 80px;
+    padding-left: 40px;
+  }
+}
+
+.comparison-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px 0px;
+  padding-top: 40px;
+  padding-right: 40px;
+  padding-bottom: 40px;
+  padding-left: 40px;
+  align-self: stretch;
+  max-width: 900px;
+  background-image: radial-gradient(circle, oklch(0.27 0.055 215) 0%, oklch(0.165 0.008 250) 100%);
+  border: 1px solid oklch(1 0 0 / 0.16);
+  border-radius: 12px;
+}
+
+.cta-heading {
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  text-align: center;
+}
+
+.cta-body {
+  max-width: 680px;
+  font-size: 18px;
+  line-height: 1.6;
+  text-align: center;
+  color: oklch(0.7 0.012 250);
+}
+
+.cta-action {
+  padding-top: 12px;
+  padding-right: 24px;
+  padding-bottom: 12px;
+  padding-left: 24px;
+  font-size: 16px;
+  font-weight: 650;
+  color: oklch(0.14 0.02 222);
+  background-color: oklch(0.71 0.125 215);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.cta-action:hover {
+  background-color: oklch(0.6 0.14 222);
+}
+
+.footer-band {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 32px;
+  padding-right: 20px;
+  padding-bottom: 32px;
+  padding-left: 20px;
+  align-self: stretch;
+  border-top: 1px solid oklch(1 0 0 / 0.09);
+}
+
+@media (min-width: 768px) {
+  .footer-band {
+    padding-top: 32px;
+    padding-right: 40px;
+    padding-bottom: 32px;
+    padding-left: 40px;
+  }
+}
+
+.footer {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+  align-self: stretch;
+  max-width: 1120px;
+}
+
+.copyright {
+  font-size: 14px;
+  color: oklch(0.55 0.014 250);
+}
+
+.footer-links {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0px 20px;
+}
+
+.terms {
+  font-size: 14px;
+  color: oklch(0.7 0.012 250);
+}
+
+.terms:hover {
+  color: oklch(0.95 0.006 250);
+}
+
+.privacy {
+  font-size: 14px;
+  color: oklch(0.7 0.012 250);
+}
+
+.privacy:hover {
+  color: oklch(0.95 0.006 250);
+}
+
+.github-2 {
+  font-size: 14px;
+  color: oklch(0.7 0.012 250);
+}
+
+.github-2:hover {
+  color: oklch(0.95 0.006 250);
+}
+</style>
+
+  <style>
+    /* Production polish on top of the deterministic codegen output. */
+    html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; scroll-behavior: smooth; }
+    body { background: oklch(0.13 0.006 250); }
+    ::selection { background: oklch(0.71 0.125 215 / 0.3); }
+  </style>
+</head>
+<body>
+<div class="pitolet-vs-figma">
+  <section class="nav-band">
+    <nav class="nav">
+      <a class="brand" href="/">
+        <img class="brandmark" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22oklch(0.71%200.125%20215)%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M3%2018%20L9.5%206%20L13.5%2013%20L16.5%208.5%20L21%2018%22%2F%3E%3C%2Fsvg%3E" alt="Pitolet">
+        <span class="wordmark">Pitolet</span>
+      </a>
+      <div class="nav-links">
+        <a class="compare-to-figma" href="/vs-figma/">Compare to Figma</a>
+        <a class="github" href="https://github.com/pitolet/pitolet">GitHub</a>
+        <a class="docs" href="https://github.com/pitolet/pitolet#readme">Docs</a>
+        <a class="open-app" href="https://app.pitolet.com">Open app</a>
+      </div>
+    </nav>
+  </section>
+  <section class="comparison-hero-band">
+    <div class="comparison-hero">
+      <p class="comparison-eyebrow">Pitolet vs Figma · for web interface work</p>
+      <h1 class="comparison-headline">A Figma alternative built for shipping web UI</h1>
+      <p class="comparison-intro">Figma is a great general-purpose design tool. But web interfaces still have to cross from Figma's layout model into CSS. Pitolet starts in the browser instead: the canvas is real DOM and CSS, and the same document exports as production code.</p>
+      <div class="comparison-actions">
+        <a class="try-pitolet" href="https://app.pitolet.com">Try Pitolet free</a>
+        <a class="self-host" href="https://github.com/pitolet/pitolet#quickstart">Self-host with npx pitolet</a>
+      </div>
+    </div>
+  </section>
+  <section class="comparison-matrix-band">
+    <div class="comparison-matrix">
+      <h2 class="matrix-heading">Different foundations, different output</h2>
+      <div class="comparison-table">
+        <div class="comparison-header">
+          <span class="capability-header">Capability</span>
+          <span class="figma">Figma</span>
+          <span class="pitolet">Pitolet</span>
+        </div>
+        <article class="layout-row">
+          <h3 class="capability">Layout</h3>
+          <div class="figma-cell">
+            <span class="figma-mobile-label">Figma</span>
+            <p class="figma-value">Auto layout, grid, and constraints in Figma's own rendering model.</p>
+          </div>
+          <div class="pitolet-cell">
+            <span class="pitolet-mobile-label">Pitolet</span>
+            <p class="pitolet-value">Real flexbox and grid rendered by the browser's layout engine.</p>
+          </div>
+        </article>
+        <article class="responsive-design-row">
+          <h3 class="capability-2">Responsive design</h3>
+          <div class="figma-cell-2">
+            <span class="figma-mobile-label-2">Figma</span>
+            <p class="figma-value-2">Frames, variants, and responsive prototypes that remain design-layer constructs.</p>
+          </div>
+          <div class="pitolet-cell-2">
+            <span class="pitolet-mobile-label-2">Pitolet</span>
+            <p class="pitolet-value-2">One frame with cascading breakpoint overrides that emit real media queries.</p>
+          </div>
+        </article>
+        <article class="interaction-states-row">
+          <h3 class="capability-3">Interaction states</h3>
+          <div class="figma-cell-3">
+            <span class="figma-mobile-label-3">Figma</span>
+            <p class="figma-value-3">Prototype interactions and component variants.</p>
+          </div>
+          <div class="pitolet-cell-3">
+            <span class="pitolet-mobile-label-3">Pitolet</span>
+            <p class="pitolet-value-3">Real :hover, :focus, and :active layers that export as CSS.</p>
+          </div>
+        </article>
+        <article class="code-path-row">
+          <h3 class="capability-4">Code path</h3>
+          <div class="figma-cell-4">
+            <span class="figma-mobile-label-4">Figma</span>
+            <p class="figma-value-4">Dev Mode context, Code Connect, plugins, and agents translate the design model into code.</p>
+          </div>
+          <div class="pitolet-cell-4">
+            <span class="pitolet-mobile-label-4">Pitolet</span>
+            <p class="pitolet-value-4">Deterministic React + Tailwind or HTML + CSS from the same style-resolution pipeline as the canvas.</p>
+          </div>
+        </article>
+        <article class="file-format-row">
+          <h3 class="capability-5">File format</h3>
+          <div class="figma-cell-5">
+            <span class="figma-mobile-label-5">Figma</span>
+            <p class="figma-value-5">Cloud-hosted proprietary design files.</p>
+          </div>
+          <div class="pitolet-cell-5">
+            <span class="pitolet-mobile-label-5">Pitolet</span>
+            <p class="pitolet-value-5">Readable JSON in your git repository, with normal diffs and history.</p>
+          </div>
+        </article>
+        <article class="coding-agents-row">
+          <h3 class="capability-6">Coding agents</h3>
+          <div class="figma-cell-6">
+            <span class="figma-mobile-label-6">Figma</span>
+            <p class="figma-value-6">Remote MCP can read and write Figma content; write access is beta and depends on client and seat.</p>
+          </div>
+          <div class="pitolet-cell-6">
+            <span class="pitolet-mobile-label-6">Pitolet</span>
+            <p class="pitolet-value-6">Read/write MCP is built into the editor. Changes appear live, pass validation, and are undoable.</p>
+          </div>
+        </article>
+        <article class="design-tokens-row">
+          <h3 class="capability-7">Design tokens</h3>
+          <div class="figma-cell-7">
+            <span class="figma-mobile-label-7">Figma</span>
+            <p class="figma-value-7">Variables and styles, with code workflows through Dev Mode, APIs, and integrations.</p>
+          </div>
+          <div class="pitolet-cell-7">
+            <span class="pitolet-mobile-label-7">Pitolet</span>
+            <p class="pitolet-value-7">Tokens emit as Tailwind @theme variables and agents can update them on the open canvas.</p>
+          </div>
+        </article>
+        <article class="hosting-and-price-row">
+          <h3 class="capability-8">Hosting and price</h3>
+          <div class="figma-cell-8">
+            <span class="figma-mobile-label-8">Figma</span>
+            <p class="figma-value-8">Free starter; paid full design seats currently range from $16 to $90 per month.</p>
+          </div>
+          <div class="pitolet-cell-8">
+            <span class="pitolet-mobile-label-8">Pitolet</span>
+            <p class="pitolet-value-8">Free hosted tier, Pro at $12 per seat, or self-host the AGPL core for free.</p>
+          </div>
+        </article>
+      </div>
+      <p class="comparison-sources">Figma capabilities and USD pricing checked July 2026. Sources: <a href="https://www.figma.com/pricing/">Figma pricing</a> and <a href="https://developers.figma.com/docs/figma-mcp-server/">Figma MCP documentation</a>.</p>
+    </div>
+  </section>
+  <section class="figma-wins-band">
+    <div class="figma-wins">
+      <h2 class="figma-wins-heading">When Figma is still the better tool</h2>
+      <p class="figma-wins-body">Choose Figma for brand and illustration work, advanced vector editing, rich prototyping, mature multiplayer across large organizations, or its enormous plugin ecosystem. Pitolet is narrower by design: it is for the part of the job where the deliverable is a working web interface.</p>
+    </div>
+  </section>
+  <section class="use-cases-band">
+    <div class="use-cases">
+      <h2 class="use-cases-heading">How teams use Pitolet</h2>
+      <div class="use-case-cards">
+        <article class="design-engineers">
+          <h3 class="use-case-title">Design engineers</h3>
+          <p class="use-case-body">Design with the same stacks, tokens, and breakpoints you ship. Export is a component, not a visual reference to rebuild.</p>
+        </article>
+        <article class="ai-assisted-teams">
+          <h3 class="use-case-title-2">AI-assisted teams</h3>
+          <p class="use-case-body-2">Let Claude Code or Codex make the first pass, then review every live, undoable change on the canvas.</p>
+        </article>
+        <article class="design-in-code-review">
+          <h3 class="use-case-title-3">Design in code review</h3>
+          <p class="use-case-body-3">Keep the readable design document beside the code, and use drift checks to flag when either side changes.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+  <section class="comparison-cta-band">
+    <div class="comparison-cta">
+      <h2 class="cta-heading">Try the browser-native path</h2>
+      <p class="cta-body">Start free in the hosted app, or run npx pitolet locally. This comparison page is itself a Pitolet document exported by Pitolet’s code generator.</p>
+      <a class="cta-action" href="https://app.pitolet.com">Start free →</a>
+    </div>
+  </section>
+  <section class="footer-band">
+    <footer class="footer">
+      <p class="copyright">© 2026 Pitolet · AGPL-3.0 core</p>
+      <div class="footer-links">
+        <a class="terms" href="/terms.html">Terms</a>
+        <a class="privacy" href="/privacy.html">Privacy</a>
+        <a class="github-2" href="https://github.com/pitolet/pitolet">GitHub</a>
+      </div>
+    </footer>
+  </section>
+</div>
+</body>
+</html>

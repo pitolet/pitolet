@@ -1,0 +1,13 @@
+.ptl-tooltip {
+  display: flex;
+  align-items: center;
+  gap: var(--ptl-space-2);
+  background: var(--ptl-bg-3);
+  color: var(--ptl-text-1);
+  font-size: var(--ptl-text-sm);
+  padding: 4px 8px;
+  border-radius: var(--ptl-radius-md);
+  box-shadow: var(--ptl-shadow-popover);
+  max-width: 280px;
+  user-select: none;
+}

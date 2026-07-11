@@ -1,0 +1,61 @@
+name: Release (npm)
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+# Publishing uses npm Trusted Publishing (OIDC) — no NPM_TOKEN secret.
+# Configured on npmjs.com: package pitolet → Settings → Trusted Publisher →
+# GitHub Actions, org pitolet, repo pitolet, workflow release.yml.
+permissions:
+  contents: read
+  id-token: write # OIDC exchange for trusted publishing + provenance
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      # Trusted publishing needs a recent npm (OIDC support); runners ship older.
+      - run: npm install -g npm@latest
+
+      - run: pnpm install --frozen-lockfile
+
+      # Never publish untested.
+      - run: pnpm -r typecheck
+      - run: pnpm vitest run
+      - run: pnpm build
+
+      - name: Show tarball contents
+        working-directory: packages/server
+        run: npm pack --dry-run
+
+      # Install the REAL tarball into a scratch project and boot the bin —
+      # catches manifest bugs npm pack can't (workspace: deps, missing bin,
+      # broken entry). v0.1.0 shipped broken because this step didn't exist.
+      - name: Tarball install smoke test
+        run: |
+          cd packages/server && npm pack --pack-destination /tmp && cd /tmp
+          mkdir smoke && cd smoke && npm init -y > /dev/null
+          npm install /tmp/pitolet-*.tgz
+          PITOLET_PORT=4933 ./node_modules/.bin/pitolet --data ./data &
+          SERVER=$!
+          for i in $(seq 1 20); do
+            curl -sf localhost:4933/api/health && break
+            sleep 0.5
+          done
+          curl -sf localhost:4933/api/health | grep -q '"ok":true'
+          curl -sf localhost:4933/ | grep -q '<title>Pitolet</title>'
+          kill $SERVER
+
+      - name: Publish to npm (OIDC trusted publishing)
+        working-directory: packages/server
+        run: npm publish

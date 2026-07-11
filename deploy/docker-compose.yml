@@ -1,0 +1,87 @@
+# Pitolet Cloud — single-VPS production stack (Hetzner + Docker Compose v2).
+# Copy this dir to /opt/pitolet on the host, fill .env from .env.example,
+# then `docker compose up -d`. See README.md for the full runbook.
+
+services:
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./static:/srv/static:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+
+  app:
+    image: ghcr.io/pitolet/pitolet-cloud:${TAG:-latest}
+    restart: unless-stopped
+    # Every key in .env is passed through (env_file). Monitoring knobs —
+    # PITOLET_METRICS_TOKEN, SENTRY_DSN — live there too; see .env.example.
+    env_file: .env
+    volumes:
+      - app_data:/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # No published ports — Caddy reaches it over the compose network as app:8080.
+
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-pitolet}
+      POSTGRES_USER: ${POSTGRES_USER:-pitolet}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pitolet} -d ${POSTGRES_DB:-pitolet}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # No published ports — reachable only on the compose network.
+
+  # Nightly backups: pg_dump (custom format) + the /data asset volume, both
+  # streamed into a restic repo (Hetzner Storage Box over sftp). Weekly prune.
+  backup:
+    image: alpine:3.20
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - app_data:/data:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -eu
+        apk add --no-cache restic postgresql17-client >/dev/null
+        # First run initialises the repo (ignore "already initialized").
+        restic snapshots >/dev/null 2>&1 || restic init || true
+        week_counter=0
+        while true; do
+          echo "[backup] $(date -u +%FT%TZ) starting nightly backup"
+          PGPASSWORD="$POSTGRES_PASSWORD" pg_dump -h postgres -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc \
+            | restic backup --stdin --stdin-filename pitolet.dump \
+            && echo "[backup] db dump ok"
+          restic backup /data && echo "[backup] asset volume ok"
+          week_counter=$((week_counter + 1))
+          if [ "$week_counter" -ge 7 ]; then
+            echo "[backup] weekly prune"
+            restic forget --keep-daily 14 --keep-weekly 8 --prune || true
+            week_counter=0
+          fi
+          sleep 86400
+        done
+
+volumes:
+  caddy_data:
+  caddy_config:
+  app_data:
+  pg_data:

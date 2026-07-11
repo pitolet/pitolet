@@ -1,0 +1,17 @@
+node_modules
+**/node_modules
+**/dist
+.git
+.github
+.claude
+coverage
+**/*.tsbuildinfo
+.vite
+**/.vite
+pitolet
+pitolet-data
+pitolet-export
+*.local
+.DS_Store
+Dockerfile
+.dockerignore

@@ -1,0 +1,97 @@
+/**
+ * Scoped reset for design content inside frames. Deliberately mirrors
+ * Tailwind Preflight (the codegen target's reset) so the canvas render and
+ * the shipped code start from identical UA-style baselines.
+ */
+
+.ptl-frame-wrapper {
+  position: absolute;
+}
+
+.ptl-frame {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: oklch(0.21 0.02 250);
+  contain: layout style;
+  /* Frames own their content: nothing bleeds outside the artboard. */
+  overflow: clip;
+}
+
+.ptl-frame *,
+.ptl-frame *::before,
+.ptl-frame *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border: 0 solid;
+  font: inherit;
+  color: inherit;
+}
+
+.ptl-frame :is(ul, ol) {
+  list-style: none;
+}
+
+.ptl-frame img,
+.ptl-frame video,
+.ptl-frame svg {
+  display: block;
+  max-width: 100%;
+}
+
+.ptl-frame a {
+  text-decoration: inherit;
+}
+
+.ptl-frame :is(button, input, select, textarea) {
+  background: transparent;
+  appearance: none;
+}
+
+/* Text nodes stay selectable only while actually editing text. */
+.ptl-frame,
+.ptl-frame * {
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.ptl-frame [contenteditable='true'] {
+  user-select: text;
+  cursor: text;
+}
+
+/* Frame name label floating above the artboard, constant screen size. */
+.ptl-frame-label {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  margin-bottom: calc(4px / var(--cam-zoom, 1));
+  font-family: var(--ptl-font-ui);
+  font-size: calc(11px / var(--cam-zoom, 1));
+  line-height: 1.2;
+  color: var(--ptl-text-3);
+  white-space: nowrap;
+  user-select: none;
+  cursor: default;
+}
+
+.ptl-frame-label:hover,
+.ptl-frame-label--selected {
+  color: var(--ptl-accent);
+}
+
+.ptl-frame-label--master {
+  color: oklch(0.72 0.14 300);
+}
+
+/* Subtle edge so white frames read against the dark canvas. */
+.ptl-frame-edge {
+  position: absolute;
+  inset: 0;
+  box-shadow: 0 0 0 calc(1px / var(--cam-zoom, 1)) oklch(1 0 0 / 0.06);
+  pointer-events: none;
+}

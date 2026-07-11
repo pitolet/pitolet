@@ -1,0 +1,39 @@
+.ptl-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--ptl-text-2);
+  border-radius: var(--ptl-radius-md);
+  cursor: default;
+  flex-shrink: 0;
+  transition:
+    background var(--ptl-duration-fast) var(--ptl-ease),
+    color var(--ptl-duration-fast) var(--ptl-ease);
+}
+
+.ptl-icon-button--md {
+  width: var(--ptl-control-height-lg);
+  height: var(--ptl-control-height-lg);
+}
+.ptl-icon-button--sm {
+  width: var(--ptl-control-height);
+  height: var(--ptl-control-height);
+}
+
+.ptl-icon-button:hover {
+  background: var(--ptl-bg-2);
+  color: var(--ptl-text-1);
+}
+
+.ptl-icon-button--active,
+.ptl-icon-button--active:hover {
+  background: var(--ptl-accent-muted);
+  color: var(--ptl-accent);
+}
+
+.ptl-icon-button:disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}

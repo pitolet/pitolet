@@ -1,0 +1,67 @@
+.ptl-tabs {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.ptl-tabs-list {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  background: var(--ptl-bg-0);
+  border-radius: var(--ptl-radius-md);
+  align-self: flex-start;
+}
+
+.ptl-tabs-tab {
+  position: relative;
+  z-index: 1;
+  border: none;
+  background: transparent;
+  color: var(--ptl-text-2);
+  font-size: var(--ptl-text-sm);
+  font-weight: 500;
+  padding: 0 var(--ptl-space-2);
+  border-radius: var(--ptl-radius-sm);
+  cursor: default;
+  user-select: none;
+  transition: color var(--ptl-duration-fast) var(--ptl-ease);
+}
+
+.ptl-tabs-list--md .ptl-tabs-tab {
+  height: 22px;
+}
+.ptl-tabs-list--sm .ptl-tabs-tab {
+  height: 18px;
+  font-size: var(--ptl-text-xs);
+}
+
+.ptl-tabs-tab:hover {
+  color: var(--ptl-text-1);
+}
+
+.ptl-tabs-tab[data-selected] {
+  color: var(--ptl-text-1);
+}
+
+.ptl-tabs-indicator {
+  position: absolute;
+  top: 2px;
+  left: 0;
+  z-index: 0;
+  width: var(--active-tab-width);
+  height: calc(100% - 4px);
+  translate: var(--active-tab-left) 0;
+  background: var(--ptl-bg-3);
+  border-radius: var(--ptl-radius-sm);
+  transition:
+    translate var(--ptl-duration-med) var(--ptl-ease),
+    width var(--ptl-duration-med) var(--ptl-ease);
+}
+
+.ptl-tabs-panel {
+  min-height: 0;
+  flex: 1;
+}

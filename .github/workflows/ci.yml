@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Locate PostgreSQL binaries (cloud tests spin ephemeral instances)
+        run: |
+          if ! command -v pg_config >/dev/null 2>&1; then
+            sudo apt-get update && sudo apt-get install -y postgresql
+          fi
+          echo "PGBIN=$(pg_config --bindir)" >> "$GITHUB_ENV"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -r typecheck
+      - run: pnpm vitest run
+      - run: pnpm build
+      - name: License boundary (OSS core must never reference commercial code)
+        run: |
+          if grep -rE "@pitolet/cloud|apps/cloud" packages/ --include='*.ts' --include='*.tsx' --include='*.json'; then
+            echo "::error::AGPL boundary violation: packages/ references commercial cloud code"
+            exit 1
+          fi
+          echo "License boundary clean"

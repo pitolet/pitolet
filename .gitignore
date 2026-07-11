@@ -1,0 +1,11 @@
+node_modules/
+.pnpm-store/
+dist/
+*.tsbuildinfo
+.DS_Store
+coverage/
+.vite/
+pitolet-data/
+pitolet-export/
+*.local
+.claude/settings.local.json

@@ -1,0 +1,19 @@
+.ptl-kbd {
+  display: inline-flex;
+  gap: 2px;
+  font-family: var(--ptl-font-ui);
+}
+
+.ptl-kbd-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  background: oklch(1 0 0 / 0.08);
+  border-radius: 4px;
+  color: var(--ptl-text-2);
+  font-size: var(--ptl-text-xs);
+  line-height: 1;
+}

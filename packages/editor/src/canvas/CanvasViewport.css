@@ -1,0 +1,37 @@
+.ptl-canvas-viewport {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  background-color: var(--ptl-canvas);
+  /* Dot grid that tracks the camera (vars written by CameraController). */
+  background-image: radial-gradient(circle, oklch(1 0 0 / 0.09) 1px, transparent 1.2px);
+  background-size: calc(var(--cam-zoom, 1) * 32px) calc(var(--cam-zoom, 1) * 32px);
+  background-position: var(--cam-x, 0px) var(--cam-y, 0px);
+  touch-action: none;
+  contain: strict;
+}
+
+.ptl-canvas-viewport--panning {
+  cursor: grab;
+}
+.ptl-canvas-viewport--panning:active {
+  cursor: grabbing;
+}
+
+.ptl-canvas-world {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.ptl-canvas-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}

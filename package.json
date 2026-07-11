@@ -1,0 +1,31 @@
+{
+  "name": "pitolet-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A design tool for developers and AI coding agents where every element is real DOM and CSS.",
+  "bin": {
+    "pitolet": "./bin/pitolet.js"
+  },
+  "scripts": {
+    "dev": "concurrently -n server,editor -c blue,cyan \"pnpm --filter ./packages/server dev\" \"pnpm --filter @pitolet/editor dev\"",
+    "build": "pnpm --filter @pitolet/editor build && pnpm --filter ./packages/server build",
+    "start": "node bin/pitolet.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "pnpm -r typecheck",
+    "format": "prettier --write \"packages/*/src/**/*.{ts,tsx,css}\""
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "concurrently": "^9.0.0",
+    "jsdom": "^26.0.0",
+    "prettier": "^3.5.0",
+    "typescript": "^5.9.0",
+    "vitest": "^3.2.0"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "pnpm@11.9.0"
+}

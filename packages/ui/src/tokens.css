@@ -1,0 +1,87 @@
+/**
+ * Pitolet design tokens — the editor's own design system.
+ *
+ * Dark-first, professional, restrained: layered near-black surfaces with a
+ * cool blue cast, a single glacial-cyan accent, hairline borders over
+ * shadows, 4px spacing grid, 13px UI type.
+ *
+ * These values deliberately mirror the token categories Pitolet documents
+ * expose to users (color / spacing / radius / shadow / typography) — the
+ * tool is built with the same primitives it sells.
+ */
+
+:root {
+  /* ---- Surfaces (deepest → most raised) ---- */
+  --ptl-canvas: oklch(0.13 0.006 250);
+  --ptl-bg-0: oklch(0.155 0.007 250);
+  --ptl-bg-1: oklch(0.185 0.008 250);
+  --ptl-bg-2: oklch(0.22 0.009 250);
+  --ptl-bg-3: oklch(0.26 0.01 250);
+
+  /* ---- Text ---- */
+  --ptl-text-1: oklch(0.93 0.006 250);
+  --ptl-text-2: oklch(0.7 0.012 250);
+  --ptl-text-3: oklch(0.52 0.014 250);
+  --ptl-text-disabled: oklch(0.42 0.012 250);
+
+  /* ---- Accent (glacial cyan-blue) ---- */
+  --ptl-accent: oklch(0.71 0.125 215);
+  --ptl-accent-strong: oklch(0.6 0.14 222);
+  --ptl-accent-muted: oklch(0.71 0.125 215 / 0.14);
+  --ptl-on-accent: oklch(0.14 0.02 222);
+
+  /* ---- Semantic ---- */
+  --ptl-danger: oklch(0.64 0.19 25);
+  --ptl-danger-muted: oklch(0.64 0.19 25 / 0.14);
+  --ptl-warning: oklch(0.78 0.14 80);
+  --ptl-success: oklch(0.72 0.14 155);
+
+  /* ---- Borders ---- */
+  --ptl-border: oklch(1 0 0 / 0.07);
+  --ptl-border-strong: oklch(1 0 0 / 0.13);
+  --ptl-border-active: oklch(0.71 0.125 215 / 0.55);
+
+  /* ---- Geometry (4px grid) ---- */
+  --ptl-space-1: 4px;
+  --ptl-space-2: 8px;
+  --ptl-space-3: 12px;
+  --ptl-space-4: 16px;
+  --ptl-space-5: 20px;
+  --ptl-space-6: 24px;
+  --ptl-space-8: 32px;
+  --ptl-radius-sm: 4px;
+  --ptl-radius-md: 6px;
+  --ptl-radius-lg: 10px;
+  --ptl-radius-full: 9999px;
+
+  /* ---- Typography ---- */
+  --ptl-font-ui:
+    'Inter', 'Inter Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui,
+    sans-serif;
+  --ptl-font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --ptl-text-xs: 10.5px;
+  --ptl-text-sm: 11.5px;
+  --ptl-text-md: 13px;
+  --ptl-text-lg: 15px;
+
+  /* ---- Elevation (popovers/dialogs only — chrome uses borders) ---- */
+  --ptl-shadow-popover:
+    0 0 0 1px oklch(1 0 0 / 0.08), 0 8px 24px oklch(0 0 0 / 0.42), 0 2px 6px oklch(0 0 0 / 0.3);
+  --ptl-shadow-dialog:
+    0 0 0 1px oklch(1 0 0 / 0.08), 0 24px 64px oklch(0 0 0 / 0.55), 0 4px 12px oklch(0 0 0 / 0.35);
+
+  /* ---- Focus ---- */
+  --ptl-ring: 0 0 0 2px oklch(0.71 0.125 215 / 0.45);
+
+  /* ---- Motion ---- */
+  --ptl-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --ptl-duration-fast: 120ms;
+  --ptl-duration-med: 200ms;
+
+  /* ---- Editor chrome metrics ---- */
+  --ptl-topbar-height: 44px;
+  --ptl-panel-width: 248px;
+  --ptl-inspector-width: 264px;
+  --ptl-control-height: 24px;
+  --ptl-control-height-lg: 28px;
+}

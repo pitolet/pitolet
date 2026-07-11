@@ -1,0 +1,12 @@
+.ptl-popover-positioner {
+  z-index: 1000;
+}
+
+.ptl-popover {
+  background: var(--ptl-bg-2);
+  border-radius: var(--ptl-radius-lg);
+  box-shadow: var(--ptl-shadow-popover);
+  padding: var(--ptl-space-2);
+  color: var(--ptl-text-1);
+  font-size: var(--ptl-text-sm);
+}

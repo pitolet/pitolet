@@ -1,0 +1,207 @@
+.ptl-topbar {
+  position: relative;
+  /* Stacking context above the canvas so overflowing children (the coach-mark)
+     paint over it. */
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--ptl-topbar-height);
+  padding: 0 var(--ptl-space-2);
+  background: var(--ptl-bg-1);
+  border-bottom: 1px solid var(--ptl-border);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.ptl-topbar-section {
+  display: flex;
+  align-items: center;
+  gap: var(--ptl-space-1);
+  height: 100%;
+  padding: var(--ptl-space-2) 0;
+}
+
+.ptl-topbar-section--center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.ptl-logo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ptl-accent);
+  padding: 0 var(--ptl-space-2);
+}
+
+.ptl-logo-name {
+  font-weight: 600;
+  font-size: var(--ptl-text-md);
+  color: var(--ptl-text-1);
+  letter-spacing: -0.01em;
+}
+
+.ptl-doc-name {
+  font-size: var(--ptl-text-sm);
+  color: var(--ptl-text-2);
+}
+
+.ptl-doc-name--button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background: transparent;
+  border-radius: var(--ptl-radius-md);
+  height: 24px;
+  padding: 0 6px;
+  cursor: default;
+}
+
+.ptl-doc-name--button:hover {
+  background: var(--ptl-bg-2);
+  color: var(--ptl-text-1);
+}
+
+.ptl-doc-switcher {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 220px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.ptl-doc-switcher-empty {
+  padding: var(--ptl-space-2);
+  color: var(--ptl-text-3);
+  font-size: var(--ptl-text-sm);
+}
+
+.ptl-doc-switcher-item {
+  display: flex;
+  align-items: center;
+  gap: var(--ptl-space-2);
+  padding: 6px var(--ptl-space-2);
+  border: none;
+  background: transparent;
+  border-radius: var(--ptl-radius-md);
+  color: var(--ptl-text-1);
+  font-size: var(--ptl-text-sm);
+  text-align: left;
+  cursor: default;
+}
+
+.ptl-doc-switcher-item:hover {
+  background: var(--ptl-bg-3);
+}
+
+.ptl-doc-switcher-item--active {
+  color: var(--ptl-accent);
+}
+
+.ptl-doc-switcher-item svg {
+  color: var(--ptl-text-3);
+  flex-shrink: 0;
+}
+
+.ptl-doc-switcher-item--active svg {
+  color: var(--ptl-accent);
+}
+
+.ptl-doc-switcher-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ptl-doc-switcher-meta {
+  font-size: var(--ptl-text-xs);
+  color: var(--ptl-text-3);
+}
+
+.ptl-connection-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ptl-text-3);
+  margin-right: 6px;
+}
+
+.ptl-connection-dot--on {
+  background: var(--ptl-success);
+}
+
+.ptl-viewonly-pill {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 9px;
+  margin-left: var(--ptl-space-2);
+  border-radius: var(--ptl-radius-full);
+  background: var(--ptl-bg-3);
+  color: var(--ptl-text-2);
+  font-size: var(--ptl-text-xs);
+  font-weight: 600;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.ptl-context-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: var(--ptl-space-3);
+}
+
+.ptl-bp-chip {
+  border: none;
+  background: transparent;
+  color: var(--ptl-text-3);
+  font-size: var(--ptl-text-xs);
+  font-weight: 550;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: var(--ptl-radius-full);
+  cursor: default;
+}
+
+.ptl-bp-chip:hover {
+  background: var(--ptl-bg-2);
+  color: var(--ptl-text-1);
+}
+
+.ptl-bp-chip--active {
+  background: var(--ptl-accent-muted);
+  color: var(--ptl-accent);
+}
+
+.ptl-bp-chip--state.ptl-bp-chip--active {
+  background: oklch(0.72 0.14 300 / 0.15);
+  color: oklch(0.72 0.14 300);
+}
+
+.ptl-context-sep {
+  width: 1px;
+  height: 12px;
+  background: var(--ptl-border-strong);
+  margin: 0 4px;
+}
+
+.ptl-zoom-control {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.ptl-zoom-value {
+  min-width: 40px;
+  text-align: center;
+  font-size: var(--ptl-text-sm);
+  color: var(--ptl-text-2);
+  font-variant-numeric: tabular-nums;
+}

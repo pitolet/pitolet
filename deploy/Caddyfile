@@ -1,0 +1,15 @@
+# Caddy auto-provisions TLS (Let's Encrypt) for both hosts on first request.
+# DNS A records for pitolet.com and app.pitolet.com must point at this VPS.
+
+# Marketing site — generated static pages from ./static (mounted at /srv/static).
+pitolet.com {
+	root * /srv/static
+	file_server
+	encode gzip
+}
+
+# The cloud app. Caddy proxies WebSocket upgrades (/w/:slug/ws) transparently.
+app.pitolet.com {
+	reverse_proxy app:8080
+	encode gzip
+}

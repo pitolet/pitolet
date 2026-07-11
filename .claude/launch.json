@@ -1,0 +1,29 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "pitolet-dev",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev"],
+      "port": 5173
+    },
+    {
+      "name": "pitolet-editor-only",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@pitolet/editor", "dev"],
+      "port": 5173
+    },
+    {
+      "name": "landing-static",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["-y", "serve", "-l", "4599", "deploy/static"],
+      "port": 4599
+    },
+    {
+      "name": "cloud-qa",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@pitolet/cloud", "exec", "tsx", "qa-boot.mts"],
+      "port": 8099
+    }
+  ]
+}

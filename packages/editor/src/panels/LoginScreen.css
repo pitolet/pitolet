@@ -1,0 +1,51 @@
+.ptl-login {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ptl-bg-0);
+}
+
+.ptl-login-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ptl-space-4);
+  width: 280px;
+  padding: var(--ptl-space-6);
+  background: var(--ptl-bg-1);
+  border: 1px solid var(--ptl-border);
+  border-radius: var(--ptl-radius-lg);
+}
+
+.ptl-login-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ptl-space-2);
+  margin-bottom: var(--ptl-space-2);
+  color: var(--ptl-accent);
+}
+
+.ptl-login-wordmark {
+  font-size: var(--ptl-text-lg);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ptl-text-1);
+}
+
+.ptl-login-input {
+  width: 100%;
+}
+
+.ptl-login-error {
+  margin: calc(-1 * var(--ptl-space-2)) 0 0;
+  color: var(--ptl-danger);
+  font-size: var(--ptl-text-sm);
+  text-align: center;
+}
+
+.ptl-login-submit {
+  width: 100%;
+  justify-content: center;
+}

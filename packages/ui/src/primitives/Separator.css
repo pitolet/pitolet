@@ -1,0 +1,13 @@
+.ptl-separator--horizontal {
+  height: 1px;
+  width: 100%;
+  background: var(--ptl-border);
+  flex-shrink: 0;
+}
+
+.ptl-separator--vertical {
+  width: 1px;
+  align-self: stretch;
+  background: var(--ptl-border);
+  flex-shrink: 0;
+}

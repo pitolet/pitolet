@@ -1,0 +1,59 @@
+.ptl-scrub {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: var(--ptl-control-height);
+  padding: 0 6px;
+  background: var(--ptl-bg-2);
+  border-radius: var(--ptl-radius-md);
+  box-shadow: inset 0 0 0 1px transparent;
+  transition: box-shadow var(--ptl-duration-fast) var(--ptl-ease);
+  min-width: 0;
+}
+
+.ptl-scrub:hover {
+  box-shadow: inset 0 0 0 1px var(--ptl-border-strong);
+}
+
+.ptl-scrub:focus-within {
+  box-shadow: inset 0 0 0 1px var(--ptl-border-active);
+}
+
+.ptl-scrub--disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.ptl-scrub-label {
+  display: inline-flex;
+  align-items: center;
+  color: var(--ptl-text-3);
+  font-size: var(--ptl-text-xs);
+  cursor: ew-resize;
+  user-select: none;
+  flex-shrink: 0;
+  min-width: 10px;
+  justify-content: center;
+}
+
+.ptl-scrub-input {
+  flex: 1 1 0;
+  min-width: 0;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--ptl-text-1);
+  font-size: var(--ptl-text-sm);
+  padding: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.ptl-scrub-input:focus,
+.ptl-scrub-input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.ptl-scrub-input::placeholder {
+  color: var(--ptl-text-3);
+}

@@ -1,0 +1,32 @@
+name: Deploy (Cloud VPS)
+
+# Manual roll-forward of the production app on the Hetzner VPS.
+# The image is built + pushed by "Release (Docker)" (docker.yml); this only
+# pulls a published tag, migrates, and restarts.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Image tag to deploy (ghcr.io/pitolet/pitolet-cloud:<tag>)
+        required: false
+        default: latest
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Roll the VPS forward
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -eu
+            cd /opt/pitolet
+            export TAG="${{ github.event.inputs.tag }}"
+            docker compose pull app
+            # Apply pending migrations before the new code serves traffic.
+            docker compose run --rm app node dist/migrate.js
+            docker compose up -d app caddy
+            docker compose ps

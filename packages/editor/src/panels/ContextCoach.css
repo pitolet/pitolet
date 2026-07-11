@@ -1,0 +1,111 @@
+.ptl-coach {
+  position: absolute;
+  top: calc(100% + 9px);
+  z-index: 700;
+  width: 268px;
+  padding: var(--ptl-space-3);
+  background: var(--ptl-bg-2);
+  border-radius: var(--ptl-radius-lg);
+  box-shadow: var(--ptl-shadow-popover);
+  cursor: default;
+  animation: ptl-coach-in var(--ptl-duration-med) var(--ptl-ease);
+}
+
+/* Anchor the sizes coach under the breakpoint chips (left), states under the
+   state chips (right). */
+.ptl-coach--sizes {
+  left: 0;
+}
+.ptl-coach--states {
+  right: 0;
+}
+
+.ptl-coach-arrow {
+  position: absolute;
+  top: -5px;
+  width: 10px;
+  height: 10px;
+  background: var(--ptl-bg-2);
+  transform: rotate(45deg);
+  border-radius: 2px;
+}
+.ptl-coach--sizes .ptl-coach-arrow {
+  left: 26px;
+}
+.ptl-coach--states .ptl-coach-arrow {
+  right: 30px;
+}
+
+.ptl-coach-head {
+  display: flex;
+  align-items: center;
+  gap: var(--ptl-space-2);
+  margin-bottom: var(--ptl-space-2);
+}
+
+.ptl-coach-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--ptl-radius-md);
+  background: var(--ptl-accent-muted);
+  color: var(--ptl-accent);
+  flex-shrink: 0;
+}
+
+.ptl-coach--states .ptl-coach-icon {
+  background: oklch(0.72 0.14 300 / 0.16);
+  color: oklch(0.76 0.14 300);
+}
+
+.ptl-coach-title {
+  font-size: var(--ptl-text-md);
+  font-weight: 600;
+  color: var(--ptl-text-1);
+}
+
+.ptl-coach-body {
+  margin: 0 0 var(--ptl-space-3);
+  font-size: var(--ptl-text-sm);
+  line-height: 1.5;
+  color: var(--ptl-text-2);
+}
+
+.ptl-coach-dismiss {
+  width: 100%;
+  height: var(--ptl-control-height-lg);
+  border: none;
+  border-radius: var(--ptl-radius-md);
+  background: var(--ptl-accent);
+  color: var(--ptl-on-accent);
+  font-size: var(--ptl-text-sm);
+  font-weight: 550;
+  cursor: default;
+  transition: background var(--ptl-duration-fast) var(--ptl-ease);
+}
+
+.ptl-coach-dismiss:hover {
+  background: var(--ptl-accent-strong);
+  color: oklch(0.98 0.005 222);
+}
+
+.ptl-coach--states .ptl-coach-dismiss {
+  background: oklch(0.62 0.16 300);
+  color: oklch(0.98 0.01 300);
+}
+.ptl-coach--states .ptl-coach-dismiss:hover {
+  background: oklch(0.56 0.17 300);
+}
+
+@keyframes ptl-coach-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

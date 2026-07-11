@@ -1,0 +1,58 @@
+.ptl-code-panel {
+  display: flex;
+  flex-direction: column;
+  height: 300px;
+  flex-shrink: 0;
+  background: var(--ptl-bg-1);
+  border-top: 1px solid var(--ptl-border);
+  min-width: 0;
+}
+
+.ptl-code-header {
+  display: flex;
+  align-items: center;
+  gap: var(--ptl-space-3);
+  padding: var(--ptl-space-2) var(--ptl-space-3);
+  border-bottom: 1px solid var(--ptl-border);
+}
+
+.ptl-code-target-name {
+  font-size: var(--ptl-text-sm);
+  color: var(--ptl-text-3);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ptl-code-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--ptl-space-1);
+}
+
+.ptl-code-exported {
+  font-size: var(--ptl-text-xs);
+  color: var(--ptl-success);
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ptl-code-body {
+  flex: 1;
+  overflow: auto;
+  margin: 0;
+  padding: var(--ptl-space-3);
+  font-family: var(--ptl-font-mono);
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--ptl-text-1);
+  tab-size: 2;
+  user-select: text;
+}
+
+.ptl-code-body code {
+  white-space: pre;
+}

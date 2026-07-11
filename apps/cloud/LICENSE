@@ -1,0 +1,25 @@
+Pitolet Commercial License
+
+Copyright (c) 2026 Jacques Marais. All rights reserved.
+
+This directory (apps/cloud) contains the commercial part of Pitolet.
+Its source code is visible to you, but it is NOT open source and is
+NOT covered by the AGPL license that applies to the rest of this
+repository.
+
+You may view, use, copy and modify this software ONLY for the purpose
+of developing, testing or evaluating contributions back to the
+Pitolet project. Any other use — including running this software in
+production, offering it (or a derivative of it) as a hosted or
+managed service, or distributing it as part of a product — is
+permitted exclusively to the copyright holder, or under a separate
+written commercial agreement with the copyright holder.
+
+You may not remove or alter this license notice.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR
+ANY CLAIM, DAMAGES OR OTHER LIABILITY ARISING FROM THE USE OF THE
+SOFTWARE.

@@ -1,0 +1,4345 @@
+{
+  "schemaVersion": 1,
+  "id": "pitolet-landing",
+  "name": "Pitolet Landing",
+  "rootOrder": [
+    "n0"
+  ],
+  "nodes": {
+    "n0": {
+      "id": "n0",
+      "type": "frame",
+      "name": "Landing",
+      "parent": null,
+      "children": [
+        "n1",
+        "n11",
+        "n22",
+        "n38",
+        "n42",
+        "n102"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "canvas": {
+        "x": 0,
+        "y": 0,
+        "width": 1440,
+        "height": "auto"
+      },
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.background"
+              }
+            }
+          ],
+          "alignItems": "center",
+          "fontFamily": {
+            "$token": "typography.fontFamily.sans"
+          },
+          "color": {
+            "$token": "color.foreground"
+          }
+        }
+      }
+    },
+    "n1": {
+      "id": "n1",
+      "type": "element",
+      "name": "Nav Band",
+      "parent": "n0",
+      "children": [
+        "n2"
+      ],
+      "tag": "section",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "alignItems": "center",
+          "width": "fill",
+          "padding": {
+            "top": {
+              "$token": "spacing.4"
+            },
+            "right": {
+              "$token": "spacing.5"
+            },
+            "bottom": {
+              "$token": "spacing.4"
+            },
+            "left": {
+              "$token": "spacing.5"
+            }
+          },
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border"
+            },
+            "sides": {
+              "bottom": true
+            }
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "padding": {
+              "top": {
+                "$token": "spacing.6"
+              },
+              "right": {
+                "$token": "spacing.10"
+              },
+              "bottom": {
+                "$token": "spacing.6"
+              },
+              "left": {
+                "$token": "spacing.10"
+              }
+            }
+          }
+        }
+      }
+    },
+    "n2": {
+      "id": "n2",
+      "type": "element",
+      "name": "Nav",
+      "parent": "n1",
+      "children": [
+        "n3",
+        "n6"
+      ],
+      "tag": "nav",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "center",
+          "justifyContent": "between",
+          "width": "fill",
+          "maxWidth": {
+            "value": 1120,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n3": {
+      "id": "n3",
+      "type": "element",
+      "name": "Brand",
+      "parent": "n2",
+      "children": [
+        "n4",
+        "n5"
+      ],
+      "tag": "a",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "center",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.2"
+            }
+          },
+          "cursor": "pointer"
+        }
+      },
+      "attrs": {
+        "href": "/"
+      }
+    },
+    "n4": {
+      "id": "n4",
+      "type": "image",
+      "name": "BrandMark",
+      "parent": "n3",
+      "children": [],
+      "tag": "img",
+      "visible": true,
+      "locked": false,
+      "src": {
+        "url": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22oklch(0.71%200.125%20215)%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M3%2018%20L9.5%206%20L13.5%2013%20L16.5%208.5%20L21%2018%22%2F%3E%3C%2Fsvg%3E"
+      },
+      "alt": "Pitolet",
+      "styles": {
+        "base": {
+          "width": {
+            "value": 24,
+            "unit": "px"
+          },
+          "height": {
+            "value": 24,
+            "unit": "px"
+          },
+          "objectFit": "cover"
+        }
+      }
+    },
+    "n5": {
+      "id": "n5",
+      "type": "text",
+      "name": "Wordmark",
+      "parent": "n3",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Pitolet"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.lg"
+          },
+          "fontWeight": 650,
+          "letterSpacing": {
+            "value": -0.3,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n6": {
+      "id": "n6",
+      "type": "element",
+      "name": "Nav Links",
+      "parent": "n2",
+      "children": [
+        "n7",
+        "n8",
+        "n9",
+        "n10"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "center",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.6"
+            }
+          }
+        }
+      }
+    },
+    "n7": {
+      "id": "n7",
+      "type": "text",
+      "name": "Compare to Figma",
+      "parent": "n6",
+      "children": [],
+      "tag": "a",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Compare to Figma"
+        }
+      ],
+      "styles": {
+        "base": {
+          "display": "none",
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "fontWeight": 500,
+          "color": {
+            "$token": "color.muted-foreground"
+          }
+        },
+        "breakpoints": {
+          "sm": {
+            "display": "block"
+          }
+        },
+        "states": {
+          "hover": {
+            "color": {
+              "$token": "color.foreground"
+            }
+          }
+        }
+      },
+      "attrs": {
+        "href": "/vs-figma/"
+      }
+    },
+    "n8": {
+      "id": "n8",
+      "type": "text",
+      "name": "GitHub",
+      "parent": "n6",
+      "children": [],
+      "tag": "a",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "GitHub"
+        }
+      ],
+      "styles": {
+        "base": {
+          "display": "none",
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "fontWeight": 500,
+          "color": {
+            "$token": "color.muted-foreground"
+          }
+        },
+        "breakpoints": {
+          "sm": {
+            "display": "block"
+          }
+        },
+        "states": {
+          "hover": {
+            "color": {
+              "$token": "color.foreground"
+            }
+          }
+        }
+      },
+      "attrs": {
+        "href": "https://github.com/pitolet/pitolet"
+      }
+    },
+    "n9": {
+      "id": "n9",
+      "type": "text",
+      "name": "Docs",
+      "parent": "n6",
+      "children": [],
+      "tag": "a",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Docs"
+        }
+      ],
+      "styles": {
+        "base": {
+          "display": "none",
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "fontWeight": 500,
+          "color": {
+            "$token": "color.muted-foreground"
+          }
+        },
+        "breakpoints": {
+          "sm": {
+            "display": "block"
+          }
+        },
+        "states": {
+          "hover": {
+            "color": {
+              "$token": "color.foreground"
+            }
+          }
+        }
+      },
+      "attrs": {
+        "href": "https://github.com/pitolet/pitolet#readme"
+      }
+    },
+    "n10": {
+      "id": "n10",
+      "type": "text",
+      "name": "Open App",
+      "parent": "n6",
+      "children": [],
+      "tag": "a",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Open app"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "fontWeight": 600,
+          "color": {
+            "$token": "color.primary-foreground"
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.primary"
+              }
+            }
+          ],
+          "padding": {
+            "top": {
+              "$token": "spacing.2"
+            },
+            "bottom": {
+              "$token": "spacing.2"
+            },
+            "left": {
+              "$token": "spacing.4"
+            },
+            "right": {
+              "$token": "spacing.4"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.md"
+            },
+            "tr": {
+              "$token": "radius.md"
+            },
+            "br": {
+              "$token": "radius.md"
+            },
+            "bl": {
+              "$token": "radius.md"
+            }
+          },
+          "cursor": "pointer"
+        },
+        "states": {
+          "hover": {
+            "fills": [
+              {
+                "type": "solid",
+                "color": {
+                  "$token": "color.primary-strong"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "attrs": {
+        "href": "https://app.pitolet.com"
+      }
+    },
+    "n11": {
+      "id": "n11",
+      "type": "element",
+      "name": "Hero Band",
+      "parent": "n0",
+      "children": [
+        "n12"
+      ],
+      "tag": "section",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "alignItems": "center",
+          "width": "fill",
+          "padding": {
+            "top": {
+              "$token": "spacing.16"
+            },
+            "right": {
+              "$token": "spacing.5"
+            },
+            "bottom": {
+              "$token": "spacing.16"
+            },
+            "left": {
+              "$token": "spacing.5"
+            }
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "padding": {
+              "top": {
+                "$token": "spacing.24"
+              },
+              "right": {
+                "$token": "spacing.10"
+              },
+              "bottom": {
+                "$token": "spacing.20"
+              },
+              "left": {
+                "$token": "spacing.10"
+              }
+            }
+          }
+        }
+      }
+    },
+    "n12": {
+      "id": "n12",
+      "type": "element",
+      "name": "Hero",
+      "parent": "n11",
+      "children": [
+        "n13",
+        "n15",
+        "n16",
+        "n17"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "width": "fill",
+          "maxWidth": {
+            "value": 880,
+            "unit": "px"
+          },
+          "alignItems": "center",
+          "gap": {
+            "row": {
+              "$token": "spacing.6"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          }
+        }
+      }
+    },
+    "n13": {
+      "id": "n13",
+      "type": "element",
+      "name": "Eyebrow",
+      "parent": "n12",
+      "children": [
+        "n14"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "center",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.2"
+            }
+          },
+          "padding": {
+            "top": {
+              "$token": "spacing.1"
+            },
+            "bottom": {
+              "$token": "spacing.1"
+            },
+            "left": {
+              "$token": "spacing.3"
+            },
+            "right": {
+              "$token": "spacing.3"
+            }
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.surface"
+              }
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.full"
+            },
+            "tr": {
+              "$token": "radius.full"
+            },
+            "br": {
+              "$token": "radius.full"
+            },
+            "bl": {
+              "$token": "radius.full"
+            }
+          }
+        }
+      }
+    },
+    "n14": {
+      "id": "n14",
+      "type": "text",
+      "name": "Eyebrow Text",
+      "parent": "n13",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Design tool "
+        },
+        {
+          "text": "·"
+        },
+        {
+          "text": " human + agent, live"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "fontWeight": 500,
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "letterSpacing": {
+            "value": 0.2,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n15": {
+      "id": "n15",
+      "type": "text",
+      "name": "Headline",
+      "parent": "n12",
+      "children": [],
+      "tag": "h1",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Design tools for you and your coding agent."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.5xl"
+          },
+          "fontWeight": 700,
+          "letterSpacing": {
+            "value": -1.5,
+            "unit": "px"
+          },
+          "lineHeight": 1.05,
+          "textAlign": "center",
+          "maxWidth": {
+            "value": 760,
+            "unit": "px"
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "fontSize": {
+              "$token": "typography.fontSize.6xl"
+            },
+            "letterSpacing": {
+              "value": -2,
+              "unit": "px"
+            }
+          },
+          "lg": {
+            "fontSize": {
+              "$token": "typography.fontSize.7xl"
+            }
+          }
+        }
+      }
+    },
+    "n16": {
+      "id": "n16",
+      "type": "text",
+      "name": "Subhead",
+      "parent": "n12",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Pitolet is a real-time design tool where you and your agent work side by side. Everything you draw is live DOM and CSS, ready to ship as code."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xl"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "textAlign": "center",
+          "maxWidth": {
+            "value": 620,
+            "unit": "px"
+          },
+          "lineHeight": 1.55
+        }
+      }
+    },
+    "n17": {
+      "id": "n17",
+      "type": "element",
+      "name": "CTAs",
+      "parent": "n12",
+      "children": [
+        "n18",
+        "n19"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "center",
+          "gap": {
+            "row": {
+              "$token": "spacing.3"
+            },
+            "column": {
+              "$token": "spacing.3"
+            }
+          },
+          "padding": {
+            "top": {
+              "$token": "spacing.4"
+            },
+            "right": {
+              "value": 0,
+              "unit": "px"
+            },
+            "bottom": {
+              "value": 0,
+              "unit": "px"
+            },
+            "left": {
+              "value": 0,
+              "unit": "px"
+            }
+          }
+        }
+      }
+    },
+    "n18": {
+      "id": "n18",
+      "type": "text",
+      "name": "Start Free",
+      "parent": "n17",
+      "children": [],
+      "tag": "a",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Start free"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "fontWeight": 600,
+          "color": {
+            "$token": "color.primary-foreground"
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.primary"
+              }
+            }
+          ],
+          "padding": {
+            "top": {
+              "$token": "spacing.3"
+            },
+            "bottom": {
+              "$token": "spacing.3"
+            },
+            "left": {
+              "$token": "spacing.6"
+            },
+            "right": {
+              "$token": "spacing.6"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.md"
+            },
+            "tr": {
+              "$token": "radius.md"
+            },
+            "br": {
+              "$token": "radius.md"
+            },
+            "bl": {
+              "$token": "radius.md"
+            }
+          },
+          "cursor": "pointer"
+        },
+        "states": {
+          "hover": {
+            "fills": [
+              {
+                "type": "solid",
+                "color": {
+                  "$token": "color.primary-strong"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "attrs": {
+        "href": "https://app.pitolet.com"
+      }
+    },
+    "n19": {
+      "id": "n19",
+      "type": "element",
+      "name": "Npx Chip",
+      "parent": "n17",
+      "children": [
+        "n20",
+        "n21"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "center",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.2"
+            }
+          },
+          "padding": {
+            "top": {
+              "$token": "spacing.3"
+            },
+            "bottom": {
+              "$token": "spacing.3"
+            },
+            "left": {
+              "$token": "spacing.4"
+            },
+            "right": {
+              "$token": "spacing.4"
+            }
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.surface"
+              }
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border-strong"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.md"
+            },
+            "tr": {
+              "$token": "radius.md"
+            },
+            "br": {
+              "$token": "radius.md"
+            },
+            "bl": {
+              "$token": "radius.md"
+            }
+          }
+        }
+      }
+    },
+    "n20": {
+      "id": "n20",
+      "type": "text",
+      "name": "Chip Prompt",
+      "parent": "n19",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "$"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontFamily": {
+            "$token": "typography.fontFamily.mono"
+          },
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.primary"
+          }
+        }
+      }
+    },
+    "n21": {
+      "id": "n21",
+      "type": "text",
+      "name": "Chip Command",
+      "parent": "n19",
+      "children": [],
+      "tag": "code",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "npx pitolet"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontFamily": {
+            "$token": "typography.fontFamily.mono"
+          },
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.foreground"
+          }
+        }
+      }
+    },
+    "n22": {
+      "id": "n22",
+      "type": "element",
+      "name": "Props Band",
+      "parent": "n0",
+      "children": [
+        "n23"
+      ],
+      "tag": "section",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "alignItems": "center",
+          "width": "fill",
+          "padding": {
+            "top": {
+              "$token": "spacing.12"
+            },
+            "right": {
+              "$token": "spacing.5"
+            },
+            "bottom": {
+              "$token": "spacing.12"
+            },
+            "left": {
+              "$token": "spacing.5"
+            }
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "padding": {
+              "top": {
+                "$token": "spacing.16"
+              },
+              "right": {
+                "$token": "spacing.10"
+              },
+              "bottom": {
+                "$token": "spacing.16"
+              },
+              "left": {
+                "$token": "spacing.10"
+              }
+            }
+          }
+        }
+      }
+    },
+    "n23": {
+      "id": "n23",
+      "type": "element",
+      "name": "Props",
+      "parent": "n22",
+      "children": [
+        "n24",
+        "n25"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "width": "fill",
+          "maxWidth": {
+            "value": 1120,
+            "unit": "px"
+          },
+          "gap": {
+            "row": {
+              "$token": "spacing.10"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          }
+        }
+      }
+    },
+    "n24": {
+      "id": "n24",
+      "type": "text",
+      "name": "Props Heading",
+      "parent": "n23",
+      "children": [],
+      "tag": "h2",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "One canvas. No fidelity gap."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.4xl"
+          },
+          "fontWeight": 650,
+          "letterSpacing": {
+            "value": -1,
+            "unit": "px"
+          },
+          "textAlign": "center",
+          "maxWidth": {
+            "value": 720,
+            "unit": "px"
+          },
+          "alignSelf": "center"
+        }
+      }
+    },
+    "n25": {
+      "id": "n25",
+      "type": "element",
+      "name": "Props Row",
+      "parent": "n23",
+      "children": [
+        "n26",
+        "n30",
+        "n34"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "alignItems": "stretch",
+          "gap": {
+            "row": {
+              "$token": "spacing.6"
+            },
+            "column": {
+              "$token": "spacing.6"
+            }
+          },
+          "width": "fill"
+        },
+        "breakpoints": {
+          "md": {
+            "display": "flex",
+            "flexDirection": "row"
+          }
+        }
+      }
+    },
+    "n26": {
+      "id": "n26",
+      "type": "element",
+      "name": "You're editing a real web page",
+      "parent": "n25",
+      "children": [
+        "n27",
+        "n28",
+        "n29"
+      ],
+      "tag": "article",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.3"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "padding": {
+            "top": {
+              "$token": "spacing.6"
+            },
+            "right": {
+              "$token": "spacing.6"
+            },
+            "bottom": {
+              "$token": "spacing.6"
+            },
+            "left": {
+              "$token": "spacing.6"
+            }
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.surface"
+              }
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.lg"
+            },
+            "tr": {
+              "$token": "radius.lg"
+            },
+            "br": {
+              "$token": "radius.lg"
+            },
+            "bl": {
+              "$token": "radius.lg"
+            }
+          },
+          "width": "fill"
+        }
+      }
+    },
+    "n27": {
+      "id": "n27",
+      "type": "element",
+      "name": "Tick",
+      "parent": "n26",
+      "children": [],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "width": {
+            "value": 36,
+            "unit": "px"
+          },
+          "height": {
+            "value": 4,
+            "unit": "px"
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.primary"
+              }
+            }
+          ],
+          "radius": {
+            "tl": {
+              "$token": "radius.full"
+            },
+            "tr": {
+              "$token": "radius.full"
+            },
+            "br": {
+              "$token": "radius.full"
+            },
+            "bl": {
+              "$token": "radius.full"
+            }
+          }
+        }
+      }
+    },
+    "n28": {
+      "id": "n28",
+      "type": "text",
+      "name": "Card Title",
+      "parent": "n26",
+      "children": [],
+      "tag": "h3",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "You're editing a real web page"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xl"
+          },
+          "fontWeight": 600,
+          "letterSpacing": {
+            "value": -0.3,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n29": {
+      "id": "n29",
+      "type": "text",
+      "name": "Card Body",
+      "parent": "n26",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Every element is real DOM and real CSS. Your design renders the same way in production, because there is no translation step in between."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "lineHeight": 1.6
+        }
+      }
+    },
+    "n30": {
+      "id": "n30",
+      "type": "element",
+      "name": "Your agent edits the same canvas",
+      "parent": "n25",
+      "children": [
+        "n31",
+        "n32",
+        "n33"
+      ],
+      "tag": "article",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.3"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "padding": {
+            "top": {
+              "$token": "spacing.6"
+            },
+            "right": {
+              "$token": "spacing.6"
+            },
+            "bottom": {
+              "$token": "spacing.6"
+            },
+            "left": {
+              "$token": "spacing.6"
+            }
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.surface"
+              }
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.lg"
+            },
+            "tr": {
+              "$token": "radius.lg"
+            },
+            "br": {
+              "$token": "radius.lg"
+            },
+            "bl": {
+              "$token": "radius.lg"
+            }
+          },
+          "width": "fill"
+        }
+      }
+    },
+    "n31": {
+      "id": "n31",
+      "type": "element",
+      "name": "Tick",
+      "parent": "n30",
+      "children": [],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "width": {
+            "value": 36,
+            "unit": "px"
+          },
+          "height": {
+            "value": 4,
+            "unit": "px"
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.primary"
+              }
+            }
+          ],
+          "radius": {
+            "tl": {
+              "$token": "radius.full"
+            },
+            "tr": {
+              "$token": "radius.full"
+            },
+            "br": {
+              "$token": "radius.full"
+            },
+            "bl": {
+              "$token": "radius.full"
+            }
+          }
+        }
+      }
+    },
+    "n32": {
+      "id": "n32",
+      "type": "text",
+      "name": "Card Title",
+      "parent": "n30",
+      "children": [],
+      "tag": "h3",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Your agent edits the same canvas"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xl"
+          },
+          "fontWeight": 600,
+          "letterSpacing": {
+            "value": -0.3,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n33": {
+      "id": "n33",
+      "type": "text",
+      "name": "Card Body",
+      "parent": "n30",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Claude Code and Codex connect over MCP and work on the document you have open. They read the comments, show up as a cursor, and change tokens while you watch."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "lineHeight": 1.6
+        }
+      }
+    },
+    "n34": {
+      "id": "n34",
+      "type": "element",
+      "name": "Ships as code",
+      "parent": "n25",
+      "children": [
+        "n35",
+        "n36",
+        "n37"
+      ],
+      "tag": "article",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.3"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "padding": {
+            "top": {
+              "$token": "spacing.6"
+            },
+            "right": {
+              "$token": "spacing.6"
+            },
+            "bottom": {
+              "$token": "spacing.6"
+            },
+            "left": {
+              "$token": "spacing.6"
+            }
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.surface"
+              }
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.lg"
+            },
+            "tr": {
+              "$token": "radius.lg"
+            },
+            "br": {
+              "$token": "radius.lg"
+            },
+            "bl": {
+              "$token": "radius.lg"
+            }
+          },
+          "width": "fill"
+        }
+      }
+    },
+    "n35": {
+      "id": "n35",
+      "type": "element",
+      "name": "Tick",
+      "parent": "n34",
+      "children": [],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "width": {
+            "value": 36,
+            "unit": "px"
+          },
+          "height": {
+            "value": 4,
+            "unit": "px"
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.primary"
+              }
+            }
+          ],
+          "radius": {
+            "tl": {
+              "$token": "radius.full"
+            },
+            "tr": {
+              "$token": "radius.full"
+            },
+            "br": {
+              "$token": "radius.full"
+            },
+            "bl": {
+              "$token": "radius.full"
+            }
+          }
+        }
+      }
+    },
+    "n36": {
+      "id": "n36",
+      "type": "text",
+      "name": "Card Title",
+      "parent": "n34",
+      "children": [],
+      "tag": "h3",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Ships as code"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xl"
+          },
+          "fontWeight": 600,
+          "letterSpacing": {
+            "value": -0.3,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n37": {
+      "id": "n37",
+      "type": "text",
+      "name": "Card Body",
+      "parent": "n34",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Export the same document to React and Tailwind or to plain HTML and CSS. It comes out as your tokens and your components, ready to drop into the repo."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "lineHeight": 1.6
+        }
+      }
+    },
+    "n38": {
+      "id": "n38",
+      "type": "element",
+      "name": "Dogfood Band",
+      "parent": "n0",
+      "children": [
+        "n39"
+      ],
+      "tag": "section",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "alignItems": "center",
+          "width": "fill",
+          "padding": {
+            "top": {
+              "value": 0,
+              "unit": "px"
+            },
+            "right": {
+              "$token": "spacing.5"
+            },
+            "bottom": {
+              "$token": "spacing.12"
+            },
+            "left": {
+              "$token": "spacing.5"
+            }
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "padding": {
+              "top": {
+                "value": 0,
+                "unit": "px"
+              },
+              "right": {
+                "$token": "spacing.10"
+              },
+              "bottom": {
+                "$token": "spacing.16"
+              },
+              "left": {
+                "$token": "spacing.10"
+              }
+            }
+          }
+        }
+      }
+    },
+    "n39": {
+      "id": "n39",
+      "type": "element",
+      "name": "Dogfood",
+      "parent": "n38",
+      "children": [
+        "n40",
+        "n41"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "center",
+          "justifyContent": "center",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.2"
+            }
+          },
+          "width": "fill",
+          "maxWidth": {
+            "value": 1120,
+            "unit": "px"
+          },
+          "padding": {
+            "top": {
+              "$token": "spacing.4"
+            },
+            "bottom": {
+              "$token": "spacing.4"
+            },
+            "left": {
+              "$token": "spacing.6"
+            },
+            "right": {
+              "$token": "spacing.6"
+            }
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.surface"
+              }
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.full"
+            },
+            "tr": {
+              "$token": "radius.full"
+            },
+            "br": {
+              "$token": "radius.full"
+            },
+            "bl": {
+              "$token": "radius.full"
+            }
+          }
+        }
+      }
+    },
+    "n40": {
+      "id": "n40",
+      "type": "text",
+      "name": "Dogfood Text",
+      "parent": "n39",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "This page is a Pitolet document, exported by Pitolet’s own codegen."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "textAlign": "center"
+        }
+      }
+    },
+    "n41": {
+      "id": "n41",
+      "type": "text",
+      "name": "Dogfood Link",
+      "parent": "n39",
+      "children": [],
+      "tag": "a",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "See site/ on GitHub →"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "fontWeight": 600,
+          "color": {
+            "$token": "color.primary"
+          }
+        }
+      },
+      "attrs": {
+        "href": "https://github.com/pitolet/pitolet/tree/main/site"
+      }
+    },
+    "n42": {
+      "id": "n42",
+      "type": "element",
+      "name": "Pricing Band",
+      "parent": "n0",
+      "children": [
+        "n43"
+      ],
+      "tag": "section",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "alignItems": "center",
+          "width": "fill",
+          "padding": {
+            "top": {
+              "$token": "spacing.12"
+            },
+            "right": {
+              "$token": "spacing.5"
+            },
+            "bottom": {
+              "$token": "spacing.12"
+            },
+            "left": {
+              "$token": "spacing.5"
+            }
+          },
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border"
+            },
+            "sides": {
+              "top": true
+            }
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "padding": {
+              "top": {
+                "$token": "spacing.16"
+              },
+              "right": {
+                "$token": "spacing.10"
+              },
+              "bottom": {
+                "$token": "spacing.16"
+              },
+              "left": {
+                "$token": "spacing.10"
+              }
+            }
+          }
+        }
+      }
+    },
+    "n43": {
+      "id": "n43",
+      "type": "element",
+      "name": "Pricing",
+      "parent": "n42",
+      "children": [
+        "n44",
+        "n45"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "width": "fill",
+          "maxWidth": {
+            "value": 1120,
+            "unit": "px"
+          },
+          "gap": {
+            "row": {
+              "$token": "spacing.10"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          }
+        }
+      }
+    },
+    "n44": {
+      "id": "n44",
+      "type": "text",
+      "name": "Pricing Heading",
+      "parent": "n43",
+      "children": [],
+      "tag": "h2",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Free to start, $12 a seat when you need a team."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.4xl"
+          },
+          "fontWeight": 650,
+          "letterSpacing": {
+            "value": -1,
+            "unit": "px"
+          },
+          "textAlign": "center",
+          "alignSelf": "center",
+          "maxWidth": {
+            "value": 720,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n45": {
+      "id": "n45",
+      "type": "element",
+      "name": "Plans",
+      "parent": "n43",
+      "children": [
+        "n46",
+        "n63",
+        "n85"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "alignItems": "stretch",
+          "gap": {
+            "row": {
+              "$token": "spacing.6"
+            },
+            "column": {
+              "$token": "spacing.6"
+            }
+          },
+          "width": "fill"
+        },
+        "breakpoints": {
+          "md": {
+            "display": "flex",
+            "flexDirection": "row"
+          }
+        }
+      }
+    },
+    "n46": {
+      "id": "n46",
+      "type": "element",
+      "name": "Plan Free",
+      "parent": "n45",
+      "children": [
+        "n47",
+        "n49",
+        "n52",
+        "n53"
+      ],
+      "tag": "article",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.5"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "padding": {
+            "top": {
+              "$token": "spacing.8"
+            },
+            "right": {
+              "$token": "spacing.8"
+            },
+            "bottom": {
+              "$token": "spacing.8"
+            },
+            "left": {
+              "$token": "spacing.8"
+            }
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.surface"
+              }
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.lg"
+            },
+            "tr": {
+              "$token": "radius.lg"
+            },
+            "br": {
+              "$token": "radius.lg"
+            },
+            "bl": {
+              "$token": "radius.lg"
+            }
+          },
+          "width": "fill"
+        }
+      }
+    },
+    "n47": {
+      "id": "n47",
+      "type": "element",
+      "name": "Plan Head",
+      "parent": "n46",
+      "children": [
+        "n48"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "center",
+          "justifyContent": "between"
+        }
+      }
+    },
+    "n48": {
+      "id": "n48",
+      "type": "text",
+      "name": "Plan Name",
+      "parent": "n47",
+      "children": [],
+      "tag": "h3",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Free"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.lg"
+          },
+          "fontWeight": 650
+        }
+      }
+    },
+    "n49": {
+      "id": "n49",
+      "type": "element",
+      "name": "Price Row",
+      "parent": "n46",
+      "children": [
+        "n50",
+        "n51"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "baseline",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.2"
+            }
+          }
+        }
+      }
+    },
+    "n50": {
+      "id": "n50",
+      "type": "text",
+      "name": "Price",
+      "parent": "n49",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "$0"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.4xl"
+          },
+          "fontWeight": 700,
+          "letterSpacing": {
+            "value": -1,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n51": {
+      "id": "n51",
+      "type": "text",
+      "name": "Price Unit",
+      "parent": "n49",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "forever"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.subtle-foreground"
+          }
+        }
+      }
+    },
+    "n52": {
+      "id": "n52",
+      "type": "text",
+      "name": "Plan Blurb",
+      "parent": "n46",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "For solo work and trying Pitolet with your agent."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "lineHeight": 1.55
+        }
+      }
+    },
+    "n53": {
+      "id": "n53",
+      "type": "element",
+      "name": "Features",
+      "parent": "n46",
+      "children": [
+        "n54",
+        "n57",
+        "n60"
+      ],
+      "tag": "ul",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.2"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          }
+        }
+      }
+    },
+    "n54": {
+      "id": "n54",
+      "type": "element",
+      "name": "Feature",
+      "parent": "n53",
+      "children": [
+        "n55",
+        "n56"
+      ],
+      "tag": "li",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "baseline",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.2"
+            }
+          }
+        }
+      }
+    },
+    "n55": {
+      "id": "n55",
+      "type": "text",
+      "name": "Check",
+      "parent": "n54",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "—"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.primary"
+          },
+          "fontWeight": 700
+        }
+      }
+    },
+    "n56": {
+      "id": "n56",
+      "type": "text",
+      "name": "Feature Text",
+      "parent": "n54",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "1 workspace"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          }
+        }
+      }
+    },
+    "n57": {
+      "id": "n57",
+      "type": "element",
+      "name": "Feature",
+      "parent": "n53",
+      "children": [
+        "n58",
+        "n59"
+      ],
+      "tag": "li",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "baseline",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.2"
+            }
+          }
+        }
+      }
+    },
+    "n58": {
+      "id": "n58",
+      "type": "text",
+      "name": "Check",
+      "parent": "n57",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "—"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.primary"
+          },
+          "fontWeight": 700
+        }
+      }
+    },
+    "n59": {
+      "id": "n59",
+      "type": "text",
+      "name": "Feature Text",
+      "parent": "n57",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "3 documents"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          }
+        }
+      }
+    },
+    "n60": {
+      "id": "n60",
+      "type": "element",
+      "name": "Feature",
+      "parent": "n53",
+      "children": [
+        "n61",
+        "n62"
+      ],
+      "tag": "li",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "baseline",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.2"
+            }
+          }
+        }
+      }
+    },
+    "n61": {
+      "id": "n61",
+      "type": "text",
+      "name": "Check",
+      "parent": "n60",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "—"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.primary"
+          },
+          "fontWeight": 700
+        }
+      }
+    },
+    "n62": {
+      "id": "n62",
+      "type": "text",
+      "name": "Feature Text",
+      "parent": "n60",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Hosted MCP for your agent"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          }
+        }
+      }
+    },
+    "n63": {
+      "id": "n63",
+      "type": "element",
+      "name": "Plan Pro",
+      "parent": "n45",
+      "children": [
+        "n64",
+        "n68",
+        "n71",
+        "n72"
+      ],
+      "tag": "article",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.5"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "padding": {
+            "top": {
+              "$token": "spacing.8"
+            },
+            "right": {
+              "$token": "spacing.8"
+            },
+            "bottom": {
+              "$token": "spacing.8"
+            },
+            "left": {
+              "$token": "spacing.8"
+            }
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.surface-2"
+              }
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.primary"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.lg"
+            },
+            "tr": {
+              "$token": "radius.lg"
+            },
+            "br": {
+              "$token": "radius.lg"
+            },
+            "bl": {
+              "$token": "radius.lg"
+            }
+          },
+          "width": "fill"
+        }
+      }
+    },
+    "n64": {
+      "id": "n64",
+      "type": "element",
+      "name": "Plan Head",
+      "parent": "n63",
+      "children": [
+        "n65",
+        "n66"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "center",
+          "justifyContent": "between"
+        }
+      }
+    },
+    "n65": {
+      "id": "n65",
+      "type": "text",
+      "name": "Plan Name",
+      "parent": "n64",
+      "children": [],
+      "tag": "h3",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Pro"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.lg"
+          },
+          "fontWeight": 650
+        }
+      }
+    },
+    "n66": {
+      "id": "n66",
+      "type": "element",
+      "name": "Badge",
+      "parent": "n64",
+      "children": [
+        "n67"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "center",
+          "padding": {
+            "top": {
+              "value": 2,
+              "unit": "px"
+            },
+            "bottom": {
+              "value": 2,
+              "unit": "px"
+            },
+            "left": {
+              "$token": "spacing.2"
+            },
+            "right": {
+              "$token": "spacing.2"
+            }
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.primary"
+              }
+            }
+          ],
+          "radius": {
+            "tl": {
+              "$token": "radius.full"
+            },
+            "tr": {
+              "$token": "radius.full"
+            },
+            "br": {
+              "$token": "radius.full"
+            },
+            "bl": {
+              "$token": "radius.full"
+            }
+          }
+        }
+      }
+    },
+    "n67": {
+      "id": "n67",
+      "type": "text",
+      "name": "Badge Text",
+      "parent": "n66",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Popular"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "fontWeight": 700,
+          "letterSpacing": {
+            "value": 0.4,
+            "unit": "px"
+          },
+          "color": {
+            "$token": "color.primary-foreground"
+          }
+        }
+      }
+    },
+    "n68": {
+      "id": "n68",
+      "type": "element",
+      "name": "Price Row",
+      "parent": "n63",
+      "children": [
+        "n69",
+        "n70"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "baseline",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.2"
+            }
+          }
+        }
+      }
+    },
+    "n69": {
+      "id": "n69",
+      "type": "text",
+      "name": "Price",
+      "parent": "n68",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "$12"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.4xl"
+          },
+          "fontWeight": 700,
+          "letterSpacing": {
+            "value": -1,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n70": {
+      "id": "n70",
+      "type": "text",
+      "name": "Price Unit",
+      "parent": "n68",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "per user / mo"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.subtle-foreground"
+          }
+        }
+      }
+    },
+    "n71": {
+      "id": "n71",
+      "type": "text",
+      "name": "Plan Blurb",
+      "parent": "n63",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "For teams building day to day with their agents."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "lineHeight": 1.55
+        }
+      }
+    },
+    "n72": {
+      "id": "n72",
+      "type": "element",
+      "name": "Features",
+      "parent": "n63",
+      "children": [
+        "n73",
+        "n76",
+        "n79",
+        "n82"
+      ],
+      "tag": "ul",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.2"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          }
+        }
+      }
+    },
+    "n73": {
+      "id": "n73",
+      "type": "element",
+      "name": "Feature",
+      "parent": "n72",
+      "children": [
+        "n74",
+        "n75"
+      ],
+      "tag": "li",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "baseline",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.2"
+            }
+          }
+        }
+      }
+    },
+    "n74": {
+      "id": "n74",
+      "type": "text",
+      "name": "Check",
+      "parent": "n73",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "—"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.primary"
+          },
+          "fontWeight": 700
+        }
+      }
+    },
+    "n75": {
+      "id": "n75",
+      "type": "text",
+      "name": "Feature Text",
+      "parent": "n73",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Unlimited documents + tokens"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          }
+        }
+      }
+    },
+    "n76": {
+      "id": "n76",
+      "type": "element",
+      "name": "Feature",
+      "parent": "n72",
+      "children": [
+        "n77",
+        "n78"
+      ],
+      "tag": "li",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "baseline",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.2"
+            }
+          }
+        }
+      }
+    },
+    "n77": {
+      "id": "n77",
+      "type": "text",
+      "name": "Check",
+      "parent": "n76",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "—"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.primary"
+          },
+          "fontWeight": 700
+        }
+      }
+    },
+    "n78": {
+      "id": "n78",
+      "type": "text",
+      "name": "Feature Text",
+      "parent": "n76",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Version history"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          }
+        }
+      }
+    },
+    "n79": {
+      "id": "n79",
+      "type": "element",
+      "name": "Feature",
+      "parent": "n72",
+      "children": [
+        "n80",
+        "n81"
+      ],
+      "tag": "li",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "baseline",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.2"
+            }
+          }
+        }
+      }
+    },
+    "n80": {
+      "id": "n80",
+      "type": "text",
+      "name": "Check",
+      "parent": "n79",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "—"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.primary"
+          },
+          "fontWeight": 700
+        }
+      }
+    },
+    "n81": {
+      "id": "n81",
+      "type": "text",
+      "name": "Feature Text",
+      "parent": "n79",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Share links"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          }
+        }
+      }
+    },
+    "n82": {
+      "id": "n82",
+      "type": "element",
+      "name": "Feature",
+      "parent": "n72",
+      "children": [
+        "n83",
+        "n84"
+      ],
+      "tag": "li",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "baseline",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.2"
+            }
+          }
+        }
+      }
+    },
+    "n83": {
+      "id": "n83",
+      "type": "text",
+      "name": "Check",
+      "parent": "n82",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "—"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.primary"
+          },
+          "fontWeight": 700
+        }
+      }
+    },
+    "n84": {
+      "id": "n84",
+      "type": "text",
+      "name": "Feature Text",
+      "parent": "n82",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Everything in Free"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          }
+        }
+      }
+    },
+    "n85": {
+      "id": "n85",
+      "type": "element",
+      "name": "Plan Self-host",
+      "parent": "n45",
+      "children": [
+        "n86",
+        "n88",
+        "n91",
+        "n92"
+      ],
+      "tag": "article",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.5"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "padding": {
+            "top": {
+              "$token": "spacing.8"
+            },
+            "right": {
+              "$token": "spacing.8"
+            },
+            "bottom": {
+              "$token": "spacing.8"
+            },
+            "left": {
+              "$token": "spacing.8"
+            }
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.surface"
+              }
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.lg"
+            },
+            "tr": {
+              "$token": "radius.lg"
+            },
+            "br": {
+              "$token": "radius.lg"
+            },
+            "bl": {
+              "$token": "radius.lg"
+            }
+          },
+          "width": "fill"
+        }
+      }
+    },
+    "n86": {
+      "id": "n86",
+      "type": "element",
+      "name": "Plan Head",
+      "parent": "n85",
+      "children": [
+        "n87"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "center",
+          "justifyContent": "between"
+        }
+      }
+    },
+    "n87": {
+      "id": "n87",
+      "type": "text",
+      "name": "Plan Name",
+      "parent": "n86",
+      "children": [],
+      "tag": "h3",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Self-host"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.lg"
+          },
+          "fontWeight": 650
+        }
+      }
+    },
+    "n88": {
+      "id": "n88",
+      "type": "element",
+      "name": "Price Row",
+      "parent": "n85",
+      "children": [
+        "n89",
+        "n90"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "baseline",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.2"
+            }
+          }
+        }
+      }
+    },
+    "n89": {
+      "id": "n89",
+      "type": "text",
+      "name": "Price",
+      "parent": "n88",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Free"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.4xl"
+          },
+          "fontWeight": 700,
+          "letterSpacing": {
+            "value": -1,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n90": {
+      "id": "n90",
+      "type": "text",
+      "name": "Price Unit",
+      "parent": "n88",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "forever · AGPL"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.subtle-foreground"
+          }
+        }
+      }
+    },
+    "n91": {
+      "id": "n91",
+      "type": "text",
+      "name": "Plan Blurb",
+      "parent": "n85",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Run it yourself. The core is open source."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "lineHeight": 1.55
+        }
+      }
+    },
+    "n92": {
+      "id": "n92",
+      "type": "element",
+      "name": "Features",
+      "parent": "n85",
+      "children": [
+        "n93",
+        "n96",
+        "n99"
+      ],
+      "tag": "ul",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.2"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          }
+        }
+      }
+    },
+    "n93": {
+      "id": "n93",
+      "type": "element",
+      "name": "Feature",
+      "parent": "n92",
+      "children": [
+        "n94",
+        "n95"
+      ],
+      "tag": "li",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "baseline",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.2"
+            }
+          }
+        }
+      }
+    },
+    "n94": {
+      "id": "n94",
+      "type": "text",
+      "name": "Check",
+      "parent": "n93",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "—"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.primary"
+          },
+          "fontWeight": 700
+        }
+      }
+    },
+    "n95": {
+      "id": "n95",
+      "type": "text",
+      "name": "Feature Text",
+      "parent": "n93",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "npx pitolet"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          }
+        }
+      }
+    },
+    "n96": {
+      "id": "n96",
+      "type": "element",
+      "name": "Feature",
+      "parent": "n92",
+      "children": [
+        "n97",
+        "n98"
+      ],
+      "tag": "li",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "baseline",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.2"
+            }
+          }
+        }
+      }
+    },
+    "n97": {
+      "id": "n97",
+      "type": "text",
+      "name": "Check",
+      "parent": "n96",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "—"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.primary"
+          },
+          "fontWeight": 700
+        }
+      }
+    },
+    "n98": {
+      "id": "n98",
+      "type": "text",
+      "name": "Feature Text",
+      "parent": "n96",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Runs on your own servers"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          }
+        }
+      }
+    },
+    "n99": {
+      "id": "n99",
+      "type": "element",
+      "name": "Feature",
+      "parent": "n92",
+      "children": [
+        "n100",
+        "n101"
+      ],
+      "tag": "li",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "baseline",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.2"
+            }
+          }
+        }
+      }
+    },
+    "n100": {
+      "id": "n100",
+      "type": "text",
+      "name": "Check",
+      "parent": "n99",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "—"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.primary"
+          },
+          "fontWeight": 700
+        }
+      }
+    },
+    "n101": {
+      "id": "n101",
+      "type": "text",
+      "name": "Feature Text",
+      "parent": "n99",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "AGPL-3.0 licensed"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          }
+        }
+      }
+    },
+    "n102": {
+      "id": "n102",
+      "type": "element",
+      "name": "Footer Band",
+      "parent": "n0",
+      "children": [
+        "n103"
+      ],
+      "tag": "section",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "alignItems": "center",
+          "width": "fill",
+          "padding": {
+            "top": {
+              "$token": "spacing.8"
+            },
+            "right": {
+              "$token": "spacing.5"
+            },
+            "bottom": {
+              "$token": "spacing.8"
+            },
+            "left": {
+              "$token": "spacing.5"
+            }
+          },
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border"
+            },
+            "sides": {
+              "top": true
+            }
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "padding": {
+              "top": {
+                "$token": "spacing.8"
+              },
+              "right": {
+                "$token": "spacing.10"
+              },
+              "bottom": {
+                "$token": "spacing.8"
+              },
+              "left": {
+                "$token": "spacing.10"
+              }
+            }
+          }
+        }
+      }
+    },
+    "n103": {
+      "id": "n103",
+      "type": "element",
+      "name": "Footer",
+      "parent": "n102",
+      "children": [
+        "n104",
+        "n105"
+      ],
+      "tag": "footer",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "center",
+          "justifyContent": "between",
+          "flexWrap": "wrap",
+          "gap": {
+            "row": {
+              "$token": "spacing.3"
+            },
+            "column": {
+              "$token": "spacing.4"
+            }
+          },
+          "width": "fill",
+          "maxWidth": {
+            "value": 1120,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n104": {
+      "id": "n104",
+      "type": "text",
+      "name": "Copyright",
+      "parent": "n103",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "© 2026 Pitolet · AGPL-3.0 core"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.subtle-foreground"
+          }
+        }
+      }
+    },
+    "n105": {
+      "id": "n105",
+      "type": "element",
+      "name": "Footer Links",
+      "parent": "n103",
+      "children": [
+        "n106",
+        "n107",
+        "n108"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "center",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.5"
+            }
+          }
+        }
+      }
+    },
+    "n106": {
+      "id": "n106",
+      "type": "text",
+      "name": "Terms",
+      "parent": "n105",
+      "children": [],
+      "tag": "a",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Terms"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          }
+        },
+        "states": {
+          "hover": {
+            "color": {
+              "$token": "color.foreground"
+            }
+          }
+        }
+      },
+      "attrs": {
+        "href": "/terms.html"
+      }
+    },
+    "n107": {
+      "id": "n107",
+      "type": "text",
+      "name": "Privacy",
+      "parent": "n105",
+      "children": [],
+      "tag": "a",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Privacy"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          }
+        },
+        "states": {
+          "hover": {
+            "color": {
+              "$token": "color.foreground"
+            }
+          }
+        }
+      },
+      "attrs": {
+        "href": "/privacy.html"
+      }
+    },
+    "n108": {
+      "id": "n108",
+      "type": "text",
+      "name": "GitHub",
+      "parent": "n105",
+      "children": [],
+      "tag": "a",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "GitHub"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          }
+        },
+        "states": {
+          "hover": {
+            "color": {
+              "$token": "color.foreground"
+            }
+          }
+        }
+      },
+      "attrs": {
+        "href": "https://github.com/pitolet/pitolet"
+      }
+    }
+  },
+  "components": {},
+  "tokens": {
+    "color": {
+      "background": {
+        "$value": {
+          "space": "oklch",
+          "l": 0.13,
+          "c": 0.006,
+          "h": 250
+        },
+        "$description": "Page canvas"
+      },
+      "surface": {
+        "$value": {
+          "space": "oklch",
+          "l": 0.165,
+          "c": 0.008,
+          "h": 250
+        },
+        "$description": "Raised surface"
+      },
+      "surface-2": {
+        "$value": {
+          "space": "oklch",
+          "l": 0.2,
+          "c": 0.009,
+          "h": 250
+        },
+        "$description": "Card surface"
+      },
+      "foreground": {
+        "$value": {
+          "space": "oklch",
+          "l": 0.95,
+          "c": 0.006,
+          "h": 250
+        },
+        "$description": "Primary text"
+      },
+      "muted-foreground": {
+        "$value": {
+          "space": "oklch",
+          "l": 0.7,
+          "c": 0.012,
+          "h": 250
+        },
+        "$description": "Secondary text"
+      },
+      "subtle-foreground": {
+        "$value": {
+          "space": "oklch",
+          "l": 0.55,
+          "c": 0.014,
+          "h": 250
+        },
+        "$description": "Tertiary text"
+      },
+      "primary": {
+        "$value": {
+          "space": "oklch",
+          "l": 0.71,
+          "c": 0.125,
+          "h": 215
+        },
+        "$description": "Glacial accent"
+      },
+      "primary-strong": {
+        "$value": {
+          "space": "oklch",
+          "l": 0.6,
+          "c": 0.14,
+          "h": 222
+        },
+        "$description": "Accent (pressed)"
+      },
+      "primary-foreground": {
+        "$value": {
+          "space": "oklch",
+          "l": 0.14,
+          "c": 0.02,
+          "h": 222
+        },
+        "$description": "Text on accent"
+      },
+      "border": {
+        "$value": {
+          "space": "oklch",
+          "l": 1,
+          "c": 0,
+          "h": 0,
+          "alpha": 0.09
+        },
+        "$description": "Hairline border"
+      },
+      "border-strong": {
+        "$value": {
+          "space": "oklch",
+          "l": 1,
+          "c": 0,
+          "h": 0,
+          "alpha": 0.16
+        },
+        "$description": "Stronger border"
+      }
+    },
+    "spacing": {
+      "1": {
+        "$value": {
+          "value": 4,
+          "unit": "px"
+        }
+      },
+      "2": {
+        "$value": {
+          "value": 8,
+          "unit": "px"
+        }
+      },
+      "3": {
+        "$value": {
+          "value": 12,
+          "unit": "px"
+        }
+      },
+      "4": {
+        "$value": {
+          "value": 16,
+          "unit": "px"
+        }
+      },
+      "5": {
+        "$value": {
+          "value": 20,
+          "unit": "px"
+        }
+      },
+      "6": {
+        "$value": {
+          "value": 24,
+          "unit": "px"
+        }
+      },
+      "8": {
+        "$value": {
+          "value": 32,
+          "unit": "px"
+        }
+      },
+      "10": {
+        "$value": {
+          "value": 40,
+          "unit": "px"
+        }
+      },
+      "12": {
+        "$value": {
+          "value": 48,
+          "unit": "px"
+        }
+      },
+      "16": {
+        "$value": {
+          "value": 64,
+          "unit": "px"
+        }
+      },
+      "20": {
+        "$value": {
+          "value": 80,
+          "unit": "px"
+        }
+      },
+      "24": {
+        "$value": {
+          "value": 96,
+          "unit": "px"
+        }
+      }
+    },
+    "radius": {
+      "sm": {
+        "$value": {
+          "value": 4,
+          "unit": "px"
+        }
+      },
+      "md": {
+        "$value": {
+          "value": 8,
+          "unit": "px"
+        }
+      },
+      "lg": {
+        "$value": {
+          "value": 12,
+          "unit": "px"
+        }
+      },
+      "xl": {
+        "$value": {
+          "value": 16,
+          "unit": "px"
+        }
+      },
+      "full": {
+        "$value": {
+          "value": 9999,
+          "unit": "px"
+        }
+      }
+    },
+    "shadow": {
+      "sm": {
+        "$value": [
+          {
+            "x": 0,
+            "y": 1,
+            "blur": 2,
+            "spread": 0,
+            "color": {
+              "space": "oklch",
+              "l": 0.2,
+              "c": 0.02,
+              "h": 250,
+              "alpha": 0.08
+            }
+          }
+        ]
+      },
+      "md": {
+        "$value": [
+          {
+            "x": 0,
+            "y": 2,
+            "blur": 8,
+            "spread": -1,
+            "color": {
+              "space": "oklch",
+              "l": 0.2,
+              "c": 0.02,
+              "h": 250,
+              "alpha": 0.1
+            }
+          },
+          {
+            "x": 0,
+            "y": 1,
+            "blur": 2,
+            "spread": 0,
+            "color": {
+              "space": "oklch",
+              "l": 0.2,
+              "c": 0.02,
+              "h": 250,
+              "alpha": 0.06
+            }
+          }
+        ]
+      },
+      "lg": {
+        "$value": [
+          {
+            "x": 0,
+            "y": 12,
+            "blur": 32,
+            "spread": -4,
+            "color": {
+              "space": "oklch",
+              "l": 0.2,
+              "c": 0.02,
+              "h": 250,
+              "alpha": 0.14
+            }
+          },
+          {
+            "x": 0,
+            "y": 2,
+            "blur": 6,
+            "spread": -1,
+            "color": {
+              "space": "oklch",
+              "l": 0.2,
+              "c": 0.02,
+              "h": 250,
+              "alpha": 0.08
+            }
+          }
+        ]
+      }
+    },
+    "typography": {
+      "fontFamily": {
+        "sans": {
+          "$value": "Inter"
+        },
+        "mono": {
+          "$value": "JetBrains Mono"
+        }
+      },
+      "fontSize": {
+        "xs": {
+          "$value": {
+            "value": 12,
+            "unit": "px"
+          }
+        },
+        "sm": {
+          "$value": {
+            "value": 14,
+            "unit": "px"
+          }
+        },
+        "base": {
+          "$value": {
+            "value": 16,
+            "unit": "px"
+          }
+        },
+        "lg": {
+          "$value": {
+            "value": 18,
+            "unit": "px"
+          }
+        },
+        "xl": {
+          "$value": {
+            "value": 20,
+            "unit": "px"
+          }
+        },
+        "2xl": {
+          "$value": {
+            "value": 24,
+            "unit": "px"
+          }
+        },
+        "3xl": {
+          "$value": {
+            "value": 30,
+            "unit": "px"
+          }
+        },
+        "4xl": {
+          "$value": {
+            "value": 36,
+            "unit": "px"
+          }
+        },
+        "5xl": {
+          "$value": {
+            "value": 48,
+            "unit": "px"
+          }
+        },
+        "6xl": {
+          "$value": {
+            "value": 60,
+            "unit": "px"
+          }
+        },
+        "7xl": {
+          "$value": {
+            "value": 72,
+            "unit": "px"
+          }
+        }
+      }
+    }
+  },
+  "breakpoints": [
+    {
+      "id": "sm",
+      "name": "Small",
+      "minWidth": 640
+    },
+    {
+      "id": "md",
+      "name": "Medium",
+      "minWidth": 768
+    },
+    {
+      "id": "lg",
+      "name": "Large",
+      "minWidth": 1024
+    },
+    {
+      "id": "xl",
+      "name": "X-Large",
+      "minWidth": 1280
+    }
+  ],
+  "assets": {},
+  "comments": {}
+}

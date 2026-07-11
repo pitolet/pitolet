@@ -1,0 +1,36 @@
+.ptl-components {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ptl-space-1);
+  padding: var(--ptl-space-2) var(--ptl-space-3);
+  overflow-y: auto;
+}
+
+.ptl-component-card {
+  display: flex;
+  align-items: center;
+  gap: var(--ptl-space-2);
+  padding: var(--ptl-space-2);
+  border: 1px solid var(--ptl-border);
+  border-radius: var(--ptl-radius-md);
+  background: var(--ptl-bg-2);
+  color: oklch(0.72 0.14 300);
+  font-size: var(--ptl-text-sm);
+  cursor: default;
+  text-align: left;
+}
+
+.ptl-component-card:hover {
+  border-color: oklch(0.72 0.14 300 / 0.5);
+}
+
+.ptl-component-name {
+  color: var(--ptl-text-1);
+  font-weight: 500;
+  flex: 1;
+}
+
+.ptl-component-variants {
+  color: var(--ptl-text-3);
+  font-size: var(--ptl-text-xs);
+}
