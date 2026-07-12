@@ -8,6 +8,7 @@ import './LayersPanel.css';
 export function LayersPanel() {
   const rootOrder = useEditor((s) => s.doc?.rootOrder);
   const docName = useEditor((s) => s.doc?.name);
+  const connectionError = useEditor((s) => s.connectionError);
 
   return (
     <div className="ptl-layers">
@@ -17,7 +18,7 @@ export function LayersPanel() {
           rootOrder.map((id) => <LayerRow key={id} id={id} depth={0} />)
         ) : (
           <div className="ptl-panel-empty">
-            {rootOrder ? 'Press F to draw a frame' : 'Connecting…'}
+            {rootOrder ? 'Press F to draw a frame' : (connectionError ?? 'Connecting…')}
           </div>
         )}
       </div>

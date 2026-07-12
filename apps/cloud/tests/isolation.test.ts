@@ -1,6 +1,5 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
-import { createSampleDocument } from '@pitolet/schema';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import net from 'node:net';
 import { tmpdir } from 'node:os';
@@ -134,13 +133,14 @@ function mcpText(result: Awaited<ReturnType<Client['callTool']>>): string {
   return content.find((c) => c.type === 'text')?.text ?? '';
 }
 
-async function seedDocument(workspaceId: string): Promise<string> {
-  const doc = createSampleDocument();
-  await pgi.pool.query(
-    'INSERT INTO documents (id, workspace_id, name, doc, rev) VALUES ($1, $2, $3, $4::jsonb, $5)',
-    [doc.id, workspaceId, doc.name, JSON.stringify(doc), 0],
+async function starterDocumentId(workspaceId: string): Promise<string> {
+  const result = await pgi.pool.query<{ id: string; name: string }>(
+    'SELECT id, name FROM documents WHERE workspace_id = $1 AND deleted_at IS NULL',
+    [workspaceId],
   );
-  return doc.id;
+  expect(result.rows).toHaveLength(1);
+  expect(result.rows[0]!.name).toBe('Welcome');
+  return result.rows[0]!.id;
 }
 
 async function createWorkspaceVia(cookie: string, name: string, slug: string) {
@@ -204,8 +204,8 @@ beforeAll(async () => {
   await pgi.pool.query("UPDATE workspaces SET plan = 'pro' WHERE id = ANY($1)", [
     [acmeWs.id, globexWs.id],
   ]);
-  acme = { id: acmeWs.id, slug: 'acme', docId: await seedDocument(acmeWs.id) };
-  globex = { id: globexWs.id, slug: 'globex', docId: await seedDocument(globexWs.id) };
+  acme = { id: acmeWs.id, slug: 'acme', docId: await starterDocumentId(acmeWs.id) };
+  globex = { id: globexWs.id, slug: 'globex', docId: await starterDocumentId(globexWs.id) };
 
   acmeToken = (await mintToken(alice, acme.id, 'acme-agent')).token;
   acmeReadToken = (await mintToken(alice, acme.id, 'acme-reader', ['read'])).token;

@@ -1,4 +1,4 @@
-import { createSampleDocument, type PitoletDocument } from '@pitolet/schema';
+import { createSampleDocument, validateDocument, type PitoletDocument } from '@pitolet/schema';
 import { enablePatches, produceWithPatches } from 'immer';
 import pg from 'pg';
 import { mkdtempSync, rmSync } from 'node:fs';
@@ -7,6 +7,7 @@ import { join } from 'node:path';
 import type { AppliedPatch } from 'pitolet';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { runMigrations } from '../src/db/migrate.js';
+import { ensureWorkspaceStarterDocuments } from '../src/cloud/workspaces.js';
 import { PgStorageAdapter } from '../src/storage/PgStorageAdapter.js';
 import { startEphemeralPg, type EphemeralPg } from './harness/ephemeralPg.js';
 
@@ -82,6 +83,26 @@ describe('migrations', () => {
       '002_better_auth_users.sql',
       '003_billing_limits.sql',
     ]);
+  });
+});
+
+describe('workspace starter-document recovery', () => {
+  it('backfills a legacy empty workspace exactly once with a valid Welcome document', async () => {
+    const workspaceId = await createWorkspace('legacy-empty');
+
+    expect(await ensureWorkspaceStarterDocuments(pgi.pool)).toBe(1);
+    expect(await ensureWorkspaceStarterDocuments(pgi.pool)).toBe(0);
+
+    const documents = await pgi.pool.query<{ name: string; doc: unknown; rev: string }>(
+      `SELECT name, doc, rev
+       FROM documents
+       WHERE workspace_id = $1 AND deleted_at IS NULL`,
+      [workspaceId],
+    );
+    expect(documents.rows).toHaveLength(1);
+    expect(documents.rows[0]!.name).toBe('Welcome');
+    expect(Number(documents.rows[0]!.rev)).toBe(0);
+    expect(validateDocument(documents.rows[0]!.doc).name).toBe('Welcome');
   });
 });
 

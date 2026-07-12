@@ -22,7 +22,10 @@ import './TokensPanel.css';
  */
 export function TokensPanel() {
   const tokens = useEditor((s) => s.doc?.tokens);
-  if (!tokens) return <div className="ptl-panel-empty">Connecting…</div>;
+  const connectionError = useEditor((s) => s.connectionError);
+  if (!tokens) {
+    return <div className="ptl-panel-empty">{connectionError ?? 'Connecting…'}</div>;
+  }
 
   return (
     <div className="ptl-tokens">

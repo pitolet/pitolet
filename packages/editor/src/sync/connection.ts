@@ -26,6 +26,7 @@ export class Connection {
     // Reset the closed flag: start() is re-entrant — the login screen calls it
     // again after auth, and React StrictMode can stop()/start() in dev.
     this.closed = false;
+    useEditor.getState().setConnectionError(null);
     try {
       await this.boot();
     } finally {
@@ -41,20 +42,25 @@ export class Connection {
     // Retry the initial fetch: on reload the Vite dev proxy can briefly race
     // the backend and return an empty body.
     let documents: Array<{ id: string; name: string }> = [];
+    let receivedDocumentList = false;
     for (let attempt = 0; attempt < 10 && !this.closed; attempt++) {
       try {
         const res = await fetch(apiUrl('/api/documents'));
         // Auth required: surface it and stop — do NOT retry-loop or attempt the
         // WS. The login screen re-invokes start() after a successful login.
         if (res.status === 401) {
+          useEditor.getState().setConnectionError(null);
           useEditor.getState().setAuthRequired(true);
           return;
         }
         if (res.ok) {
           const body = (await res.json()) as { documents?: typeof documents };
-          if (body.documents && body.documents.length > 0) {
-            documents = body.documents;
-            break;
+          if (body.documents) {
+            receivedDocumentList = true;
+            if (body.documents.length > 0) {
+              documents = body.documents;
+              break;
+            }
           }
         }
       } catch {
@@ -67,7 +73,16 @@ export class Connection {
     // (e.g. after a successful login retry).
     useEditor.getState().setAuthRequired(false);
     const first = documents[0];
-    if (!first) throw new Error('server has no documents (after retries)');
+    if (!first) {
+      useEditor
+        .getState()
+        .setConnectionError(
+          receivedDocumentList
+            ? 'This workspace has no documents. Reload the page; if the problem continues, return to the dashboard and create a document.'
+            : 'Pitolet could not reach this workspace. Check your connection and reload the page.',
+        );
+      return;
+    }
     this.docId = first.id;
     this.booted = true;
     this.connect();

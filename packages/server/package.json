@@ -1,6 +1,6 @@
 {
   "name": "pitolet",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Web-native design tool for AI-coding workflows. Bundles the editor, MCP server, and deterministic codegen.",
   "type": "module",
   "license": "AGPL-3.0-only",

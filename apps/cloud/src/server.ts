@@ -12,6 +12,7 @@ import {
 } from './billing/paddle.js';
 import type { Plan } from './cloud/plans.js';
 import { WorkspaceManager, type WorkspaceManagerOptions } from './cloud/workspaceManager.js';
+import { ensureWorkspaceStarterDocuments } from './cloud/workspaces.js';
 import { runMigrations } from './db/migrate.js';
 import { createPool } from './db/pool.js';
 import {
@@ -187,6 +188,12 @@ async function main(): Promise<void> {
   // better-auth's own tables. Both are idempotent.
   await runMigrations(pool);
   await ensureAuthSchema({ pool, baseURL, secret });
+  const repairedWorkspaces = await ensureWorkspaceStarterDocuments(pool);
+  if (repairedWorkspaces > 0) {
+    console.log(
+      `[pitolet-cloud] created starter documents for ${repairedWorkspaces} empty workspace(s)`,
+    );
+  }
 
   // Error tracking first so process-level handlers below can report. No-op
   // unless SENTRY_DSN is set and @sentry/node is installed.

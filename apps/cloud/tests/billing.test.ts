@@ -307,15 +307,17 @@ describe('free plan gates', () => {
     expect(body.error).toMatch(/upgrade to Pro/i);
   });
 
-  it('allows 3 documents via MCP create_document, denies the 4th with the limit message', async () => {
-    for (let i = 1; i <= 3; i++) {
+  it('counts the starter toward the 3-document limit and denies a 4th document', async () => {
+    // Workspace creation supplied Welcome, so two more documents reach the
+    // free plan's total of three.
+    for (let i = 1; i <= 2; i++) {
       const result = await mcp.callTool({
         name: 'create_document',
         arguments: { name: `Doc ${i}` },
       });
       expect(result.isError ?? false).toBe(false);
     }
-    const fourth = await mcp.callTool({ name: 'create_document', arguments: { name: 'Doc 4' } });
+    const fourth = await mcp.callTool({ name: 'create_document', arguments: { name: 'Doc 3' } });
     expect(fourth.isError).toBe(true);
     expect(mcpText(fourth)).toMatch(/limited to 3 documents/i);
     expect(mcpText(fourth)).toMatch(/upgrade to Pro/i);
@@ -446,7 +448,7 @@ describe('upgrade via verified webhook', () => {
     const runtimeBefore = await cloud.manager.getRuntime(acme.id);
 
     // 4th document now allowed, over the SAME MCP client/connection.
-    const fourth = await mcp.callTool({ name: 'create_document', arguments: { name: 'Doc 4' } });
+    const fourth = await mcp.callTool({ name: 'create_document', arguments: { name: 'Doc 3' } });
     expect(fourth.isError ?? false).toBe(false);
 
     // 2nd token now allowed.
