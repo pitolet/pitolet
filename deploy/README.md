@@ -162,7 +162,7 @@ evicted by the sweep (15 min idle, LRU hard cap). If RSS climbs while
 
 ## 8. GitHub Actions deploy key
 
-The `.github/workflows/deploy.yml` workflow SSHes in and rolls the app forward.
+The `.github/workflows/deploy.yml` workflow copies the generated landing pages to Caddy, then rolls the app forward.
 Add these repository **secrets**:
 
 - `VPS_HOST` — the server IP or hostname.

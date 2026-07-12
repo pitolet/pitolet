@@ -15,6 +15,19 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Publish the static site
+        uses: appleboy/scp-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: deploy/static/*
+          target: /opt/pitolet/static
+          strip_components: 2
+          overwrite: true
+
       - name: Roll the VPS forward
         uses: appleboy/ssh-action@v1
         with:
