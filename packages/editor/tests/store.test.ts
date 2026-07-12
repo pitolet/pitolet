@@ -24,6 +24,19 @@ describe('editor store', () => {
     expect(sent[0]!.label).toBe('Rename');
   });
 
+  it('retains a fatal connection error until a connection or document succeeds', () => {
+    const store = useEditor.getState();
+    store.setConnectionError('Could not load workspace');
+    expect(useEditor.getState().connectionError).toBe('Could not load workspace');
+
+    store.setConnected(true);
+    expect(useEditor.getState().connectionError).toBeNull();
+
+    store.setConnectionError('Empty workspace');
+    store.setDocument(createSampleDocument(), 0);
+    expect(useEditor.getState().connectionError).toBeNull();
+  });
+
   it('undo reverts and sends an inverse patch; redo re-applies', () => {
     const store = useEditor.getState();
     store.dispatchEdit('Rename', (draft) => {

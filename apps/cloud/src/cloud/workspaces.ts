@@ -1,4 +1,5 @@
-import type { Pool } from 'pg';
+import { createSampleDocument } from '@pitolet/schema';
+import type { Pool, PoolClient } from 'pg';
 
 /**
  * Workspace lifecycle + membership queries. All identity ids are better-auth
@@ -42,6 +43,16 @@ export const RESERVED_SLUGS = new Set([
 
 export class SlugError extends Error {}
 
+async function insertStarterDocument(client: PoolClient, workspaceId: string): Promise<string> {
+  const document = createSampleDocument();
+  await client.query(
+    `INSERT INTO documents (id, workspace_id, name, doc, rev)
+     VALUES ($1, $2, $3, $4::jsonb, 0)`,
+    [document.id, workspaceId, document.name, JSON.stringify(document)],
+  );
+  return document.id;
+}
+
 export function validateSlug(slug: string): void {
   if (!SLUG_PATTERN.test(slug)) {
     throw new SlugError(
@@ -54,8 +65,9 @@ export function validateSlug(slug: string): void {
 }
 
 /**
- * Create a workspace and its owner membership atomically. Throws SlugError
- * for invalid/reserved slugs and (from pg) a unique violation for taken ones.
+ * Create a workspace, owner membership, and starter document atomically.
+ * Throws SlugError for invalid/reserved slugs and (from pg) a unique
+ * violation for taken ones.
  */
 export async function createWorkspace(
   pool: Pool,
@@ -74,8 +86,42 @@ export async function createWorkspace(
       "INSERT INTO memberships (workspace_id, user_id, role) VALUES ($1, $2, 'owner')",
       [row.id, input.ownerUserId],
     );
+    await insertStarterDocument(client, row.id);
     await client.query('COMMIT');
     return row;
+  } catch (err) {
+    await client.query('ROLLBACK').catch(() => {});
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Repair workspaces created before starter documents were seeded. This is
+ * intentionally idempotent and runs at boot after migrations. The advisory
+ * lock serializes concurrent application starts so two replicas cannot seed
+ * the same empty workspace at once.
+ */
+export async function ensureWorkspaceStarterDocuments(pool: Pool): Promise<number> {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query("SELECT pg_advisory_xact_lock(hashtext('pitolet:starter-documents'))");
+    const empty = await client.query<{ id: string }>(
+      `SELECT w.id
+       FROM workspaces w
+       WHERE NOT EXISTS (
+         SELECT 1 FROM documents d
+         WHERE d.workspace_id = w.id AND d.deleted_at IS NULL
+       )
+       ORDER BY w.created_at ASC`,
+    );
+    for (const workspace of empty.rows) {
+      await insertStarterDocument(client, workspace.id);
+    }
+    await client.query('COMMIT');
+    return empty.rowCount ?? empty.rows.length;
   } catch (err) {
     await client.query('ROLLBACK').catch(() => {});
     throw err;

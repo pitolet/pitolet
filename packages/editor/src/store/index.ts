@@ -49,6 +49,9 @@ export interface EditorState {
   doc: PitoletDocument | null;
   docRev: number;
   connected: boolean;
+  /** Fatal boot failure that cannot be healed by WebSocket reconnects. */
+  connectionError: string | null;
+  setConnectionError: (message: string | null) => void;
   /** True once the boot fetch/WS returns 401 — the login screen renders. */
   authRequired: boolean;
   setAuthRequired: (required: boolean) => void;
@@ -120,6 +123,7 @@ export const useEditor = create<EditorState>((set, get) => ({
   doc: null,
   docRev: 0,
   connected: false,
+  connectionError: null,
   authRequired: false,
   readOnly: false,
 
@@ -191,7 +195,12 @@ export const useEditor = create<EditorState>((set, get) => ({
     // Full doc replacement (initial open or external reload) — history is
     // no longer valid against the new tree.
     history.clear();
-    set({ doc, docRev: rev, selection: pruneSelection(get().selection, doc) });
+    set({
+      doc,
+      docRev: rev,
+      selection: pruneSelection(get().selection, doc),
+      connectionError: null,
+    });
     overlaySync.notify();
   },
 
@@ -244,7 +253,8 @@ export const useEditor = create<EditorState>((set, get) => ({
     overlaySync.notify();
   },
 
-  setConnected: (connected) => set({ connected }),
+  setConnected: (connected) => set({ connected, ...(connected ? { connectionError: null } : {}) }),
+  setConnectionError: (connectionError) => set({ connectionError }),
   setAuthRequired: (authRequired) => set({ authRequired }),
   setReadOnly: (readOnly) => set({ readOnly }),
 
