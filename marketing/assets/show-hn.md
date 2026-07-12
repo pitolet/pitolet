@@ -19,13 +19,12 @@ wrapping, real `:hover` states. Because the editor and the code generator both
 read from the same style-resolution pipeline, what you see on the canvas and
 the React + Tailwind (or plain HTML/CSS) it exports can't drift apart.
 
-The second thing: coding agents are first-class users. Pitolet ships an MCP
-server with 20 tools, so Claude Code (or any MCP client) can read the design
-as code, inspect tokens, and also write: insert nodes, edit styles, change
-tokens, leave comments. Agent edits go through the same validated patch
-pipeline as human edits, show up live on the open canvas with a glow, and are
-undoable with ⌘Z. Documents are human-readable JSON that lives in your repo
-and diffs cleanly.
+Coding agents can edit the document too. Pitolet ships an MCP server with 20
+tools, so Claude Code (or any MCP client) can read the design as code, inspect
+tokens, insert nodes, edit styles, change tokens, and leave comments. Those
+edits use the same validation and history as UI edits. They appear on the open
+canvas and can be undone with ⌘Z. Documents are readable JSON files that can
+live in your repo.
 
 Try it: `npx pitolet` (Node 22+), or the Docker one-liner in the README.
 There's a 44-second demo video in the repo showing Claude Code adding a
@@ -33,8 +32,8 @@ section and re-theming the doc.
 
 The core is AGPL-3.0. There's a hosted version (app.pitolet.com) with a free
 tier; that code is in the same repo under a commercial license. The
-pitolet.com landing page is itself a Pitolet document exported by the codegen,
-which is the closest thing I have to a fidelity proof.
+pitolet.com landing page is a Pitolet document exported by the codegen, and
+the source document sits beside the generated HTML in the repo.
 
 Known gaps I'm working on: no multiplayer cursors between humans yet (agent
 presence works), grid editing beyond column count is thin, and nested
@@ -66,10 +65,9 @@ the agent edits real DOM/CSS through the same validated, undoable pipeline
 humans use, the file is readable JSON in your repo, and the same style pipeline
 drives both the canvas and deterministic code export.
 
-**Why not a Figma plugin?** The fidelity problem is structural. Figma's layout
-model approximates CSS, so anything that exports code from it is translating
-between two systems that don't quite line up. Starting from the DOM removes
-the translation instead of improving it.
+**Why not a Figma plugin?** A plugin would still translate from Figma's layout
+model into CSS. Pitolet starts with DOM and CSS, so there is only one layout
+system to maintain.
 
 **Is my data locked in?** Documents are plain JSON files on disk
 (`*.pitolet.json`), schema in `packages/schema`. Export to React/HTML at any

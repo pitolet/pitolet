@@ -1,10 +1,8 @@
 # @pitolet/cloud
 
-Pitolet Cloud is the commercial hosted service. The source is visible, but this
-is **not open source** (see [LICENSE](./LICENSE)). It's the multi-tenant app behind
-[app.pitolet.com](https://app.pitolet.com): better-auth sessions, Postgres-backed
-workspaces, agent tokens, and the hosted MCP endpoint, serving the editor SPA
-per workspace under `/w/:slug/`.
+This package runs [app.pitolet.com](https://app.pitolet.com). It handles accounts, Postgres-backed workspaces, agent tokens, and the hosted MCP endpoint. Each workspace serves the editor under `/w/:slug/`.
+
+The source is visible, but it is commercially licensed rather than open source. See [LICENSE](./LICENSE).
 
 ## Layout
 

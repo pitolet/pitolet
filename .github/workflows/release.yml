@@ -28,6 +28,8 @@ jobs:
       - run: npm install -g npm@latest
 
       - run: pnpm install --frozen-lockfile
+      - name: Install Chromium for website-import end-to-end tests
+        run: node packages/server/node_modules/playwright-core/cli.js install --with-deps chromium
 
       # Never publish untested.
       - run: pnpm -r typecheck

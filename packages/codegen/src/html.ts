@@ -118,7 +118,8 @@ export function nodeToHtml(
 
     const attrs = [`class="${className}"`];
     for (const [key, value] of Object.entries(node.attrs ?? {})) {
-      attrs.push(`${key}="${escapeHtml(value)}"`);
+      if (BOOLEAN_ATTRS.has(key)) attrs.push(key);
+      else attrs.push(`${key}="${escapeHtml(value)}"`);
     }
     const attrString = ` ${attrs.join(' ')}`;
 
@@ -144,6 +145,7 @@ export function nodeToHtml(
             ),
           )
           .filter((c): c is string => c !== null);
+        if (VOID_TAGS.has(node.tag)) return `${pad}<${node.tag}${attrString}>`;
         if (children.length === 0) return `${pad}<${node.tag}${attrString}></${node.tag}>`;
         return `${pad}<${node.tag}${attrString}>\n${children.join('\n')}\n${pad}</${node.tag}>`;
       }
@@ -163,6 +165,9 @@ export function nodeToHtml(
     return count === 0 ? base : `${base}-${count + 1}`;
   }
 }
+
+const BOOLEAN_ATTRS = new Set(['checked', 'disabled', 'selected']);
+const VOID_TAGS = new Set(['input', 'br', 'hr', 'meta', 'link', 'source', 'track', 'wbr']);
 
 function spansToHtml(spans: TextSpan[]): string {
   return spans

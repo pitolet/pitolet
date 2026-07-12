@@ -41,7 +41,7 @@ export function generateProject(
   options: JsxOptions = {},
 ): GeneratedFile[] {
   const files: GeneratedFile[] = [];
-  files.push({ path: 'theme.css', contents: generateThemeCss(doc.tokens) });
+  files.push({ path: 'theme.css', contents: generateThemeCss(doc.tokens, doc.breakpoints) });
 
   for (const def of Object.values(doc.components)) {
     const annotation = options.annotate

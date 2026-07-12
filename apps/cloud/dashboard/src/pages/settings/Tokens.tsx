@@ -53,7 +53,7 @@ export function Tokens({ ws }: { ws: WorkspaceSummary }) {
   return (
     <>
       {justCreated && (
-        <TokenReveal token={justCreated} onDismiss={() => setJustCreated(null)} />
+        <TokenReveal token={justCreated} ws={ws} onDismiss={() => setJustCreated(null)} />
       )}
 
       <CreateTokenForm
@@ -68,7 +68,11 @@ export function Tokens({ ws }: { ws: WorkspaceSummary }) {
         <h2 className="ptl-dash-section-title">Active tokens</h2>
       </div>
 
-      {error && <div className="ptl-dash-error" style={{ marginBottom: 12 }}>{error}</div>}
+      {error && (
+        <div className="ptl-dash-error" style={{ marginBottom: 12 }}>
+          {error}
+        </div>
+      )}
 
       {tokens === null ? (
         <div className="ptl-dash-empty">Loading tokens…</div>
@@ -105,8 +109,18 @@ export function Tokens({ ws }: { ws: WorkspaceSummary }) {
   );
 }
 
-function TokenReveal({ token, onDismiss }: { token: CreatedToken; onDismiss: () => void }) {
+function TokenReveal({
+  token,
+  ws,
+  onDismiss,
+}: {
+  token: CreatedToken;
+  ws: WorkspaceSummary;
+  onDismiss: () => void;
+}) {
   const [copied, setCopied] = useState(false);
+  const [importCopied, setImportCopied] = useState(false);
+  const importCommand = `PITOLET_TOKEN='${token.token}' npx pitolet import http://localhost:3000 --to ${window.location.origin}/w/${ws.slug}`;
 
   async function copy() {
     try {
@@ -115,6 +129,16 @@ function TokenReveal({ token, onDismiss }: { token: CreatedToken; onDismiss: () 
       setTimeout(() => setCopied(false), 2000);
     } catch {
       // clipboard blocked (e.g. insecure context) — the value is selectable.
+    }
+  }
+
+  async function copyImportCommand() {
+    try {
+      await navigator.clipboard.writeText(importCommand);
+      setImportCopied(true);
+      setTimeout(() => setImportCopied(false), 2000);
+    } catch {
+      // The command remains selectable if clipboard access is unavailable.
     }
   }
 
@@ -130,6 +154,20 @@ function TokenReveal({ token, onDismiss }: { token: CreatedToken; onDismiss: () 
           {copied ? <Check size={13} /> : <Copy size={13} />} {copied ? 'Copied' : 'Copy'}
         </Button>
       </div>
+      {token.scopes.includes('write') && (
+        <>
+          <div className="ptl-dash-token-warn" style={{ marginTop: 12 }}>
+            Run this on the same machine as the site you want to import:
+          </div>
+          <div className="ptl-dash-token-value">
+            <span className="ptl-dash-token-code">{importCommand}</span>
+            <Button variant="outline" size="sm" onClick={copyImportCommand}>
+              {importCopied ? <Check size={13} /> : <Copy size={13} />}{' '}
+              {importCopied ? 'Copied' : 'Copy command'}
+            </Button>
+          </div>
+        </>
+      )}
       <div className="ptl-dash-form-actions">
         <Button variant="ghost" size="sm" onClick={onDismiss}>
           I've saved it

@@ -12,8 +12,8 @@
   undoably. AGPL core, `npx pitolet`.
 - **Why is it interesting?** Agent edits are live on the canvas, validated,
   and undoable, while the document itself remains real DOM/CSS that exports
-  deterministically. The landing page is a Pitolet export, so the fidelity
-  claim is verifiable.
+  deterministically. The landing page is a Pitolet export, and both the source
+  document and generated page are in the repo.
 
 ## TLDR / general submission blurb (~25 words)
 
@@ -29,15 +29,12 @@ canvas live, undoable with ⌘Z. Free tier hosted, AGPL self-hosted.
 
 ## 100-word boilerplate (press/about)
 
-Pitolet is an open-source design tool built for developers and AI coding
-agents. Instead of approximating CSS the way traditional design tools do,
-Pitolet's canvas renders with the browser's own layout engine: every element
-is a real DOM node with real flexbox, grid, and hover states, and a
-deterministic compiler exports the same document as React + Tailwind or plain
-HTML/CSS. Documents are human-readable JSON files that live in a git repo.
-Coding agents such as Claude Code connect over MCP to read designs, edit
-them live on the canvas, and keep design and shipped code in sync. The core
-is AGPL-3.0; a hosted version with team workspaces is available at
+Pitolet is an open-source design tool for web interfaces. Its canvas uses the
+browser's layout engine, so elements use real DOM, flexbox, grid, and hover
+states. The same document exports as React and Tailwind or plain HTML and CSS.
+Documents are readable JSON files that can live in a git repo. Coding agents
+such as Claude Code connect over MCP, read the design, and edit the open canvas.
+The core is AGPL-3.0, and a hosted version with team workspaces is available at
 app.pitolet.com.
 
 ## MCP directory listing (Smithery / PulseMCP / Glama / mcp.so)

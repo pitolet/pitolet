@@ -22,8 +22,26 @@ export const CONTAINER_TAGS = [
   'ol',
   'li',
   'button',
+  'input',
+  'textarea',
+  'select',
+  'option',
+  'fieldset',
+  'legend',
   'a',
   'label',
+  'table',
+  'caption',
+  'thead',
+  'tbody',
+  'tfoot',
+  'tr',
+  'td',
+  'th',
+  'details',
+  'summary',
+  'br',
+  'hr',
 ] as const;
 
 export const TEXT_TAGS = [
@@ -41,6 +59,9 @@ export const TEXT_TAGS = [
   'a',
   'button',
   'label',
+  'option',
+  'td',
+  'th',
 ] as const;
 
 interface NodeBase {

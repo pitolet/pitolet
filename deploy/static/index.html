@@ -4,17 +4,17 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="color-scheme" content="dark" />
-  <title>Pitolet — design tools for you and your coding agent</title>
-  <meta name="description" content="Pitolet is a web-native design tool for you and your coding agent. Everything you draw is live DOM and CSS, ready to ship as code." />
+  <title>Pitolet — design the real interface</title>
+  <meta name="description" content="Design responsive web interfaces with real DOM and CSS. Work on the same canvas as your coding agent, then export React or HTML." />
   <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2232%22%20height%3D%2232%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22oklch(0.165%200.008%20250)%22%2F%3E%3Cpath%20d%3D%22M5%2022%20L11%208%20L15%2015%20L18%2010%20L27%2022%22%20fill%3D%22none%22%20stroke%3D%22oklch(0.71%200.125%20215)%22%20stroke-width%3D%222.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Pitolet" />
-  <meta property="og:title" content="Pitolet — design tools for you and your coding agent" />
-  <meta property="og:description" content="Pitolet is a web-native design tool for you and your coding agent. Everything you draw is live DOM and CSS, ready to ship as code." />
+  <meta property="og:title" content="Pitolet — design the real interface" />
+  <meta property="og:description" content="Design responsive web interfaces with real DOM and CSS. Work on the same canvas as your coding agent, then export React or HTML." />
   <meta property="og:url" content="https://pitolet.com" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Pitolet — design tools for you and your coding agent" />
-  <meta name="twitter:description" content="Pitolet is a web-native design tool for you and your coding agent. Everything you draw is live DOM and CSS, ready to ship as code." />
+  <meta name="twitter:title" content="Pitolet — design the real interface" />
+  <meta name="twitter:description" content="Design responsive web interfaces with real DOM and CSS. Work on the same canvas as your coding agent, then export React or HTML." />
   <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; border: 0 solid; font: inherit; color: inherit; }
 html, body { min-height: 100%; }
@@ -161,16 +161,17 @@ button, input, select, textarea { background: transparent; appearance: none; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 64px;
+  padding-top: 48px;
   padding-right: 20px;
   padding-bottom: 64px;
   padding-left: 20px;
   width: 100%;
+  background-image: radial-gradient(circle, oklch(0.22 0.045 215) 0%, oklch(0.13 0.006 250) 72%);
 }
 
 @media (min-width: 768px) {
   .hero-band {
-    padding-top: 96px;
+    padding-top: 80px;
     padding-right: 40px;
     padding-bottom: 80px;
     padding-left: 40px;
@@ -183,7 +184,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
   align-items: center;
   gap: 24px 0px;
   width: 100%;
-  max-width: 880px;
+  max-width: 1120px;
 }
 
 .eyebrow {
@@ -208,7 +209,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
 }
 
 .headline {
-  max-width: 760px;
+  max-width: 900px;
   font-size: 48px;
   font-weight: 700;
   line-height: 1.05;
@@ -230,7 +231,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
 }
 
 .subhead {
-  max-width: 620px;
+  max-width: 700px;
   font-size: 20px;
   line-height: 1.55;
   text-align: center;
@@ -239,7 +240,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
 
 .ctas {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
   gap: 12px;
   padding-top: 16px;
@@ -289,6 +290,344 @@ button, input, select, textarea { background: transparent; appearance: none; }
   font-family: 'JetBrains Mono', system-ui, sans-serif;
   font-size: 14px;
   color: oklch(0.95 0.006 250);
+}
+
+.editor-preview {
+  display: flex;
+  flex-direction: column;
+  margin-top: 24px;
+  margin-right: 0px;
+  margin-bottom: 0px;
+  margin-left: 0px;
+  width: 100%;
+  max-width: 1040px;
+  background-color: oklch(0.165 0.008 250);
+  border: 1px solid oklch(1 0 0 / 0.16);
+  border-radius: 12px;
+  box-shadow: 0px 24px 64px -24px oklch(0.02 0.01 250 / 0.72);
+  overflow: hidden;
+}
+
+.preview-toolbar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  padding-right: 16px;
+  padding-bottom: 12px;
+  padding-left: 16px;
+  border-bottom: 1px solid oklch(1 0 0 / 0.09);
+}
+
+.window-controls {
+  display: flex;
+  flex-direction: row;
+  gap: 0px 8px;
+}
+
+.close {
+  display: flex;
+  flex-direction: column;
+  width: 8px;
+  height: 8px;
+  background-color: oklch(0.55 0.014 250);
+  border-radius: 9999px;
+  opacity: 0.45;
+}
+
+.minimize {
+  display: flex;
+  flex-direction: column;
+  width: 8px;
+  height: 8px;
+  background-color: oklch(0.55 0.014 250);
+  border-radius: 9999px;
+  opacity: 0.45;
+}
+
+.expand {
+  display: flex;
+  flex-direction: column;
+  width: 8px;
+  height: 8px;
+  background-color: oklch(0.71 0.125 215);
+  border-radius: 9999px;
+  opacity: 0.9;
+}
+
+.preview-document {
+  font-size: 12px;
+  color: oklch(0.55 0.014 250);
+}
+
+.agent-status {
+  padding-top: 3px;
+  padding-right: 8px;
+  padding-bottom: 3px;
+  padding-left: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: oklch(0.71 0.125 215);
+  background-color: oklch(0.13 0.006 250);
+  border: 1px solid oklch(1 0 0 / 0.09);
+  border-radius: 9999px;
+}
+
+.preview-work-area {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  min-height: 430px;
+}
+
+.preview-layers {
+  display: none;
+  gap: 12px 0px;
+  padding-top: 16px;
+  padding-right: 16px;
+  padding-bottom: 16px;
+  padding-left: 16px;
+  width: 180px;
+  background-color: oklch(0.13 0.006 250);
+  border-right: 1px solid oklch(1 0 0 / 0.09);
+}
+
+@media (min-width: 768px) {
+  .preview-layers {
+    display: flex;
+  }
+}
+
+.layers-label {
+  font-size: 12px;
+  font-weight: 650;
+  color: oklch(0.7 0.012 250);
+}
+
+.layer-landing {
+  padding-top: 4px;
+  padding-right: 8px;
+  padding-bottom: 4px;
+  padding-left: 8px;
+  font-size: 12px;
+  color: oklch(0.55 0.014 250);
+  border-radius: 4px;
+}
+
+.layer-navigation {
+  padding-top: 4px;
+  padding-right: 8px;
+  padding-bottom: 4px;
+  padding-left: 8px;
+  font-size: 12px;
+  color: oklch(0.55 0.014 250);
+  border-radius: 4px;
+}
+
+.layer-hero {
+  padding-top: 4px;
+  padding-right: 8px;
+  padding-bottom: 4px;
+  padding-left: 8px;
+  font-size: 12px;
+  color: oklch(0.71 0.125 215);
+  background-color: oklch(0.165 0.008 250);
+  border-radius: 4px;
+}
+
+.layer-feature-cards {
+  padding-top: 4px;
+  padding-right: 8px;
+  padding-bottom: 4px;
+  padding-left: 8px;
+  font-size: 12px;
+  color: oklch(0.55 0.014 250);
+  border-radius: 4px;
+}
+
+.preview-canvas {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px 0px;
+  padding-top: 20px;
+  padding-right: 20px;
+  padding-bottom: 20px;
+  padding-left: 20px;
+  flex-grow: 1;
+  flex-shrink: 1;
+  flex-basis: 0%;
+  min-width: 0px;
+  background-color: oklch(0.13 0.006 250);
+}
+
+@media (min-width: 768px) {
+  .preview-canvas {
+    padding-top: 32px;
+    padding-right: 32px;
+    padding-bottom: 32px;
+    padding-left: 32px;
+  }
+}
+
+.canvas-width {
+  font-size: 12px;
+  color: oklch(0.55 0.014 250);
+}
+
+.preview-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px 0px;
+  padding-top: 24px;
+  padding-right: 24px;
+  padding-bottom: 24px;
+  padding-left: 24px;
+  width: 100%;
+  max-width: 560px;
+  background-color: oklch(0.2 0.009 250);
+  border: 1px solid oklch(0.71 0.125 215);
+  border-radius: 8px;
+  box-shadow: 0px 0px 0px 3px oklch(0.71 0.125 215 / 0.12);
+}
+
+.preview-page-nav {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.preview-logo {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.preview-nav-links {
+  font-size: 12px;
+  color: oklch(0.7 0.012 250);
+}
+
+.preview-eyebrow {
+  font-size: 12px;
+  font-weight: 650;
+  color: oklch(0.71 0.125 215);
+}
+
+.preview-headline {
+  max-width: 390px;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.8px;
+}
+
+.preview-body {
+  max-width: 390px;
+  font-size: 14px;
+  color: oklch(0.7 0.012 250);
+}
+
+.preview-actions {
+  display: flex;
+  flex-direction: row;
+  gap: 0px 8px;
+}
+
+.preview-primary {
+  padding-top: 8px;
+  padding-right: 12px;
+  padding-bottom: 8px;
+  padding-left: 12px;
+  font-size: 12px;
+  font-weight: 650;
+  color: oklch(0.14 0.02 222);
+  background-color: oklch(0.71 0.125 215);
+  border-radius: 4px;
+}
+
+.preview-secondary {
+  padding-top: 8px;
+  padding-right: 12px;
+  padding-bottom: 8px;
+  padding-left: 12px;
+  font-size: 12px;
+  color: oklch(0.7 0.012 250);
+  border: 1px solid oklch(1 0 0 / 0.16);
+  border-radius: 4px;
+}
+
+.preview-inspector {
+  display: none;
+  gap: 16px 0px;
+  padding-top: 16px;
+  padding-right: 16px;
+  padding-bottom: 16px;
+  padding-left: 16px;
+  width: 210px;
+  background-color: oklch(0.13 0.006 250);
+  border-left: 1px solid oklch(1 0 0 / 0.09);
+}
+
+@media (min-width: 1024px) {
+  .preview-inspector {
+    display: flex;
+  }
+}
+
+.inspector-label {
+  font-size: 12px;
+  font-weight: 650;
+  color: oklch(0.7 0.012 250);
+}
+
+.inspector-stack-vertical {
+  padding-top: 8px;
+  padding-right: 12px;
+  padding-bottom: 8px;
+  padding-left: 12px;
+  font-family: 'JetBrains Mono', system-ui, sans-serif;
+  font-size: 12px;
+  color: oklch(0.55 0.014 250);
+  background-color: oklch(0.165 0.008 250);
+  border-radius: 4px;
+}
+
+.inspector-gap-20 {
+  padding-top: 8px;
+  padding-right: 12px;
+  padding-bottom: 8px;
+  padding-left: 12px;
+  font-family: 'JetBrains Mono', system-ui, sans-serif;
+  font-size: 12px;
+  color: oklch(0.55 0.014 250);
+  background-color: oklch(0.165 0.008 250);
+  border-radius: 4px;
+}
+
+.inspector-padding-24 {
+  padding-top: 8px;
+  padding-right: 12px;
+  padding-bottom: 8px;
+  padding-left: 12px;
+  font-family: 'JetBrains Mono', system-ui, sans-serif;
+  font-size: 12px;
+  color: oklch(0.55 0.014 250);
+  background-color: oklch(0.165 0.008 250);
+  border-radius: 4px;
+}
+
+.inspector-width-fill {
+  padding-top: 8px;
+  padding-right: 12px;
+  padding-bottom: 8px;
+  padding-left: 12px;
+  font-family: 'JetBrains Mono', system-ui, sans-serif;
+  font-size: 12px;
+  color: oklch(0.55 0.014 250);
+  background-color: oklch(0.165 0.008 250);
+  border-radius: 4px;
 }
 
 .props-band {
@@ -343,7 +682,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
   }
 }
 
-.you-re-editing-a-real-web-page {
+.the-browser-is-the-canvas {
   display: flex;
   flex-direction: column;
   gap: 12px 0px;
@@ -378,7 +717,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
   color: oklch(0.7 0.012 250);
 }
 
-.your-agent-edits-the-same-canvas {
+.your-agent-works-beside-you {
   display: flex;
   flex-direction: column;
   gap: 12px 0px;
@@ -413,7 +752,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
   color: oklch(0.7 0.012 250);
 }
 
-.ships-as-code {
+.the-output-is-already-code {
   display: flex;
   flex-direction: column;
   gap: 12px 0px;
@@ -448,6 +787,211 @@ button, input, select, textarea { background: transparent; appearance: none; }
   color: oklch(0.7 0.012 250);
 }
 
+.import-band {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 48px;
+  padding-right: 20px;
+  padding-bottom: 48px;
+  padding-left: 20px;
+  width: 100%;
+  background-color: oklch(0.165 0.008 250);
+  border-top: 1px solid oklch(1 0 0 / 0.09);
+  border-bottom: 1px solid oklch(1 0 0 / 0.09);
+}
+
+@media (min-width: 768px) {
+  .import-band {
+    padding-top: 64px;
+    padding-right: 40px;
+    padding-bottom: 64px;
+    padding-left: 40px;
+  }
+}
+
+.import-existing-site {
+  display: flex;
+  flex-direction: column;
+  gap: 32px 40px;
+  padding-top: 24px;
+  padding-right: 24px;
+  padding-bottom: 24px;
+  padding-left: 24px;
+  width: 100%;
+  max-width: 1120px;
+  background-color: oklch(0.13 0.006 250);
+  border: 1px solid oklch(1 0 0 / 0.16);
+  border-radius: 12px;
+}
+
+@media (min-width: 768px) {
+  .import-existing-site {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding-top: 40px;
+    padding-right: 40px;
+    padding-bottom: 40px;
+    padding-left: 40px;
+  }
+}
+
+.import-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 16px 0px;
+  width: 100%;
+  min-width: 0px;
+}
+
+.import-eyebrow {
+  font-size: 14px;
+  font-weight: 650;
+  color: oklch(0.71 0.125 215);
+}
+
+.import-heading {
+  max-width: 520px;
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -1px;
+}
+
+.import-body {
+  max-width: 560px;
+  font-size: 18px;
+  line-height: 1.6;
+  color: oklch(0.7 0.012 250);
+}
+
+.import-command {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0px 8px;
+  padding-top: 12px;
+  padding-right: 16px;
+  padding-bottom: 12px;
+  padding-left: 16px;
+  width: 100%;
+  background-color: oklch(0.165 0.008 250);
+  border: 1px solid oklch(1 0 0 / 0.09);
+  border-radius: 8px;
+  overflow: auto;
+}
+
+.import-prompt {
+  font-family: 'JetBrains Mono', system-ui, sans-serif;
+  font-size: 14px;
+  color: oklch(0.71 0.125 215);
+}
+
+.import-code {
+  font-family: 'JetBrains Mono', system-ui, sans-serif;
+  font-size: 14px;
+  color: oklch(0.95 0.006 250);
+}
+
+.import-details {
+  display: flex;
+  flex-direction: column;
+  gap: 16px 0px;
+  width: 100%;
+  min-width: 0px;
+}
+
+.one-responsive-frame {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 0px 12px;
+}
+
+.import-check {
+  font-size: 14px;
+  font-weight: 700;
+  color: oklch(0.71 0.125 215);
+}
+
+.import-point-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px 0px;
+}
+
+.import-point-title {
+  font-size: 16px;
+  font-weight: 650;
+}
+
+.import-point-body {
+  font-size: 14px;
+  line-height: 1.5;
+  color: oklch(0.7 0.012 250);
+}
+
+.assets-copied-in {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 0px 12px;
+}
+
+.import-check-2 {
+  font-size: 14px;
+  font-weight: 700;
+  color: oklch(0.71 0.125 215);
+}
+
+.import-point-copy-2 {
+  display: flex;
+  flex-direction: column;
+  gap: 4px 0px;
+}
+
+.import-point-title-2 {
+  font-size: 16px;
+  font-weight: 650;
+}
+
+.import-point-body-2 {
+  font-size: 14px;
+  line-height: 1.5;
+  color: oklch(0.7 0.012 250);
+}
+
+.a-visual-report {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 0px 12px;
+}
+
+.import-check-3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: oklch(0.71 0.125 215);
+}
+
+.import-point-copy-3 {
+  display: flex;
+  flex-direction: column;
+  gap: 4px 0px;
+}
+
+.import-point-title-3 {
+  font-size: 16px;
+  font-weight: 650;
+}
+
+.import-point-body-3 {
+  font-size: 14px;
+  line-height: 1.5;
+  color: oklch(0.7 0.012 250);
+}
+
 .dogfood-band {
   display: flex;
   flex-direction: column;
@@ -471,6 +1015,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
 .dogfood {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   gap: 0px 8px;
@@ -1015,50 +1560,129 @@ button, input, select, textarea { background: transparent; appearance: none; }
   <section class="hero-band">
     <div class="hero">
       <div class="eyebrow">
-        <span class="eyebrow-text">Design tool · human + agent, live</span>
+        <span class="eyebrow-text">Real DOM + CSS · shared with your agent</span>
       </div>
-      <h1 class="headline">Design tools for you and your coding agent.</h1>
-      <p class="subhead">Pitolet is a real-time design tool where you and your agent work side by side. Everything you draw is live DOM and CSS, ready to ship as code.</p>
+      <h1 class="headline">Design the interface. Ship the same thing.</h1>
+      <p class="subhead">Pitolet is a browser-based design canvas that you and your coding agent can edit together. It uses real web layout, so the design already behaves like the page you will ship.</p>
       <div class="ctas">
-        <a class="start-free" href="https://app.pitolet.com">Start free</a>
+        <a class="start-free" href="https://app.pitolet.com">Open Pitolet</a>
         <div class="npx-chip">
           <span class="chip-prompt">$</span>
           <code class="chip-command">npx pitolet</code>
         </div>
       </div>
+      <article class="editor-preview">
+        <div class="preview-toolbar">
+          <div class="window-controls">
+            <div class="close"></div>
+            <div class="minimize"></div>
+            <div class="expand"></div>
+          </div>
+          <span class="preview-document">Landing page · Pitolet</span>
+          <span class="agent-status">Agent connected</span>
+        </div>
+        <div class="preview-work-area">
+          <div class="preview-layers">
+            <span class="layers-label">Layers</span>
+            <span class="layer-landing">Landing</span>
+            <span class="layer-navigation">  Navigation</span>
+            <span class="layer-hero">  Hero</span>
+            <span class="layer-feature-cards">  Feature cards</span>
+          </div>
+          <div class="preview-canvas">
+            <span class="canvas-width">1440 px · Desktop</span>
+            <div class="preview-page">
+              <div class="preview-page-nav">
+                <span class="preview-logo">Northstar</span>
+                <span class="preview-nav-links">Product   Pricing   Log in</span>
+              </div>
+              <span class="preview-eyebrow">Built for small teams</span>
+              <h3 class="preview-headline">A calmer way to plan the week.</h3>
+              <p class="preview-body">Projects, decisions, and next steps in one clear workspace.</p>
+              <div class="preview-actions">
+                <span class="preview-primary">Start planning</span>
+                <span class="preview-secondary">See how it works</span>
+              </div>
+            </div>
+          </div>
+          <div class="preview-inspector">
+            <span class="inspector-label">Layout</span>
+            <span class="inspector-stack-vertical">Stack · Vertical</span>
+            <span class="inspector-gap-20">Gap · 20</span>
+            <span class="inspector-padding-24">Padding · 24</span>
+            <span class="inspector-width-fill">Width · Fill</span>
+          </div>
+        </div>
+      </article>
     </div>
   </section>
   <section class="props-band">
     <div class="props">
-      <h2 class="props-heading">One canvas. No fidelity gap.</h2>
+      <h2 class="props-heading">Design and code stop drifting.</h2>
       <div class="props-row">
-        <article class="you-re-editing-a-real-web-page">
+        <article class="the-browser-is-the-canvas">
           <div class="tick"></div>
-          <h3 class="card-title">You're editing a real web page</h3>
-          <p class="card-body">Every element is real DOM and real CSS. Your design renders the same way in production, because there is no translation step in between.</p>
+          <h3 class="card-title">The browser is the canvas</h3>
+          <p class="card-body">Use real flexbox, grid, breakpoints, and interaction states. Text wraps and layouts respond the way they do on the web.</p>
         </article>
-        <article class="your-agent-edits-the-same-canvas">
+        <article class="your-agent-works-beside-you">
           <div class="tick-2"></div>
-          <h3 class="card-title-2">Your agent edits the same canvas</h3>
-          <p class="card-body-2">Claude Code and Codex connect over MCP and work on the document you have open. They read the comments, show up as a cursor, and change tokens while you watch.</p>
+          <h3 class="card-title-2">Your agent works beside you</h3>
+          <p class="card-body-2">Connect any MCP client. Your agent can read the open document, follow comments, edit nodes, and update tokens while you watch.</p>
         </article>
-        <article class="ships-as-code">
+        <article class="the-output-is-already-code">
           <div class="tick-3"></div>
-          <h3 class="card-title-3">Ships as code</h3>
-          <p class="card-body-3">Export the same document to React and Tailwind or to plain HTML and CSS. It comes out as your tokens and your components, ready to drop into the repo.</p>
+          <h3 class="card-title-3">The output is already code</h3>
+          <p class="card-body-3">Export React and Tailwind or plain HTML and CSS from the same document. Your tokens, components, and responsive rules come with it.</p>
         </article>
+      </div>
+    </div>
+  </section>
+  <section class="import-band">
+    <div class="import-existing-site">
+      <div class="import-copy">
+        <span class="import-eyebrow">Import from a URL</span>
+        <h2 class="import-heading">Start with the site you already have.</h2>
+        <p class="import-body">Run one local command to capture an existing page at mobile, tablet, and desktop widths. Pitolet keeps the DOM it understands editable and preserves the rest as images.</p>
+        <div class="import-command">
+          <span class="import-prompt">$</span>
+          <code class="import-code">pitolet import http://localhost:3000 --to …</code>
+        </div>
+      </div>
+      <div class="import-details">
+        <div class="one-responsive-frame">
+          <span class="import-check">✓</span>
+          <div class="import-point-copy">
+            <h3 class="import-point-title">One responsive frame</h3>
+            <p class="import-point-body">Mobile styles form the base; wider layouts become breakpoint overrides.</p>
+          </div>
+        </div>
+        <div class="assets-copied-in">
+          <span class="import-check-2">✓</span>
+          <div class="import-point-copy-2">
+            <h3 class="import-point-title-2">Assets copied in</h3>
+            <p class="import-point-body-2">Images move into Pitolet’s asset store instead of staying hotlinked.</p>
+          </div>
+        </div>
+        <div class="a-visual-report">
+          <span class="import-check-3">✓</span>
+          <div class="import-point-copy-3">
+            <h3 class="import-point-title-3">A visual report</h3>
+            <p class="import-point-body-3">Source, imported, and difference images show where the result needs attention.</p>
+          </div>
+        </div>
       </div>
     </div>
   </section>
   <section class="dogfood-band">
     <div class="dogfood">
-      <p class="dogfood-text">This page is a Pitolet document, exported by Pitolet’s own codegen.</p>
-      <a class="dogfood-link" href="https://github.com/pitolet/pitolet/tree/main/site">See site/ on GitHub →</a>
+      <p class="dogfood-text">This page was designed in Pitolet and exported from the same document.</p>
+      <a class="dogfood-link" href="https://github.com/pitolet/pitolet/tree/main/site">Read the source →</a>
     </div>
   </section>
   <section class="pricing-band">
     <div class="pricing">
-      <h2 class="pricing-heading">Free to start, $12 a seat when you need a team.</h2>
+      <h2 class="pricing-heading">Use the cloud, or run it yourself.</h2>
       <div class="plans">
         <article class="plan-free">
           <div class="plan-head">
@@ -1068,7 +1692,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
             <span class="price">$0</span>
             <span class="price-unit">forever</span>
           </div>
-          <p class="plan-blurb">For solo work and trying Pitolet with your agent.</p>
+          <p class="plan-blurb">For personal projects and a first workspace.</p>
           <ul class="features">
             <li class="feature">
               <span class="check">—</span>
@@ -1095,7 +1719,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
             <span class="price-2">$12</span>
             <span class="price-unit-2">per user / mo</span>
           </div>
-          <p class="plan-blurb-2">For teams building day to day with their agents.</p>
+          <p class="plan-blurb-2">For teams that need more documents, history, and sharing.</p>
           <ul class="features-2">
             <li class="feature-4">
               <span class="check-4">—</span>
@@ -1123,7 +1747,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
             <span class="price-3">Free</span>
             <span class="price-unit-3">forever · AGPL</span>
           </div>
-          <p class="plan-blurb-3">Run it yourself. The core is open source.</p>
+          <p class="plan-blurb-3">Keep the files and server on your own machine.</p>
           <ul class="features-3">
             <li class="feature-8">
               <span class="check-8">—</span>

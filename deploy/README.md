@@ -1,8 +1,6 @@
 # Deploying Pitolet Cloud
 
-Single-VPS production stack: **Caddy** (TLS + static landing + reverse proxy),
-the **app** (`ghcr.io/pitolet/pitolet-cloud`), **Postgres 17**, and a **restic**
-backup sidecar. Once the box is set up, it all comes up with `docker compose up -d`.
+Pitolet Cloud runs on one VPS with Caddy, the app container, Postgres 17, and restic backups. After the initial setup, `docker compose up -d` starts the full stack.
 
 Target hosts:
 

@@ -1,8 +1,8 @@
 # Pitolet marketing plan
 
-Solo founder, small budget. The plan leans on channels where developers choose
-what they read, spends money only where it multiplies the free work, and uses
-the two strongest product stories:
+This is a solo-founder launch with a small budget. Focus on places where
+developers already look for tools, and spend only after an organic channel
+shows that it can bring the right users. The two clearest product stories are:
 
 1. **Coding agents work in the same shippable artifact.** Claude Code edits
    the canvas live over MCP, you can ⌘Z it, and the changed document remains

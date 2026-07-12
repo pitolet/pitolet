@@ -75,7 +75,8 @@ function renderNode(
   if (options.debugIds) attrs.push(`data-node-id="${node.id}"`);
   if (options.annotate) attrs.push(`data-ptl-id="${node.id}"`);
   for (const [key, value] of Object.entries(node.attrs ?? {})) {
-    attrs.push(`${jsxAttrName(key)}="${escapeAttr(value)}"`);
+    if (BOOLEAN_ATTRS.has(key)) attrs.push(jsxAttrName(key));
+    else attrs.push(`${jsxAttrName(key)}="${escapeAttr(value)}"`);
   }
 
   const tag = node.tag;
@@ -110,6 +111,8 @@ function renderNode(
     }
   }
 }
+
+const BOOLEAN_ATTRS = new Set(['checked', 'disabled', 'selected']);
 
 function renderInstance(
   doc: PitoletDocument,
@@ -189,6 +192,10 @@ function resolveDirection(node: PitoletNode): FlexDirection | undefined {
 function jsxAttrName(key: string): string {
   if (key === 'class') return 'className';
   if (key === 'for') return 'htmlFor';
+  if (key === 'colspan') return 'colSpan';
+  if (key === 'rowspan') return 'rowSpan';
+  if (key === 'autocomplete') return 'autoComplete';
+  if (key === 'inputmode') return 'inputMode';
   return key;
 }
 

@@ -22,9 +22,7 @@ export function Documents({ me, workspaceId }: { me: Me; workspaceId: string }) 
     return (
       <>
         <BackLink />
-        <div className="ptl-dash-empty">
-          Workspace not found, or you don't have access to it.
-        </div>
+        <div className="ptl-dash-empty">Workspace not found, or you don't have access to it.</div>
       </>
     );
   }
@@ -61,7 +59,7 @@ function DocumentsList({ ws }: { ws: WorkspaceSummary }) {
         <div>
           <h1 className="ptl-dash-title">{ws.name}</h1>
           <p className="ptl-dash-subtitle">
-            Documents · version history and sharing ·{' '}
+            Documents, history, and sharing ·{' '}
             <span style={{ textTransform: 'capitalize' }}>{ws.role}</span>
           </p>
         </div>

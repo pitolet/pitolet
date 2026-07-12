@@ -1,9 +1,9 @@
 {
   "name": "pitolet-workspace",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
-  "description": "A design tool for developers and AI coding agents where every element is real DOM and CSS.",
+  "description": "Design web interfaces with real DOM and CSS, work alongside a coding agent, and export React or HTML.",
   "bin": {
     "pitolet": "./bin/pitolet.js"
   },

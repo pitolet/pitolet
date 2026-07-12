@@ -5,7 +5,7 @@ and 4 each get a GIF cut from the video (insert-with-glow; token recolor).
 Keep replies on; the whole point is conversations with the MCP/Claude crowd.
 
 **1.**
-I built Pitolet: an open-source design tool that Claude Code can edit.
+I built Pitolet, an open-source design tool for web interfaces. Claude Code can edit the canvas with you.
 
 It connects over MCP, edits land on your canvas live, and ⌘Z undoes them.
 
@@ -36,8 +36,7 @@ in CI without any design-tool API, and a check_drift tool tells you when
 design and shipped code have diverged.
 
 **6.**
-The pitolet.com landing page is itself a Pitolet document, exported by
-Pitolet's codegen. The page is the fidelity proof.
+The pitolet.com landing page is a Pitolet document exported by Pitolet. You can inspect the source and the generated page in the repo.
 
 **7.**
 Core is AGPL-3.0 — self-host with `npx pitolet` or one Docker command.

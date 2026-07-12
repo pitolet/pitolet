@@ -129,6 +129,9 @@ const ALLOWED_TAGS = new Set([
   'div', 'section', 'header', 'footer', 'main', 'nav', 'aside', 'article', 'figure',
   'figcaption', 'form', 'ul', 'ol', 'li', 'button', 'a', 'label', 'span', 'p',
   'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'code', 'strong', 'em', 'img', 'input',
+  'textarea', 'select', 'option', 'fieldset', 'legend', 'table', 'caption', 'thead',
+  'tbody', 'tfoot', 'tr', 'td', 'th', 'details', 'summary',
+  'br', 'hr',
 ]);
 
 function safeTag(tag: string): string {
@@ -136,16 +139,25 @@ function safeTag(tag: string): string {
 }
 
 /** Only carry through inert attributes; navigation/interactivity stays dead in-editor. */
-function sanitizeAttrs(attrs?: Record<string, string>): Record<string, string> {
+function sanitizeAttrs(attrs?: Record<string, string>): Record<string, string | boolean> {
   if (!attrs) return {};
-  const out: Record<string, string> = {};
+  const out: Record<string, string | boolean> = {};
   for (const [key, value] of Object.entries(attrs)) {
     if (key === 'href') continue; // links stay inert on canvas
     if (key.startsWith('on')) continue;
-    out[key] = value;
+    const reactKey = REACT_ATTRS[key] ?? key;
+    out[reactKey] = ['checked', 'disabled', 'selected'].includes(key) ? true : value;
   }
   return out;
 }
+
+const REACT_ATTRS: Record<string, string> = {
+  for: 'htmlFor',
+  colspan: 'colSpan',
+  rowspan: 'rowSpan',
+  autocomplete: 'autoComplete',
+  inputmode: 'inputMode',
+};
 
 const TRANSPARENT_PIXEL =
   'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';

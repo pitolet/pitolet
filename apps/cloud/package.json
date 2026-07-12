@@ -1,10 +1,10 @@
 {
   "name": "@pitolet/cloud",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "license": "SEE LICENSE IN LICENSE",
-  "description": "Pitolet Cloud, the commercial hosted service. Source is visible, but not open source (see LICENSE).",
+  "description": "The hosted Pitolet service: accounts, workspaces, agent tokens, history, and sharing.",
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "dev:dashboard": "vite --config dashboard/vite.config.ts",

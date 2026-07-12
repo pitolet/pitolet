@@ -635,7 +635,7 @@
       "locked": false,
       "content": [
         {
-          "text": "A Figma alternative built for shipping web UI"
+          "text": "Use Figma to draw. Use Pitolet to build for the web."
         }
       ],
       "styles": {
@@ -684,7 +684,7 @@
       "locked": false,
       "content": [
         {
-          "text": "Figma is a great general-purpose design tool. But web interfaces still have to cross from Figma's layout model into CSS. Pitolet starts in the browser instead: the canvas is real DOM and CSS, and the same document exports as production code."
+          "text": "Figma is excellent for general design work. Web interfaces are different: the final layout lives in CSS. Pitolet starts there, using real DOM and CSS on the canvas and exporting code from the same document."
         }
       ],
       "styles": {
@@ -1005,7 +1005,7 @@
       "locked": false,
       "content": [
         {
-          "text": "Different foundations, different output"
+          "text": "The difference is where the design lives"
         }
       ],
       "styles": {
@@ -3837,7 +3837,7 @@
       "locked": false,
       "content": [
         {
-          "text": "Choose Figma for brand and illustration work, advanced vector editing, rich prototyping, mature multiplayer across large organizations, or its enormous plugin ecosystem. Pitolet is narrower by design: it is for the part of the job where the deliverable is a working web interface."
+          "text": "Choose Figma for brand work, illustration, advanced vector editing, rich prototypes, large multiplayer teams, or its plugin ecosystem. Pitolet has a narrower job: designing interfaces that will become working web pages."
         }
       ],
       "styles": {
@@ -4533,7 +4533,7 @@
       "locked": false,
       "content": [
         {
-          "text": "Try the browser-native path"
+          "text": "Design one page without rebuilding it later."
         }
       ],
       "styles": {
@@ -4561,7 +4561,7 @@
       "locked": false,
       "content": [
         {
-          "text": "Start free in the hosted app, or run npx pitolet locally. This comparison page is itself a Pitolet document exported by Pitolet’s code generator."
+          "text": "Open the hosted app for free, or run npx pitolet locally. This comparison page was designed in Pitolet and exported from its source document."
         }
       ],
       "styles": {

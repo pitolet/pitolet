@@ -1,4 +1,6 @@
+import { structuralProblems, validateDocument, type PitoletDocument } from '@pitolet/schema';
 import type http from 'node:http';
+import { isDeepStrictEqual } from 'node:util';
 import { handleAssetUpload, serveAsset } from './assets.js';
 import { ANONYMOUS, check, type AuthContext, type AuthHooks, type AuthzResult } from './auth/types.js';
 import { exportProject } from './export.js';
@@ -174,6 +176,58 @@ function handleApi(
     return;
   }
 
+  if (pathname === '/api/import' && req.method === 'GET') {
+    const result = check(auth, ctx, 'doc:create');
+    if (!result.ok) {
+      deny(res, ctx, result);
+      return;
+    }
+    json(200, {
+      ok: true,
+      maxDocumentBytes: MAX_IMPORT_BYTES,
+      maxNodes: MAX_IMPORT_NODES,
+      maxDepth: MAX_IMPORT_DEPTH,
+    });
+    return;
+  }
+
+  if (pathname === '/api/import' && req.method === 'POST') {
+    const result = check(auth, ctx, 'doc:create');
+    if (!result.ok) {
+      deny(res, ctx, result);
+      return;
+    }
+    readBody(req, MAX_IMPORT_BYTES)
+      .then(async (body) => {
+        try {
+          const document = validateImportedDocument(JSON.parse(body || '{}'));
+          const existing = store.get(document.id);
+          if (existing) {
+            if (isDeepStrictEqual(existing.doc, document)) {
+              json(200, { docId: document.id, name: document.name, duplicate: true });
+            } else {
+              json(409, { error: `document ${document.id} already exists` });
+            }
+            return;
+          }
+          await validateImportedAssets(document, adapter);
+          await adapter.saveNow(document, 0);
+          store.load(document, 0);
+          json(201, { docId: document.id, name: document.name, duplicate: false });
+        } catch (err) {
+          json(400, { error: err instanceof Error ? err.message.slice(0, 500) : 'invalid import' });
+        }
+      })
+      .catch((err) => {
+        if (!res.headersSent) {
+          json((err as BodyTooLargeError).tooLarge ? 413 : 400, {
+            error: err instanceof Error ? err.message : 'invalid import body',
+          });
+        }
+      });
+    return;
+  }
+
   // Export requires a local directory to write into — a capability only
   // some storage adapters provide.
   const exportBaseDir = adapter.exportBaseDir;
@@ -212,17 +266,87 @@ function handleApi(
   json(404, { error: 'not found' });
 }
 
-function readBody(req: http.IncomingMessage): Promise<string> {
+const MAX_IMPORT_BYTES = 25 * 1024 * 1024;
+const MAX_IMPORT_NODES = 10_000;
+const MAX_IMPORT_DEPTH = 100;
+
+interface BodyTooLargeError extends Error {
+  tooLarge?: true;
+}
+
+function readBody(req: http.IncomingMessage, limit = 10_000_000): Promise<string> {
   return new Promise((resolve, reject) => {
     let body = '';
+    let bytes = 0;
+    let tooLarge = false;
     req.on('data', (chunk) => {
+      if (tooLarge) return;
+      bytes += Buffer.byteLength(chunk);
       body += chunk;
-      if (body.length > 10_000_000) {
-        reject(new Error('body too large'));
-        req.destroy(); // stop buffering — the promise is already settled
+      if (bytes > limit) {
+        tooLarge = true;
+        body = '';
+        const err = new Error(`body exceeds ${limit} bytes`) as BodyTooLargeError;
+        err.tooLarge = true;
+        reject(err);
       }
     });
-    req.on('end', () => resolve(body));
+    req.on('end', () => {
+      if (!tooLarge) resolve(body);
+    });
     req.on('error', reject);
   });
+}
+
+function validateImportedDocument(raw: unknown): PitoletDocument {
+  const document = validateDocument(raw);
+  const nodeCount = Object.keys(document.nodes).length;
+  if (nodeCount > MAX_IMPORT_NODES) {
+    throw new Error(`import has ${nodeCount} nodes; maximum is ${MAX_IMPORT_NODES}`);
+  }
+  const problems = structuralProblems(document);
+  if (problems.length > 0) throw new Error(`invalid document structure: ${problems[0]}`);
+
+  const visited = new Set<string>();
+  const visiting = new Set<string>();
+  const visit = (nodeId: string, depth: number): void => {
+    if (depth > MAX_IMPORT_DEPTH) {
+      throw new Error(`import tree exceeds maximum depth ${MAX_IMPORT_DEPTH}`);
+    }
+    if (visiting.has(nodeId)) throw new Error(`import tree contains a cycle at ${nodeId}`);
+    if (visited.has(nodeId)) return;
+    const node = document.nodes[nodeId];
+    if (!node) return;
+    visiting.add(nodeId);
+    for (const childId of node.children) visit(childId, depth + 1);
+    visiting.delete(nodeId);
+    visited.add(nodeId);
+  };
+  for (const rootId of document.rootOrder) visit(rootId, 1);
+  for (const component of Object.values(document.components)) visit(component.rootId, 1);
+  if (visited.size !== nodeCount) {
+    throw new Error(`import contains ${nodeCount - visited.size} unreachable node(s)`);
+  }
+  return document;
+}
+
+async function validateImportedAssets(
+  document: PitoletDocument,
+  adapter: StorageAdapter,
+): Promise<void> {
+  const referenced = new Set<string>();
+  for (const node of Object.values(document.nodes)) {
+    if (node.type === 'image' && 'asset' in node.src) referenced.add(node.src.asset);
+    if (node.type === 'instance') {
+      for (const override of Object.values(node.overrides)) {
+        if (override.src && 'asset' in override.src) referenced.add(override.src.asset);
+      }
+    }
+  }
+  for (const assetId of referenced) {
+    if (!document.assets[assetId]) throw new Error(`image references undeclared asset ${assetId}`);
+    const stored = await adapter.assets.get(assetId);
+    if (!stored) throw new Error(`required asset ${assetId} was not uploaded`);
+    stored.stream.destroy();
+  }
 }

@@ -1,5 +1,6 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+import { attach, createDocument, createFrame } from '@pitolet/schema';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import net from 'node:net';
 import { tmpdir } from 'node:os';
@@ -575,5 +576,51 @@ describe('workspace lifecycle (idle eviction)', () => {
     expect(doc.rev).toBe(1);
     expect(doc.document.name).toBe('Acme Landing');
     ws.close();
+  });
+});
+
+describe('bulk website import authorization', () => {
+  it('allows the workspace write token and rejects read-only and foreign tokens', async () => {
+    const document = createDocument({ id: 'imp_cloud_isolation', name: 'Imported cloud page' });
+    attach(document, null, createFrame({ name: 'Imported page', width: 1440, height: 'auto' }));
+
+    const foreign = await api('/w/acme/api/import', {
+      method: 'POST',
+      token: globexToken,
+      body: document,
+    });
+    expect(foreign.status).toBe(401);
+
+    const readOnly = await api('/w/acme/api/import', {
+      method: 'POST',
+      token: acmeReadToken,
+      body: document,
+    });
+    expect(readOnly.status).toBe(403);
+
+    expect((await api('/w/acme/api/import', { token: globexToken })).status).toBe(401);
+    expect((await api('/w/acme/api/import', { token: acmeReadToken })).status).toBe(403);
+    expect((await api('/w/acme/api/import', { token: acmeToken })).status).toBe(200);
+
+    const viewer = await api('/w/acme/api/import', {
+      method: 'POST',
+      cookie: carol,
+      body: document,
+    });
+    expect(viewer.status).toBe(403);
+
+    const imported = await api('/w/acme/api/import', {
+      method: 'POST',
+      token: acmeToken,
+      body: document,
+    });
+    expect(imported.status).toBe(201);
+    expect(await imported.json()).toMatchObject({ docId: document.id, duplicate: false });
+
+    const row = await pgi.pool.query(
+      'SELECT workspace_id, name FROM documents WHERE id = $1',
+      [document.id],
+    );
+    expect(row.rows[0]).toMatchObject({ workspace_id: acme.id, name: 'Imported cloud page' });
   });
 });

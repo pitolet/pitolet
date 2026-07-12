@@ -1,23 +1,23 @@
 # Pitolet
 
-**A web-native design tool built for developers and AI coding agents.**
+**Design web interfaces with real DOM and CSS, alongside your coding agent.**
 
 [![Claude Code editing a Pitolet canvas live](marketing/gifs/pitolet-insert.gif)](pitolet-demo.mp4)
 
-*Claude Code adds a section over MCP. The edit appears live on the canvas and is undoable with ⌘Z. [Watch the narrated 44-second demo.](pitolet-demo.mp4)*
+*Claude Code adds a section over MCP. You can watch the edit happen and undo it with ⌘Z. [Watch the 44-second demo.](pitolet-demo.mp4)*
 
-Pitolet replaces Figma for web work. Every element you draw is a real DOM node with real CSS: flexbox and grid, the box model, text wrapping, fonts, all of it running in the browser's own layout engine. The design and the shipped code are the same artifact, so there's no handoff step to get wrong.
+Pitolet is a design tool for web interfaces. The canvas runs in the browser, so every layer uses real DOM and CSS: flexbox, grid, text wrapping, fonts, breakpoints, and interaction states. Exported code comes from that same document instead of a separate interpretation of it.
 
 ## Why Pitolet
 
 | Figma | Pitolet |
 |---|---|
-| Auto Layout ≈ flexbox (lossy) | Real flexbox/grid — the browser is the layout engine |
-| Responsive = N hand-drawn frames that drift | One frame, cascading breakpoint overrides; frame width drives the cascade |
-| Hover states = hand-drawn variant copies | Real `:hover`/`:focus`/`:active` layers that export as real CSS |
-| Dev Mode emits absolute-positioned px soup | Deterministic compiler → semantic React + Tailwind v4 |
-| MCP dumps 350k-token contexts | Token-cheap summaries; `get_design_as_code` is the canonical read |
-| Agents can only read | Agents read **and write** — edits appear live on the canvas, undoable in-editor |
+| A separate layout model | Real flexbox and grid, rendered by the browser |
+| Several frames for several widths | One frame with cascading breakpoint overrides |
+| Interaction mockups and variants | Real `:hover`, `:focus`, and `:active` styles |
+| Design-to-code translation | React, Tailwind, or HTML generated from the canvas document |
+| Design files stored behind an API | Readable JSON files that can live in your repo |
+| Agent access varies by tool and plan | Built-in read/write MCP with live, undoable edits |
 
 ## Quickstart
 
@@ -26,7 +26,7 @@ pnpm install
 pnpm dev          # server on :4517, editor on :5173
 ```
 
-Open http://localhost:5173. A sample document is created in `./pitolet/` — human-readable JSON that belongs in your repo and diffs cleanly in git.
+Open http://localhost:5173. Pitolet creates a sample document in `./pitolet/`. It is ordinary JSON, so you can keep it in the repo and review it like any other file.
 
 Production build:
 
@@ -79,7 +79,35 @@ Then, in Claude Code:
 
 > *"In Pitolet, add a testimonial section to the Landing frame using the design tokens."*
 
-The agent's edits go through the same validated patch pipeline as human edits. They appear live on the open canvas, with a glow flash, an "Agent editing" badge, and an activity-feed entry. You can undo them with ⌘Z, and they persist to disk.
+### Import an existing site
+
+Use the CLI when you already have a page and want it on the Pitolet canvas. Normal agent editing still happens over MCP. The import command runs locally, captures the page, and sends one responsive document to your own server or a cloud workspace:
+
+```bash
+# Self-hosted (no auth)
+pitolet import http://localhost:3000 --to http://localhost:4517
+
+# Pitolet Cloud (use a write-scoped agent token)
+PITOLET_TOKEN=ptl_... pitolet import http://localhost:3000 \
+  --to https://app.pitolet.com/w/your-workspace
+```
+
+By default, Pitolet captures the page at 375, 768, and 1440 pixels. The mobile styles become the base and wider layouts become breakpoint overrides. Images are copied into Pitolet. Regions it cannot edit safely—such as canvas, SVG, iframe, and video content—are kept as images and listed in the report.
+
+Useful options:
+
+```bash
+pitolet import https://example.com/dashboard \
+  --to http://localhost:4517 \
+  --selector '#app' \
+  --storage-state ./playwright-state.json \
+  --wait-for '[data-ready=true]' \
+  --report-dir ./import-report
+```
+
+The first import downloads a compatible Chromium build and caches it. Each run saves source, imported, and difference images for every width. The importer recreates appearance and responsive structure; it does not copy application logic, routing, event handlers, or live data.
+
+Agent edits use the same validation and history as edits made in the UI. They appear on the open canvas, show a short highlight, and can be undone with ⌘Z.
 
 **Read**: `list_documents`, `list_frames`, `get_node`, `get_selection`, `get_design_as_code`, `get_tokens`, `get_screenshot` (uses the open editor; falls back to headless Playwright if installed).
 **Write**: `create_frame`, `insert_nodes`, `update_node`, `delete_nodes`, `set_tokens`, `set_selection`, `create_document`.
@@ -134,9 +162,9 @@ Documents live in `./pitolet/*.pitolet.json`. Edit them externally (git checkout
 
 ## Pitolet Cloud
 
-[app.pitolet.com](https://app.pitolet.com) is the hosted version. It adds teams and workspaces, a stable MCP endpoint per workspace with scoped agent tokens (your coding agent connects from anywhere, with no local server or tunnel), read-only share links, and version history with restore. There's a free tier, and the cloud code lives in [apps/cloud](apps/cloud) under a commercial license.
+[app.pitolet.com](https://app.pitolet.com) is the hosted version. It adds team workspaces, scoped agent tokens, read-only share links, and version history. Each workspace has a stable MCP endpoint, so your agent can connect without a local server or tunnel. The free tier is available without self-hosting; the cloud code lives in [apps/cloud](apps/cloud) under a commercial license.
 
-The [pitolet.com](https://pitolet.com) landing page is itself a Pitolet document, exported by this repo's codegen — see [site/](site).
+The [pitolet.com](https://pitolet.com) landing page is a Pitolet document exported from [site/](site).
 
 ## License
 

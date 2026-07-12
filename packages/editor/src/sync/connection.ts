@@ -72,7 +72,7 @@ export class Connection {
     // We got here with documents → auth is satisfied. Clear any prior flag
     // (e.g. after a successful login retry).
     useEditor.getState().setAuthRequired(false);
-    const first = documents[0];
+    const first = initialDocument(documents, window.location.search);
     if (!first) {
       useEditor
         .getState()
@@ -196,3 +196,12 @@ export class Connection {
 }
 
 export const connection = new Connection();
+
+/** Resolve an import/deep-link document while preserving the historic first-document fallback. */
+export function initialDocument<T extends { id: string }>(
+  documents: T[],
+  search: string,
+): T | undefined {
+  const requestedDocumentId = new URLSearchParams(search).get('document');
+  return documents.find((document) => document.id === requestedDocumentId) ?? documents[0];
+}

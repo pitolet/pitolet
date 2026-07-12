@@ -8,15 +8,13 @@ pattern) so the page itself stays part of the pitch. Target keyword:
 
 ## H1
 
-A Figma alternative built for shipping web UI
+Use Figma to draw. Use Pitolet to build for the web.
 
 ## Intro
 
-Figma is a great drawing tool. But if what you're making is a web interface,
-you pay a translation tax: its layout engine approximates CSS, so everything
-you design gets rebuilt in code, and the two drift apart from day one.
-Pitolet removes the translation. The canvas renders with the browser's own
-layout engine, and the file you design is the file that ships.
+Figma is excellent for general design work. Web interfaces are different: the
+final layout lives in CSS. Pitolet starts there, using real DOM and CSS on the
+canvas and exporting code from the same document.
 
 ## Comparison table
 
@@ -38,10 +36,9 @@ Figma capabilities and USD pricing checked July 2026 against the official
 
 ## When Figma is still the better tool
 
-Honesty section, keep it. Brand and illustration work, print, complex vector
-editing, mature multiplayer with hundreds of collaborators, and a huge plugin
-ecosystem: Figma wins those today. Pitolet is for the part of the job where
-the deliverable is a working web interface.
+Choose Figma for brand work, illustration, print, complex vector editing,
+large multiplayer teams, or its plugin ecosystem. Pitolet has a narrower job:
+designing interfaces that will become working web pages.
 
 ## How teams use it
 

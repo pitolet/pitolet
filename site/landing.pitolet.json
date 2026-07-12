@@ -14,10 +14,11 @@
       "children": [
         "n1",
         "n11",
-        "n22",
-        "n38",
-        "n42",
-        "n102"
+        "n55",
+        "n71",
+        "n96",
+        "n100",
+        "n160"
       ],
       "tag": "div",
       "visible": true,
@@ -482,7 +483,7 @@
           "width": "fill",
           "padding": {
             "top": {
-              "$token": "spacing.16"
+              "$token": "spacing.12"
             },
             "right": {
               "$token": "spacing.5"
@@ -493,13 +494,38 @@
             "left": {
               "$token": "spacing.5"
             }
-          }
+          },
+          "fills": [
+            {
+              "type": "radial",
+              "stops": [
+                {
+                  "color": {
+                    "space": "oklch",
+                    "l": 0.22,
+                    "c": 0.045,
+                    "h": 215
+                  },
+                  "position": 0
+                },
+                {
+                  "color": {
+                    "space": "oklch",
+                    "l": 0.13,
+                    "c": 0.006,
+                    "h": 250
+                  },
+                  "position": 0.72
+                }
+              ]
+            }
+          ]
         },
         "breakpoints": {
           "md": {
             "padding": {
               "top": {
-                "$token": "spacing.24"
+                "$token": "spacing.20"
               },
               "right": {
                 "$token": "spacing.10"
@@ -524,7 +550,8 @@
         "n13",
         "n15",
         "n16",
-        "n17"
+        "n17",
+        "n22"
       ],
       "tag": "div",
       "visible": true,
@@ -535,7 +562,7 @@
           "flexDirection": "column",
           "width": "fill",
           "maxWidth": {
-            "value": 880,
+            "value": 1120,
             "unit": "px"
           },
           "alignItems": "center",
@@ -636,13 +663,7 @@
       "locked": false,
       "content": [
         {
-          "text": "Design tool "
-        },
-        {
-          "text": "·"
-        },
-        {
-          "text": " human + agent, live"
+          "text": "Real DOM + CSS · shared with your agent"
         }
       ],
       "styles": {
@@ -672,7 +693,7 @@
       "locked": false,
       "content": [
         {
-          "text": "Design tools for you and your coding agent."
+          "text": "Design the interface. Ship the same thing."
         }
       ],
       "styles": {
@@ -688,7 +709,7 @@
           "lineHeight": 1.05,
           "textAlign": "center",
           "maxWidth": {
-            "value": 760,
+            "value": 900,
             "unit": "px"
           }
         },
@@ -721,7 +742,7 @@
       "locked": false,
       "content": [
         {
-          "text": "Pitolet is a real-time design tool where you and your agent work side by side. Everything you draw is live DOM and CSS, ready to ship as code."
+          "text": "Pitolet is a browser-based design canvas that you and your coding agent can edit together. It uses real web layout, so the design already behaves like the page you will ship."
         }
       ],
       "styles": {
@@ -734,7 +755,7 @@
           },
           "textAlign": "center",
           "maxWidth": {
-            "value": 620,
+            "value": 700,
             "unit": "px"
           },
           "lineHeight": 1.55
@@ -756,7 +777,7 @@
       "styles": {
         "base": {
           "display": "flex",
-          "flexDirection": "row",
+          "flexDirection": "column",
           "alignItems": "center",
           "gap": {
             "row": {
@@ -783,6 +804,11 @@
               "unit": "px"
             }
           }
+        },
+        "breakpoints": {
+          "sm": {
+            "flexDirection": "row"
+          }
         }
       }
     },
@@ -797,7 +823,7 @@
       "locked": false,
       "content": [
         {
-          "text": "Start free"
+          "text": "Open Pitolet"
         }
       ],
       "styles": {
@@ -998,10 +1024,1625 @@
     "n22": {
       "id": "n22",
       "type": "element",
+      "name": "Editor Preview",
+      "parent": "n12",
+      "children": [
+        "n23",
+        "n30"
+      ],
+      "tag": "article",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "width": "fill",
+          "maxWidth": {
+            "value": 1040,
+            "unit": "px"
+          },
+          "margin": {
+            "top": {
+              "$token": "spacing.6"
+            },
+            "right": {
+              "value": 0,
+              "unit": "px"
+            },
+            "bottom": {
+              "value": 0,
+              "unit": "px"
+            },
+            "left": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.surface"
+              }
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border-strong"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.lg"
+            },
+            "tr": {
+              "$token": "radius.lg"
+            },
+            "br": {
+              "$token": "radius.lg"
+            },
+            "bl": {
+              "$token": "radius.lg"
+            }
+          },
+          "overflow": "hidden",
+          "shadows": [
+            {
+              "x": 0,
+              "y": 24,
+              "blur": 64,
+              "spread": -24,
+              "color": {
+                "space": "oklch",
+                "l": 0.02,
+                "c": 0.01,
+                "h": 250,
+                "alpha": 0.72
+              }
+            }
+          ]
+        }
+      }
+    },
+    "n23": {
+      "id": "n23",
+      "type": "element",
+      "name": "Preview Toolbar",
+      "parent": "n22",
+      "children": [
+        "n24",
+        "n28",
+        "n29"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "center",
+          "justifyContent": "between",
+          "padding": {
+            "top": {
+              "$token": "spacing.3"
+            },
+            "bottom": {
+              "$token": "spacing.3"
+            },
+            "left": {
+              "$token": "spacing.4"
+            },
+            "right": {
+              "$token": "spacing.4"
+            }
+          },
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border"
+            },
+            "sides": {
+              "bottom": true
+            }
+          }
+        }
+      }
+    },
+    "n24": {
+      "id": "n24",
+      "type": "element",
+      "name": "Window Controls",
+      "parent": "n23",
+      "children": [
+        "n25",
+        "n26",
+        "n27"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.2"
+            }
+          }
+        }
+      }
+    },
+    "n25": {
+      "id": "n25",
+      "type": "element",
+      "name": "Close",
+      "parent": "n24",
+      "children": [],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "width": {
+            "value": 8,
+            "unit": "px"
+          },
+          "height": {
+            "value": 8,
+            "unit": "px"
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.subtle-foreground"
+              }
+            }
+          ],
+          "radius": {
+            "tl": {
+              "$token": "radius.full"
+            },
+            "tr": {
+              "$token": "radius.full"
+            },
+            "br": {
+              "$token": "radius.full"
+            },
+            "bl": {
+              "$token": "radius.full"
+            }
+          },
+          "opacity": 0.45
+        }
+      }
+    },
+    "n26": {
+      "id": "n26",
+      "type": "element",
+      "name": "Minimize",
+      "parent": "n24",
+      "children": [],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "width": {
+            "value": 8,
+            "unit": "px"
+          },
+          "height": {
+            "value": 8,
+            "unit": "px"
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.subtle-foreground"
+              }
+            }
+          ],
+          "radius": {
+            "tl": {
+              "$token": "radius.full"
+            },
+            "tr": {
+              "$token": "radius.full"
+            },
+            "br": {
+              "$token": "radius.full"
+            },
+            "bl": {
+              "$token": "radius.full"
+            }
+          },
+          "opacity": 0.45
+        }
+      }
+    },
+    "n27": {
+      "id": "n27",
+      "type": "element",
+      "name": "Expand",
+      "parent": "n24",
+      "children": [],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "width": {
+            "value": 8,
+            "unit": "px"
+          },
+          "height": {
+            "value": 8,
+            "unit": "px"
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.primary"
+              }
+            }
+          ],
+          "radius": {
+            "tl": {
+              "$token": "radius.full"
+            },
+            "tr": {
+              "$token": "radius.full"
+            },
+            "br": {
+              "$token": "radius.full"
+            },
+            "bl": {
+              "$token": "radius.full"
+            }
+          },
+          "opacity": 0.9
+        }
+      }
+    },
+    "n28": {
+      "id": "n28",
+      "type": "text",
+      "name": "Preview Document",
+      "parent": "n23",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Landing page · Pitolet"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "color": {
+            "$token": "color.subtle-foreground"
+          }
+        }
+      }
+    },
+    "n29": {
+      "id": "n29",
+      "type": "text",
+      "name": "Agent Status",
+      "parent": "n23",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Agent connected"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "fontWeight": 600,
+          "color": {
+            "$token": "color.primary"
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.background"
+              }
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border"
+            }
+          },
+          "padding": {
+            "top": {
+              "value": 3,
+              "unit": "px"
+            },
+            "bottom": {
+              "value": 3,
+              "unit": "px"
+            },
+            "left": {
+              "$token": "spacing.2"
+            },
+            "right": {
+              "$token": "spacing.2"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.full"
+            },
+            "tr": {
+              "$token": "radius.full"
+            },
+            "br": {
+              "$token": "radius.full"
+            },
+            "bl": {
+              "$token": "radius.full"
+            }
+          }
+        }
+      }
+    },
+    "n30": {
+      "id": "n30",
+      "type": "element",
+      "name": "Preview Work Area",
+      "parent": "n22",
+      "children": [
+        "n31",
+        "n37",
+        "n49"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "width": "fill",
+          "minHeight": {
+            "value": 430,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n31": {
+      "id": "n31",
+      "type": "element",
+      "name": "Preview Layers",
+      "parent": "n30",
+      "children": [
+        "n32",
+        "n33",
+        "n34",
+        "n35",
+        "n36"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "none",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.3"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "width": {
+            "value": 180,
+            "unit": "px"
+          },
+          "padding": {
+            "top": {
+              "$token": "spacing.4"
+            },
+            "right": {
+              "$token": "spacing.4"
+            },
+            "bottom": {
+              "$token": "spacing.4"
+            },
+            "left": {
+              "$token": "spacing.4"
+            }
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.background"
+              }
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border"
+            },
+            "sides": {
+              "right": true
+            }
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "display": "flex"
+          }
+        }
+      }
+    },
+    "n32": {
+      "id": "n32",
+      "type": "text",
+      "name": "Layers Label",
+      "parent": "n31",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Layers"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "fontWeight": 650,
+          "color": {
+            "$token": "color.muted-foreground"
+          }
+        }
+      }
+    },
+    "n33": {
+      "id": "n33",
+      "type": "text",
+      "name": "Layer Landing",
+      "parent": "n31",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Landing"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "color": {
+            "$token": "color.subtle-foreground"
+          },
+          "padding": {
+            "top": {
+              "$token": "spacing.1"
+            },
+            "bottom": {
+              "$token": "spacing.1"
+            },
+            "left": {
+              "$token": "spacing.2"
+            },
+            "right": {
+              "$token": "spacing.2"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.sm"
+            },
+            "tr": {
+              "$token": "radius.sm"
+            },
+            "br": {
+              "$token": "radius.sm"
+            },
+            "bl": {
+              "$token": "radius.sm"
+            }
+          }
+        }
+      }
+    },
+    "n34": {
+      "id": "n34",
+      "type": "text",
+      "name": "Layer Navigation",
+      "parent": "n31",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "  Navigation"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "color": {
+            "$token": "color.subtle-foreground"
+          },
+          "padding": {
+            "top": {
+              "$token": "spacing.1"
+            },
+            "bottom": {
+              "$token": "spacing.1"
+            },
+            "left": {
+              "$token": "spacing.2"
+            },
+            "right": {
+              "$token": "spacing.2"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.sm"
+            },
+            "tr": {
+              "$token": "radius.sm"
+            },
+            "br": {
+              "$token": "radius.sm"
+            },
+            "bl": {
+              "$token": "radius.sm"
+            }
+          }
+        }
+      }
+    },
+    "n35": {
+      "id": "n35",
+      "type": "text",
+      "name": "Layer Hero",
+      "parent": "n31",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "  Hero"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "color": {
+            "$token": "color.primary"
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.surface"
+              }
+            }
+          ],
+          "padding": {
+            "top": {
+              "$token": "spacing.1"
+            },
+            "bottom": {
+              "$token": "spacing.1"
+            },
+            "left": {
+              "$token": "spacing.2"
+            },
+            "right": {
+              "$token": "spacing.2"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.sm"
+            },
+            "tr": {
+              "$token": "radius.sm"
+            },
+            "br": {
+              "$token": "radius.sm"
+            },
+            "bl": {
+              "$token": "radius.sm"
+            }
+          }
+        }
+      }
+    },
+    "n36": {
+      "id": "n36",
+      "type": "text",
+      "name": "Layer Feature cards",
+      "parent": "n31",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "  Feature cards"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "color": {
+            "$token": "color.subtle-foreground"
+          },
+          "padding": {
+            "top": {
+              "$token": "spacing.1"
+            },
+            "bottom": {
+              "$token": "spacing.1"
+            },
+            "left": {
+              "$token": "spacing.2"
+            },
+            "right": {
+              "$token": "spacing.2"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.sm"
+            },
+            "tr": {
+              "$token": "radius.sm"
+            },
+            "br": {
+              "$token": "radius.sm"
+            },
+            "bl": {
+              "$token": "radius.sm"
+            }
+          }
+        }
+      }
+    },
+    "n37": {
+      "id": "n37",
+      "type": "element",
+      "name": "Preview Canvas",
+      "parent": "n30",
+      "children": [
+        "n38",
+        "n39"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "alignItems": "center",
+          "gap": {
+            "row": {
+              "$token": "spacing.3"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "width": "fill",
+          "minWidth": {
+            "value": 0,
+            "unit": "px"
+          },
+          "padding": {
+            "top": {
+              "$token": "spacing.5"
+            },
+            "right": {
+              "$token": "spacing.5"
+            },
+            "bottom": {
+              "$token": "spacing.5"
+            },
+            "left": {
+              "$token": "spacing.5"
+            }
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.background"
+              }
+            }
+          ]
+        },
+        "breakpoints": {
+          "md": {
+            "padding": {
+              "top": {
+                "$token": "spacing.8"
+              },
+              "right": {
+                "$token": "spacing.8"
+              },
+              "bottom": {
+                "$token": "spacing.8"
+              },
+              "left": {
+                "$token": "spacing.8"
+              }
+            }
+          }
+        }
+      }
+    },
+    "n38": {
+      "id": "n38",
+      "type": "text",
+      "name": "Canvas Width",
+      "parent": "n37",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "1440 px · Desktop"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "color": {
+            "$token": "color.subtle-foreground"
+          }
+        }
+      }
+    },
+    "n39": {
+      "id": "n39",
+      "type": "element",
+      "name": "Preview Page",
+      "parent": "n37",
+      "children": [
+        "n40",
+        "n43",
+        "n44",
+        "n45",
+        "n46"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.5"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "width": "fill",
+          "maxWidth": {
+            "value": 560,
+            "unit": "px"
+          },
+          "padding": {
+            "top": {
+              "$token": "spacing.6"
+            },
+            "right": {
+              "$token": "spacing.6"
+            },
+            "bottom": {
+              "$token": "spacing.6"
+            },
+            "left": {
+              "$token": "spacing.6"
+            }
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.surface-2"
+              }
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.primary"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.md"
+            },
+            "tr": {
+              "$token": "radius.md"
+            },
+            "br": {
+              "$token": "radius.md"
+            },
+            "bl": {
+              "$token": "radius.md"
+            }
+          },
+          "shadows": [
+            {
+              "x": 0,
+              "y": 0,
+              "blur": 0,
+              "spread": 3,
+              "color": {
+                "space": "oklch",
+                "l": 0.71,
+                "c": 0.125,
+                "h": 215,
+                "alpha": 0.12
+              }
+            }
+          ]
+        }
+      }
+    },
+    "n40": {
+      "id": "n40",
+      "type": "element",
+      "name": "Preview Page Nav",
+      "parent": "n39",
+      "children": [
+        "n41",
+        "n42"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "center",
+          "justifyContent": "between"
+        }
+      }
+    },
+    "n41": {
+      "id": "n41",
+      "type": "text",
+      "name": "Preview Logo",
+      "parent": "n40",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Northstar"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "fontWeight": 700
+        }
+      }
+    },
+    "n42": {
+      "id": "n42",
+      "type": "text",
+      "name": "Preview Nav Links",
+      "parent": "n40",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Product   Pricing   Log in"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          }
+        }
+      }
+    },
+    "n43": {
+      "id": "n43",
+      "type": "text",
+      "name": "Preview Eyebrow",
+      "parent": "n39",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Built for small teams"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "fontWeight": 650,
+          "color": {
+            "$token": "color.primary"
+          }
+        }
+      }
+    },
+    "n44": {
+      "id": "n44",
+      "type": "text",
+      "name": "Preview Headline",
+      "parent": "n39",
+      "children": [],
+      "tag": "h3",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "A calmer way to plan the week."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.3xl"
+          },
+          "fontWeight": 700,
+          "letterSpacing": {
+            "value": -0.8,
+            "unit": "px"
+          },
+          "lineHeight": 1.1,
+          "maxWidth": {
+            "value": 390,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n45": {
+      "id": "n45",
+      "type": "text",
+      "name": "Preview Body",
+      "parent": "n39",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Projects, decisions, and next steps in one clear workspace."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "maxWidth": {
+            "value": 390,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n46": {
+      "id": "n46",
+      "type": "element",
+      "name": "Preview Actions",
+      "parent": "n39",
+      "children": [
+        "n47",
+        "n48"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.2"
+            }
+          }
+        }
+      }
+    },
+    "n47": {
+      "id": "n47",
+      "type": "text",
+      "name": "Preview Primary",
+      "parent": "n46",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Start planning"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "fontWeight": 650,
+          "color": {
+            "$token": "color.primary-foreground"
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.primary"
+              }
+            }
+          ],
+          "padding": {
+            "top": {
+              "$token": "spacing.2"
+            },
+            "bottom": {
+              "$token": "spacing.2"
+            },
+            "left": {
+              "$token": "spacing.3"
+            },
+            "right": {
+              "$token": "spacing.3"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.sm"
+            },
+            "tr": {
+              "$token": "radius.sm"
+            },
+            "br": {
+              "$token": "radius.sm"
+            },
+            "bl": {
+              "$token": "radius.sm"
+            }
+          }
+        }
+      }
+    },
+    "n48": {
+      "id": "n48",
+      "type": "text",
+      "name": "Preview Secondary",
+      "parent": "n46",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "See how it works"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border-strong"
+            }
+          },
+          "padding": {
+            "top": {
+              "$token": "spacing.2"
+            },
+            "bottom": {
+              "$token": "spacing.2"
+            },
+            "left": {
+              "$token": "spacing.3"
+            },
+            "right": {
+              "$token": "spacing.3"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.sm"
+            },
+            "tr": {
+              "$token": "radius.sm"
+            },
+            "br": {
+              "$token": "radius.sm"
+            },
+            "bl": {
+              "$token": "radius.sm"
+            }
+          }
+        }
+      }
+    },
+    "n49": {
+      "id": "n49",
+      "type": "element",
+      "name": "Preview Inspector",
+      "parent": "n30",
+      "children": [
+        "n50",
+        "n51",
+        "n52",
+        "n53",
+        "n54"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "none",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.4"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "width": {
+            "value": 210,
+            "unit": "px"
+          },
+          "padding": {
+            "top": {
+              "$token": "spacing.4"
+            },
+            "right": {
+              "$token": "spacing.4"
+            },
+            "bottom": {
+              "$token": "spacing.4"
+            },
+            "left": {
+              "$token": "spacing.4"
+            }
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.background"
+              }
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border"
+            },
+            "sides": {
+              "left": true
+            }
+          }
+        },
+        "breakpoints": {
+          "lg": {
+            "display": "flex"
+          }
+        }
+      }
+    },
+    "n50": {
+      "id": "n50",
+      "type": "text",
+      "name": "Inspector Label",
+      "parent": "n49",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Layout"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "fontWeight": 650,
+          "color": {
+            "$token": "color.muted-foreground"
+          }
+        }
+      }
+    },
+    "n51": {
+      "id": "n51",
+      "type": "text",
+      "name": "Inspector Stack · Vertical",
+      "parent": "n49",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Stack · Vertical"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontFamily": {
+            "$token": "typography.fontFamily.mono"
+          },
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "color": {
+            "$token": "color.subtle-foreground"
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.surface"
+              }
+            }
+          ],
+          "padding": {
+            "top": {
+              "$token": "spacing.2"
+            },
+            "bottom": {
+              "$token": "spacing.2"
+            },
+            "left": {
+              "$token": "spacing.3"
+            },
+            "right": {
+              "$token": "spacing.3"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.sm"
+            },
+            "tr": {
+              "$token": "radius.sm"
+            },
+            "br": {
+              "$token": "radius.sm"
+            },
+            "bl": {
+              "$token": "radius.sm"
+            }
+          }
+        }
+      }
+    },
+    "n52": {
+      "id": "n52",
+      "type": "text",
+      "name": "Inspector Gap · 20",
+      "parent": "n49",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Gap · 20"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontFamily": {
+            "$token": "typography.fontFamily.mono"
+          },
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "color": {
+            "$token": "color.subtle-foreground"
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.surface"
+              }
+            }
+          ],
+          "padding": {
+            "top": {
+              "$token": "spacing.2"
+            },
+            "bottom": {
+              "$token": "spacing.2"
+            },
+            "left": {
+              "$token": "spacing.3"
+            },
+            "right": {
+              "$token": "spacing.3"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.sm"
+            },
+            "tr": {
+              "$token": "radius.sm"
+            },
+            "br": {
+              "$token": "radius.sm"
+            },
+            "bl": {
+              "$token": "radius.sm"
+            }
+          }
+        }
+      }
+    },
+    "n53": {
+      "id": "n53",
+      "type": "text",
+      "name": "Inspector Padding · 24",
+      "parent": "n49",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Padding · 24"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontFamily": {
+            "$token": "typography.fontFamily.mono"
+          },
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "color": {
+            "$token": "color.subtle-foreground"
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.surface"
+              }
+            }
+          ],
+          "padding": {
+            "top": {
+              "$token": "spacing.2"
+            },
+            "bottom": {
+              "$token": "spacing.2"
+            },
+            "left": {
+              "$token": "spacing.3"
+            },
+            "right": {
+              "$token": "spacing.3"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.sm"
+            },
+            "tr": {
+              "$token": "radius.sm"
+            },
+            "br": {
+              "$token": "radius.sm"
+            },
+            "bl": {
+              "$token": "radius.sm"
+            }
+          }
+        }
+      }
+    },
+    "n54": {
+      "id": "n54",
+      "type": "text",
+      "name": "Inspector Width · Fill",
+      "parent": "n49",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Width · Fill"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontFamily": {
+            "$token": "typography.fontFamily.mono"
+          },
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "color": {
+            "$token": "color.subtle-foreground"
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.surface"
+              }
+            }
+          ],
+          "padding": {
+            "top": {
+              "$token": "spacing.2"
+            },
+            "bottom": {
+              "$token": "spacing.2"
+            },
+            "left": {
+              "$token": "spacing.3"
+            },
+            "right": {
+              "$token": "spacing.3"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.sm"
+            },
+            "tr": {
+              "$token": "radius.sm"
+            },
+            "br": {
+              "$token": "radius.sm"
+            },
+            "bl": {
+              "$token": "radius.sm"
+            }
+          }
+        }
+      }
+    },
+    "n55": {
+      "id": "n55",
+      "type": "element",
       "name": "Props Band",
       "parent": "n0",
       "children": [
-        "n23"
+        "n56"
       ],
       "tag": "section",
       "visible": true,
@@ -1047,14 +2688,14 @@
         }
       }
     },
-    "n23": {
-      "id": "n23",
+    "n56": {
+      "id": "n56",
       "type": "element",
       "name": "Props",
-      "parent": "n22",
+      "parent": "n55",
       "children": [
-        "n24",
-        "n25"
+        "n57",
+        "n58"
       ],
       "tag": "div",
       "visible": true,
@@ -1080,18 +2721,18 @@
         }
       }
     },
-    "n24": {
-      "id": "n24",
+    "n57": {
+      "id": "n57",
       "type": "text",
       "name": "Props Heading",
-      "parent": "n23",
+      "parent": "n56",
       "children": [],
       "tag": "h2",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "One canvas. No fidelity gap."
+          "text": "Design and code stop drifting."
         }
       ],
       "styles": {
@@ -1113,15 +2754,15 @@
         }
       }
     },
-    "n25": {
-      "id": "n25",
+    "n58": {
+      "id": "n58",
       "type": "element",
       "name": "Props Row",
-      "parent": "n23",
+      "parent": "n56",
       "children": [
-        "n26",
-        "n30",
-        "n34"
+        "n59",
+        "n63",
+        "n67"
       ],
       "tag": "div",
       "visible": true,
@@ -1149,15 +2790,15 @@
         }
       }
     },
-    "n26": {
-      "id": "n26",
+    "n59": {
+      "id": "n59",
       "type": "element",
-      "name": "You're editing a real web page",
-      "parent": "n25",
+      "name": "The browser is the canvas",
+      "parent": "n58",
       "children": [
-        "n27",
-        "n28",
-        "n29"
+        "n60",
+        "n61",
+        "n62"
       ],
       "tag": "article",
       "visible": true,
@@ -1225,11 +2866,11 @@
         }
       }
     },
-    "n27": {
-      "id": "n27",
+    "n60": {
+      "id": "n60",
       "type": "element",
       "name": "Tick",
-      "parent": "n26",
+      "parent": "n59",
       "children": [],
       "tag": "div",
       "visible": true,
@@ -1271,18 +2912,18 @@
         }
       }
     },
-    "n28": {
-      "id": "n28",
+    "n61": {
+      "id": "n61",
       "type": "text",
       "name": "Card Title",
-      "parent": "n26",
+      "parent": "n59",
       "children": [],
       "tag": "h3",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "You're editing a real web page"
+          "text": "The browser is the canvas"
         }
       ],
       "styles": {
@@ -1298,18 +2939,18 @@
         }
       }
     },
-    "n29": {
-      "id": "n29",
+    "n62": {
+      "id": "n62",
       "type": "text",
       "name": "Card Body",
-      "parent": "n26",
+      "parent": "n59",
       "children": [],
       "tag": "p",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "Every element is real DOM and real CSS. Your design renders the same way in production, because there is no translation step in between."
+          "text": "Use real flexbox, grid, breakpoints, and interaction states. Text wraps and layouts respond the way they do on the web."
         }
       ],
       "styles": {
@@ -1324,15 +2965,15 @@
         }
       }
     },
-    "n30": {
-      "id": "n30",
+    "n63": {
+      "id": "n63",
       "type": "element",
-      "name": "Your agent edits the same canvas",
-      "parent": "n25",
+      "name": "Your agent works beside you",
+      "parent": "n58",
       "children": [
-        "n31",
-        "n32",
-        "n33"
+        "n64",
+        "n65",
+        "n66"
       ],
       "tag": "article",
       "visible": true,
@@ -1400,11 +3041,11 @@
         }
       }
     },
-    "n31": {
-      "id": "n31",
+    "n64": {
+      "id": "n64",
       "type": "element",
       "name": "Tick",
-      "parent": "n30",
+      "parent": "n63",
       "children": [],
       "tag": "div",
       "visible": true,
@@ -1446,18 +3087,18 @@
         }
       }
     },
-    "n32": {
-      "id": "n32",
+    "n65": {
+      "id": "n65",
       "type": "text",
       "name": "Card Title",
-      "parent": "n30",
+      "parent": "n63",
       "children": [],
       "tag": "h3",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "Your agent edits the same canvas"
+          "text": "Your agent works beside you"
         }
       ],
       "styles": {
@@ -1473,18 +3114,18 @@
         }
       }
     },
-    "n33": {
-      "id": "n33",
+    "n66": {
+      "id": "n66",
       "type": "text",
       "name": "Card Body",
-      "parent": "n30",
+      "parent": "n63",
       "children": [],
       "tag": "p",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "Claude Code and Codex connect over MCP and work on the document you have open. They read the comments, show up as a cursor, and change tokens while you watch."
+          "text": "Connect any MCP client. Your agent can read the open document, follow comments, edit nodes, and update tokens while you watch."
         }
       ],
       "styles": {
@@ -1499,15 +3140,15 @@
         }
       }
     },
-    "n34": {
-      "id": "n34",
+    "n67": {
+      "id": "n67",
       "type": "element",
-      "name": "Ships as code",
-      "parent": "n25",
+      "name": "The output is already code",
+      "parent": "n58",
       "children": [
-        "n35",
-        "n36",
-        "n37"
+        "n68",
+        "n69",
+        "n70"
       ],
       "tag": "article",
       "visible": true,
@@ -1575,11 +3216,11 @@
         }
       }
     },
-    "n35": {
-      "id": "n35",
+    "n68": {
+      "id": "n68",
       "type": "element",
       "name": "Tick",
-      "parent": "n34",
+      "parent": "n67",
       "children": [],
       "tag": "div",
       "visible": true,
@@ -1621,18 +3262,18 @@
         }
       }
     },
-    "n36": {
-      "id": "n36",
+    "n69": {
+      "id": "n69",
       "type": "text",
       "name": "Card Title",
-      "parent": "n34",
+      "parent": "n67",
       "children": [],
       "tag": "h3",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "Ships as code"
+          "text": "The output is already code"
         }
       ],
       "styles": {
@@ -1648,18 +3289,18 @@
         }
       }
     },
-    "n37": {
-      "id": "n37",
+    "n70": {
+      "id": "n70",
       "type": "text",
       "name": "Card Body",
-      "parent": "n34",
+      "parent": "n67",
       "children": [],
       "tag": "p",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "Export the same document to React and Tailwind or to plain HTML and CSS. It comes out as your tokens and your components, ready to drop into the repo."
+          "text": "Export React and Tailwind or plain HTML and CSS from the same document. Your tokens, components, and responsive rules come with it."
         }
       ],
       "styles": {
@@ -1674,13 +3315,872 @@
         }
       }
     },
-    "n38": {
-      "id": "n38",
+    "n71": {
+      "id": "n71",
+      "type": "element",
+      "name": "Import Band",
+      "parent": "n0",
+      "children": [
+        "n72"
+      ],
+      "tag": "section",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "alignItems": "center",
+          "width": "fill",
+          "padding": {
+            "top": {
+              "$token": "spacing.12"
+            },
+            "right": {
+              "$token": "spacing.5"
+            },
+            "bottom": {
+              "$token": "spacing.12"
+            },
+            "left": {
+              "$token": "spacing.5"
+            }
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.surface"
+              }
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border"
+            },
+            "sides": {
+              "top": true,
+              "bottom": true
+            }
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "padding": {
+              "top": {
+                "$token": "spacing.16"
+              },
+              "right": {
+                "$token": "spacing.10"
+              },
+              "bottom": {
+                "$token": "spacing.16"
+              },
+              "left": {
+                "$token": "spacing.10"
+              }
+            }
+          }
+        }
+      }
+    },
+    "n72": {
+      "id": "n72",
+      "type": "element",
+      "name": "Import Existing Site",
+      "parent": "n71",
+      "children": [
+        "n73",
+        "n80"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "width": "fill",
+          "maxWidth": {
+            "value": 1120,
+            "unit": "px"
+          },
+          "gap": {
+            "row": {
+              "$token": "spacing.8"
+            },
+            "column": {
+              "$token": "spacing.10"
+            }
+          },
+          "padding": {
+            "top": {
+              "$token": "spacing.6"
+            },
+            "right": {
+              "$token": "spacing.6"
+            },
+            "bottom": {
+              "$token": "spacing.6"
+            },
+            "left": {
+              "$token": "spacing.6"
+            }
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.background"
+              }
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border-strong"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.lg"
+            },
+            "tr": {
+              "$token": "radius.lg"
+            },
+            "br": {
+              "$token": "radius.lg"
+            },
+            "bl": {
+              "$token": "radius.lg"
+            }
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "display": "flex",
+            "flexDirection": "row",
+            "alignItems": "center",
+            "padding": {
+              "top": {
+                "$token": "spacing.10"
+              },
+              "right": {
+                "$token": "spacing.10"
+              },
+              "bottom": {
+                "$token": "spacing.10"
+              },
+              "left": {
+                "$token": "spacing.10"
+              }
+            }
+          }
+        }
+      }
+    },
+    "n73": {
+      "id": "n73",
+      "type": "element",
+      "name": "Import Copy",
+      "parent": "n72",
+      "children": [
+        "n74",
+        "n75",
+        "n76",
+        "n77"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.4"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "width": "fill",
+          "minWidth": {
+            "value": 0,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n74": {
+      "id": "n74",
+      "type": "text",
+      "name": "Import Eyebrow",
+      "parent": "n73",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Import from a URL"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "fontWeight": 650,
+          "color": {
+            "$token": "color.primary"
+          }
+        }
+      }
+    },
+    "n75": {
+      "id": "n75",
+      "type": "text",
+      "name": "Import Heading",
+      "parent": "n73",
+      "children": [],
+      "tag": "h2",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Start with the site you already have."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.4xl"
+          },
+          "fontWeight": 700,
+          "letterSpacing": {
+            "value": -1,
+            "unit": "px"
+          },
+          "lineHeight": 1.12,
+          "maxWidth": {
+            "value": 520,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n76": {
+      "id": "n76",
+      "type": "text",
+      "name": "Import Body",
+      "parent": "n73",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Run one local command to capture an existing page at mobile, tablet, and desktop widths. Pitolet keeps the DOM it understands editable and preserves the rest as images."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.lg"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "lineHeight": 1.6,
+          "maxWidth": {
+            "value": 560,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n77": {
+      "id": "n77",
+      "type": "element",
+      "name": "Import Command",
+      "parent": "n73",
+      "children": [
+        "n78",
+        "n79"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "center",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.2"
+            }
+          },
+          "width": "fill",
+          "padding": {
+            "top": {
+              "$token": "spacing.3"
+            },
+            "bottom": {
+              "$token": "spacing.3"
+            },
+            "left": {
+              "$token": "spacing.4"
+            },
+            "right": {
+              "$token": "spacing.4"
+            }
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.surface"
+              }
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "$token": "color.border"
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.md"
+            },
+            "tr": {
+              "$token": "radius.md"
+            },
+            "br": {
+              "$token": "radius.md"
+            },
+            "bl": {
+              "$token": "radius.md"
+            }
+          },
+          "overflow": "auto"
+        }
+      }
+    },
+    "n78": {
+      "id": "n78",
+      "type": "text",
+      "name": "Import Prompt",
+      "parent": "n77",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "$"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontFamily": {
+            "$token": "typography.fontFamily.mono"
+          },
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.primary"
+          }
+        }
+      }
+    },
+    "n79": {
+      "id": "n79",
+      "type": "text",
+      "name": "Import Code",
+      "parent": "n77",
+      "children": [],
+      "tag": "code",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "pitolet import http://localhost:3000 --to …"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontFamily": {
+            "$token": "typography.fontFamily.mono"
+          },
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.foreground"
+          }
+        }
+      }
+    },
+    "n80": {
+      "id": "n80",
+      "type": "element",
+      "name": "Import Details",
+      "parent": "n72",
+      "children": [
+        "n81",
+        "n86",
+        "n91"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.4"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "width": "fill",
+          "minWidth": {
+            "value": 0,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n81": {
+      "id": "n81",
+      "type": "element",
+      "name": "One responsive frame",
+      "parent": "n80",
+      "children": [
+        "n82",
+        "n83"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "start",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.3"
+            }
+          }
+        }
+      }
+    },
+    "n82": {
+      "id": "n82",
+      "type": "text",
+      "name": "Import Check",
+      "parent": "n81",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "✓"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "fontWeight": 700,
+          "color": {
+            "$token": "color.primary"
+          }
+        }
+      }
+    },
+    "n83": {
+      "id": "n83",
+      "type": "element",
+      "name": "Import Point Copy",
+      "parent": "n81",
+      "children": [
+        "n84",
+        "n85"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.1"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          }
+        }
+      }
+    },
+    "n84": {
+      "id": "n84",
+      "type": "text",
+      "name": "Import Point Title",
+      "parent": "n83",
+      "children": [],
+      "tag": "h3",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "One responsive frame"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "fontWeight": 650
+        }
+      }
+    },
+    "n85": {
+      "id": "n85",
+      "type": "text",
+      "name": "Import Point Body",
+      "parent": "n83",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Mobile styles form the base; wider layouts become breakpoint overrides."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "lineHeight": 1.5
+        }
+      }
+    },
+    "n86": {
+      "id": "n86",
+      "type": "element",
+      "name": "Assets copied in",
+      "parent": "n80",
+      "children": [
+        "n87",
+        "n88"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "start",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.3"
+            }
+          }
+        }
+      }
+    },
+    "n87": {
+      "id": "n87",
+      "type": "text",
+      "name": "Import Check",
+      "parent": "n86",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "✓"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "fontWeight": 700,
+          "color": {
+            "$token": "color.primary"
+          }
+        }
+      }
+    },
+    "n88": {
+      "id": "n88",
+      "type": "element",
+      "name": "Import Point Copy",
+      "parent": "n86",
+      "children": [
+        "n89",
+        "n90"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.1"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          }
+        }
+      }
+    },
+    "n89": {
+      "id": "n89",
+      "type": "text",
+      "name": "Import Point Title",
+      "parent": "n88",
+      "children": [],
+      "tag": "h3",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Assets copied in"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "fontWeight": 650
+        }
+      }
+    },
+    "n90": {
+      "id": "n90",
+      "type": "text",
+      "name": "Import Point Body",
+      "parent": "n88",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Images move into Pitolet’s asset store instead of staying hotlinked."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "lineHeight": 1.5
+        }
+      }
+    },
+    "n91": {
+      "id": "n91",
+      "type": "element",
+      "name": "A visual report",
+      "parent": "n80",
+      "children": [
+        "n92",
+        "n93"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "start",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.3"
+            }
+          }
+        }
+      }
+    },
+    "n92": {
+      "id": "n92",
+      "type": "text",
+      "name": "Import Check",
+      "parent": "n91",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "✓"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "fontWeight": 700,
+          "color": {
+            "$token": "color.primary"
+          }
+        }
+      }
+    },
+    "n93": {
+      "id": "n93",
+      "type": "element",
+      "name": "Import Point Copy",
+      "parent": "n91",
+      "children": [
+        "n94",
+        "n95"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.1"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          }
+        }
+      }
+    },
+    "n94": {
+      "id": "n94",
+      "type": "text",
+      "name": "Import Point Title",
+      "parent": "n93",
+      "children": [],
+      "tag": "h3",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "A visual report"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "fontWeight": 650
+        }
+      }
+    },
+    "n95": {
+      "id": "n95",
+      "type": "text",
+      "name": "Import Point Body",
+      "parent": "n93",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Source, imported, and difference images show where the result needs attention."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "lineHeight": 1.5
+        }
+      }
+    },
+    "n96": {
+      "id": "n96",
       "type": "element",
       "name": "Dogfood Band",
       "parent": "n0",
       "children": [
-        "n39"
+        "n97"
       ],
       "tag": "section",
       "visible": true,
@@ -1728,14 +4228,14 @@
         }
       }
     },
-    "n39": {
-      "id": "n39",
+    "n97": {
+      "id": "n97",
       "type": "element",
       "name": "Dogfood",
-      "parent": "n38",
+      "parent": "n96",
       "children": [
-        "n40",
-        "n41"
+        "n98",
+        "n99"
       ],
       "tag": "div",
       "visible": true,
@@ -1744,6 +4244,7 @@
         "base": {
           "display": "flex",
           "flexDirection": "row",
+          "flexWrap": "wrap",
           "alignItems": "center",
           "justifyContent": "center",
           "gap": {
@@ -1809,18 +4310,18 @@
         }
       }
     },
-    "n40": {
-      "id": "n40",
+    "n98": {
+      "id": "n98",
       "type": "text",
       "name": "Dogfood Text",
-      "parent": "n39",
+      "parent": "n97",
       "children": [],
       "tag": "p",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "This page is a Pitolet document, exported by Pitolet’s own codegen."
+          "text": "This page was designed in Pitolet and exported from the same document."
         }
       ],
       "styles": {
@@ -1835,18 +4336,18 @@
         }
       }
     },
-    "n41": {
-      "id": "n41",
+    "n99": {
+      "id": "n99",
       "type": "text",
       "name": "Dogfood Link",
-      "parent": "n39",
+      "parent": "n97",
       "children": [],
       "tag": "a",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "See site/ on GitHub →"
+          "text": "Read the source →"
         }
       ],
       "styles": {
@@ -1864,13 +4365,13 @@
         "href": "https://github.com/pitolet/pitolet/tree/main/site"
       }
     },
-    "n42": {
-      "id": "n42",
+    "n100": {
+      "id": "n100",
       "type": "element",
       "name": "Pricing Band",
       "parent": "n0",
       "children": [
-        "n43"
+        "n101"
       ],
       "tag": "section",
       "visible": true,
@@ -1929,14 +4430,14 @@
         }
       }
     },
-    "n43": {
-      "id": "n43",
+    "n101": {
+      "id": "n101",
       "type": "element",
       "name": "Pricing",
-      "parent": "n42",
+      "parent": "n100",
       "children": [
-        "n44",
-        "n45"
+        "n102",
+        "n103"
       ],
       "tag": "div",
       "visible": true,
@@ -1962,18 +4463,18 @@
         }
       }
     },
-    "n44": {
-      "id": "n44",
+    "n102": {
+      "id": "n102",
       "type": "text",
       "name": "Pricing Heading",
-      "parent": "n43",
+      "parent": "n101",
       "children": [],
       "tag": "h2",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "Free to start, $12 a seat when you need a team."
+          "text": "Use the cloud, or run it yourself."
         }
       ],
       "styles": {
@@ -1995,15 +4496,15 @@
         }
       }
     },
-    "n45": {
-      "id": "n45",
+    "n103": {
+      "id": "n103",
       "type": "element",
       "name": "Plans",
-      "parent": "n43",
+      "parent": "n101",
       "children": [
-        "n46",
-        "n63",
-        "n85"
+        "n104",
+        "n121",
+        "n143"
       ],
       "tag": "div",
       "visible": true,
@@ -2031,16 +4532,16 @@
         }
       }
     },
-    "n46": {
-      "id": "n46",
+    "n104": {
+      "id": "n104",
       "type": "element",
       "name": "Plan Free",
-      "parent": "n45",
+      "parent": "n103",
       "children": [
-        "n47",
-        "n49",
-        "n52",
-        "n53"
+        "n105",
+        "n107",
+        "n110",
+        "n111"
       ],
       "tag": "article",
       "visible": true,
@@ -2108,13 +4609,13 @@
         }
       }
     },
-    "n47": {
-      "id": "n47",
+    "n105": {
+      "id": "n105",
       "type": "element",
       "name": "Plan Head",
-      "parent": "n46",
+      "parent": "n104",
       "children": [
-        "n48"
+        "n106"
       ],
       "tag": "div",
       "visible": true,
@@ -2128,11 +4629,11 @@
         }
       }
     },
-    "n48": {
-      "id": "n48",
+    "n106": {
+      "id": "n106",
       "type": "text",
       "name": "Plan Name",
-      "parent": "n47",
+      "parent": "n105",
       "children": [],
       "tag": "h3",
       "visible": true,
@@ -2151,14 +4652,14 @@
         }
       }
     },
-    "n49": {
-      "id": "n49",
+    "n107": {
+      "id": "n107",
       "type": "element",
       "name": "Price Row",
-      "parent": "n46",
+      "parent": "n104",
       "children": [
-        "n50",
-        "n51"
+        "n108",
+        "n109"
       ],
       "tag": "div",
       "visible": true,
@@ -2180,11 +4681,11 @@
         }
       }
     },
-    "n50": {
-      "id": "n50",
+    "n108": {
+      "id": "n108",
       "type": "text",
       "name": "Price",
-      "parent": "n49",
+      "parent": "n107",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -2207,11 +4708,11 @@
         }
       }
     },
-    "n51": {
-      "id": "n51",
+    "n109": {
+      "id": "n109",
       "type": "text",
       "name": "Price Unit",
-      "parent": "n49",
+      "parent": "n107",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -2232,18 +4733,18 @@
         }
       }
     },
-    "n52": {
-      "id": "n52",
+    "n110": {
+      "id": "n110",
       "type": "text",
       "name": "Plan Blurb",
-      "parent": "n46",
+      "parent": "n104",
       "children": [],
       "tag": "p",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "For solo work and trying Pitolet with your agent."
+          "text": "For personal projects and a first workspace."
         }
       ],
       "styles": {
@@ -2258,15 +4759,15 @@
         }
       }
     },
-    "n53": {
-      "id": "n53",
+    "n111": {
+      "id": "n111",
       "type": "element",
       "name": "Features",
-      "parent": "n46",
+      "parent": "n104",
       "children": [
-        "n54",
-        "n57",
-        "n60"
+        "n112",
+        "n115",
+        "n118"
       ],
       "tag": "ul",
       "visible": true,
@@ -2287,14 +4788,14 @@
         }
       }
     },
-    "n54": {
-      "id": "n54",
+    "n112": {
+      "id": "n112",
       "type": "element",
       "name": "Feature",
-      "parent": "n53",
+      "parent": "n111",
       "children": [
-        "n55",
-        "n56"
+        "n113",
+        "n114"
       ],
       "tag": "li",
       "visible": true,
@@ -2316,11 +4817,11 @@
         }
       }
     },
-    "n55": {
-      "id": "n55",
+    "n113": {
+      "id": "n113",
       "type": "text",
       "name": "Check",
-      "parent": "n54",
+      "parent": "n112",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -2342,11 +4843,11 @@
         }
       }
     },
-    "n56": {
-      "id": "n56",
+    "n114": {
+      "id": "n114",
       "type": "text",
       "name": "Feature Text",
-      "parent": "n54",
+      "parent": "n112",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -2367,14 +4868,14 @@
         }
       }
     },
-    "n57": {
-      "id": "n57",
+    "n115": {
+      "id": "n115",
       "type": "element",
       "name": "Feature",
-      "parent": "n53",
+      "parent": "n111",
       "children": [
-        "n58",
-        "n59"
+        "n116",
+        "n117"
       ],
       "tag": "li",
       "visible": true,
@@ -2396,11 +4897,11 @@
         }
       }
     },
-    "n58": {
-      "id": "n58",
+    "n116": {
+      "id": "n116",
       "type": "text",
       "name": "Check",
-      "parent": "n57",
+      "parent": "n115",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -2422,11 +4923,11 @@
         }
       }
     },
-    "n59": {
-      "id": "n59",
+    "n117": {
+      "id": "n117",
       "type": "text",
       "name": "Feature Text",
-      "parent": "n57",
+      "parent": "n115",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -2447,14 +4948,14 @@
         }
       }
     },
-    "n60": {
-      "id": "n60",
+    "n118": {
+      "id": "n118",
       "type": "element",
       "name": "Feature",
-      "parent": "n53",
+      "parent": "n111",
       "children": [
-        "n61",
-        "n62"
+        "n119",
+        "n120"
       ],
       "tag": "li",
       "visible": true,
@@ -2476,11 +4977,11 @@
         }
       }
     },
-    "n61": {
-      "id": "n61",
+    "n119": {
+      "id": "n119",
       "type": "text",
       "name": "Check",
-      "parent": "n60",
+      "parent": "n118",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -2502,11 +5003,11 @@
         }
       }
     },
-    "n62": {
-      "id": "n62",
+    "n120": {
+      "id": "n120",
       "type": "text",
       "name": "Feature Text",
-      "parent": "n60",
+      "parent": "n118",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -2527,16 +5028,16 @@
         }
       }
     },
-    "n63": {
-      "id": "n63",
+    "n121": {
+      "id": "n121",
       "type": "element",
       "name": "Plan Pro",
-      "parent": "n45",
+      "parent": "n103",
       "children": [
-        "n64",
-        "n68",
-        "n71",
-        "n72"
+        "n122",
+        "n126",
+        "n129",
+        "n130"
       ],
       "tag": "article",
       "visible": true,
@@ -2604,14 +5105,14 @@
         }
       }
     },
-    "n64": {
-      "id": "n64",
+    "n122": {
+      "id": "n122",
       "type": "element",
       "name": "Plan Head",
-      "parent": "n63",
+      "parent": "n121",
       "children": [
-        "n65",
-        "n66"
+        "n123",
+        "n124"
       ],
       "tag": "div",
       "visible": true,
@@ -2625,11 +5126,11 @@
         }
       }
     },
-    "n65": {
-      "id": "n65",
+    "n123": {
+      "id": "n123",
       "type": "text",
       "name": "Plan Name",
-      "parent": "n64",
+      "parent": "n122",
       "children": [],
       "tag": "h3",
       "visible": true,
@@ -2648,13 +5149,13 @@
         }
       }
     },
-    "n66": {
-      "id": "n66",
+    "n124": {
+      "id": "n124",
       "type": "element",
       "name": "Badge",
-      "parent": "n64",
+      "parent": "n122",
       "children": [
-        "n67"
+        "n125"
       ],
       "tag": "div",
       "visible": true,
@@ -2705,11 +5206,11 @@
         }
       }
     },
-    "n67": {
-      "id": "n67",
+    "n125": {
+      "id": "n125",
       "type": "text",
       "name": "Badge Text",
-      "parent": "n66",
+      "parent": "n124",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -2735,14 +5236,14 @@
         }
       }
     },
-    "n68": {
-      "id": "n68",
+    "n126": {
+      "id": "n126",
       "type": "element",
       "name": "Price Row",
-      "parent": "n63",
+      "parent": "n121",
       "children": [
-        "n69",
-        "n70"
+        "n127",
+        "n128"
       ],
       "tag": "div",
       "visible": true,
@@ -2764,11 +5265,11 @@
         }
       }
     },
-    "n69": {
-      "id": "n69",
+    "n127": {
+      "id": "n127",
       "type": "text",
       "name": "Price",
-      "parent": "n68",
+      "parent": "n126",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -2791,11 +5292,11 @@
         }
       }
     },
-    "n70": {
-      "id": "n70",
+    "n128": {
+      "id": "n128",
       "type": "text",
       "name": "Price Unit",
-      "parent": "n68",
+      "parent": "n126",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -2816,18 +5317,18 @@
         }
       }
     },
-    "n71": {
-      "id": "n71",
+    "n129": {
+      "id": "n129",
       "type": "text",
       "name": "Plan Blurb",
-      "parent": "n63",
+      "parent": "n121",
       "children": [],
       "tag": "p",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "For teams building day to day with their agents."
+          "text": "For teams that need more documents, history, and sharing."
         }
       ],
       "styles": {
@@ -2842,16 +5343,16 @@
         }
       }
     },
-    "n72": {
-      "id": "n72",
+    "n130": {
+      "id": "n130",
       "type": "element",
       "name": "Features",
-      "parent": "n63",
+      "parent": "n121",
       "children": [
-        "n73",
-        "n76",
-        "n79",
-        "n82"
+        "n131",
+        "n134",
+        "n137",
+        "n140"
       ],
       "tag": "ul",
       "visible": true,
@@ -2872,14 +5373,14 @@
         }
       }
     },
-    "n73": {
-      "id": "n73",
+    "n131": {
+      "id": "n131",
       "type": "element",
       "name": "Feature",
-      "parent": "n72",
+      "parent": "n130",
       "children": [
-        "n74",
-        "n75"
+        "n132",
+        "n133"
       ],
       "tag": "li",
       "visible": true,
@@ -2901,11 +5402,11 @@
         }
       }
     },
-    "n74": {
-      "id": "n74",
+    "n132": {
+      "id": "n132",
       "type": "text",
       "name": "Check",
-      "parent": "n73",
+      "parent": "n131",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -2927,11 +5428,11 @@
         }
       }
     },
-    "n75": {
-      "id": "n75",
+    "n133": {
+      "id": "n133",
       "type": "text",
       "name": "Feature Text",
-      "parent": "n73",
+      "parent": "n131",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -2952,14 +5453,14 @@
         }
       }
     },
-    "n76": {
-      "id": "n76",
+    "n134": {
+      "id": "n134",
       "type": "element",
       "name": "Feature",
-      "parent": "n72",
+      "parent": "n130",
       "children": [
-        "n77",
-        "n78"
+        "n135",
+        "n136"
       ],
       "tag": "li",
       "visible": true,
@@ -2981,11 +5482,11 @@
         }
       }
     },
-    "n77": {
-      "id": "n77",
+    "n135": {
+      "id": "n135",
       "type": "text",
       "name": "Check",
-      "parent": "n76",
+      "parent": "n134",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -3007,11 +5508,11 @@
         }
       }
     },
-    "n78": {
-      "id": "n78",
+    "n136": {
+      "id": "n136",
       "type": "text",
       "name": "Feature Text",
-      "parent": "n76",
+      "parent": "n134",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -3032,14 +5533,14 @@
         }
       }
     },
-    "n79": {
-      "id": "n79",
+    "n137": {
+      "id": "n137",
       "type": "element",
       "name": "Feature",
-      "parent": "n72",
+      "parent": "n130",
       "children": [
-        "n80",
-        "n81"
+        "n138",
+        "n139"
       ],
       "tag": "li",
       "visible": true,
@@ -3061,11 +5562,11 @@
         }
       }
     },
-    "n80": {
-      "id": "n80",
+    "n138": {
+      "id": "n138",
       "type": "text",
       "name": "Check",
-      "parent": "n79",
+      "parent": "n137",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -3087,11 +5588,11 @@
         }
       }
     },
-    "n81": {
-      "id": "n81",
+    "n139": {
+      "id": "n139",
       "type": "text",
       "name": "Feature Text",
-      "parent": "n79",
+      "parent": "n137",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -3112,14 +5613,14 @@
         }
       }
     },
-    "n82": {
-      "id": "n82",
+    "n140": {
+      "id": "n140",
       "type": "element",
       "name": "Feature",
-      "parent": "n72",
+      "parent": "n130",
       "children": [
-        "n83",
-        "n84"
+        "n141",
+        "n142"
       ],
       "tag": "li",
       "visible": true,
@@ -3141,11 +5642,11 @@
         }
       }
     },
-    "n83": {
-      "id": "n83",
+    "n141": {
+      "id": "n141",
       "type": "text",
       "name": "Check",
-      "parent": "n82",
+      "parent": "n140",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -3167,11 +5668,11 @@
         }
       }
     },
-    "n84": {
-      "id": "n84",
+    "n142": {
+      "id": "n142",
       "type": "text",
       "name": "Feature Text",
-      "parent": "n82",
+      "parent": "n140",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -3192,16 +5693,16 @@
         }
       }
     },
-    "n85": {
-      "id": "n85",
+    "n143": {
+      "id": "n143",
       "type": "element",
       "name": "Plan Self-host",
-      "parent": "n45",
+      "parent": "n103",
       "children": [
-        "n86",
-        "n88",
-        "n91",
-        "n92"
+        "n144",
+        "n146",
+        "n149",
+        "n150"
       ],
       "tag": "article",
       "visible": true,
@@ -3269,13 +5770,13 @@
         }
       }
     },
-    "n86": {
-      "id": "n86",
+    "n144": {
+      "id": "n144",
       "type": "element",
       "name": "Plan Head",
-      "parent": "n85",
+      "parent": "n143",
       "children": [
-        "n87"
+        "n145"
       ],
       "tag": "div",
       "visible": true,
@@ -3289,11 +5790,11 @@
         }
       }
     },
-    "n87": {
-      "id": "n87",
+    "n145": {
+      "id": "n145",
       "type": "text",
       "name": "Plan Name",
-      "parent": "n86",
+      "parent": "n144",
       "children": [],
       "tag": "h3",
       "visible": true,
@@ -3312,14 +5813,14 @@
         }
       }
     },
-    "n88": {
-      "id": "n88",
+    "n146": {
+      "id": "n146",
       "type": "element",
       "name": "Price Row",
-      "parent": "n85",
+      "parent": "n143",
       "children": [
-        "n89",
-        "n90"
+        "n147",
+        "n148"
       ],
       "tag": "div",
       "visible": true,
@@ -3341,11 +5842,11 @@
         }
       }
     },
-    "n89": {
-      "id": "n89",
+    "n147": {
+      "id": "n147",
       "type": "text",
       "name": "Price",
-      "parent": "n88",
+      "parent": "n146",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -3368,11 +5869,11 @@
         }
       }
     },
-    "n90": {
-      "id": "n90",
+    "n148": {
+      "id": "n148",
       "type": "text",
       "name": "Price Unit",
-      "parent": "n88",
+      "parent": "n146",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -3393,18 +5894,18 @@
         }
       }
     },
-    "n91": {
-      "id": "n91",
+    "n149": {
+      "id": "n149",
       "type": "text",
       "name": "Plan Blurb",
-      "parent": "n85",
+      "parent": "n143",
       "children": [],
       "tag": "p",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "Run it yourself. The core is open source."
+          "text": "Keep the files and server on your own machine."
         }
       ],
       "styles": {
@@ -3419,15 +5920,15 @@
         }
       }
     },
-    "n92": {
-      "id": "n92",
+    "n150": {
+      "id": "n150",
       "type": "element",
       "name": "Features",
-      "parent": "n85",
+      "parent": "n143",
       "children": [
-        "n93",
-        "n96",
-        "n99"
+        "n151",
+        "n154",
+        "n157"
       ],
       "tag": "ul",
       "visible": true,
@@ -3448,14 +5949,14 @@
         }
       }
     },
-    "n93": {
-      "id": "n93",
+    "n151": {
+      "id": "n151",
       "type": "element",
       "name": "Feature",
-      "parent": "n92",
+      "parent": "n150",
       "children": [
-        "n94",
-        "n95"
+        "n152",
+        "n153"
       ],
       "tag": "li",
       "visible": true,
@@ -3477,11 +5978,11 @@
         }
       }
     },
-    "n94": {
-      "id": "n94",
+    "n152": {
+      "id": "n152",
       "type": "text",
       "name": "Check",
-      "parent": "n93",
+      "parent": "n151",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -3503,11 +6004,11 @@
         }
       }
     },
-    "n95": {
-      "id": "n95",
+    "n153": {
+      "id": "n153",
       "type": "text",
       "name": "Feature Text",
-      "parent": "n93",
+      "parent": "n151",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -3528,14 +6029,14 @@
         }
       }
     },
-    "n96": {
-      "id": "n96",
+    "n154": {
+      "id": "n154",
       "type": "element",
       "name": "Feature",
-      "parent": "n92",
+      "parent": "n150",
       "children": [
-        "n97",
-        "n98"
+        "n155",
+        "n156"
       ],
       "tag": "li",
       "visible": true,
@@ -3557,11 +6058,11 @@
         }
       }
     },
-    "n97": {
-      "id": "n97",
+    "n155": {
+      "id": "n155",
       "type": "text",
       "name": "Check",
-      "parent": "n96",
+      "parent": "n154",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -3583,11 +6084,11 @@
         }
       }
     },
-    "n98": {
-      "id": "n98",
+    "n156": {
+      "id": "n156",
       "type": "text",
       "name": "Feature Text",
-      "parent": "n96",
+      "parent": "n154",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -3608,14 +6109,14 @@
         }
       }
     },
-    "n99": {
-      "id": "n99",
+    "n157": {
+      "id": "n157",
       "type": "element",
       "name": "Feature",
-      "parent": "n92",
+      "parent": "n150",
       "children": [
-        "n100",
-        "n101"
+        "n158",
+        "n159"
       ],
       "tag": "li",
       "visible": true,
@@ -3637,11 +6138,11 @@
         }
       }
     },
-    "n100": {
-      "id": "n100",
+    "n158": {
+      "id": "n158",
       "type": "text",
       "name": "Check",
-      "parent": "n99",
+      "parent": "n157",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -3663,11 +6164,11 @@
         }
       }
     },
-    "n101": {
-      "id": "n101",
+    "n159": {
+      "id": "n159",
       "type": "text",
       "name": "Feature Text",
-      "parent": "n99",
+      "parent": "n157",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -3688,13 +6189,13 @@
         }
       }
     },
-    "n102": {
-      "id": "n102",
+    "n160": {
+      "id": "n160",
       "type": "element",
       "name": "Footer Band",
       "parent": "n0",
       "children": [
-        "n103"
+        "n161"
       ],
       "tag": "section",
       "visible": true,
@@ -3753,14 +6254,14 @@
         }
       }
     },
-    "n103": {
-      "id": "n103",
+    "n161": {
+      "id": "n161",
       "type": "element",
       "name": "Footer",
-      "parent": "n102",
+      "parent": "n160",
       "children": [
-        "n104",
-        "n105"
+        "n162",
+        "n163"
       ],
       "tag": "footer",
       "visible": true,
@@ -3788,11 +6289,11 @@
         }
       }
     },
-    "n104": {
-      "id": "n104",
+    "n162": {
+      "id": "n162",
       "type": "text",
       "name": "Copyright",
-      "parent": "n103",
+      "parent": "n161",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -3813,15 +6314,15 @@
         }
       }
     },
-    "n105": {
-      "id": "n105",
+    "n163": {
+      "id": "n163",
       "type": "element",
       "name": "Footer Links",
-      "parent": "n103",
+      "parent": "n161",
       "children": [
-        "n106",
-        "n107",
-        "n108"
+        "n164",
+        "n165",
+        "n166"
       ],
       "tag": "div",
       "visible": true,
@@ -3843,11 +6344,11 @@
         }
       }
     },
-    "n106": {
-      "id": "n106",
+    "n164": {
+      "id": "n164",
       "type": "text",
       "name": "Terms",
-      "parent": "n105",
+      "parent": "n163",
       "children": [],
       "tag": "a",
       "visible": true,
@@ -3878,11 +6379,11 @@
         "href": "/terms.html"
       }
     },
-    "n107": {
-      "id": "n107",
+    "n165": {
+      "id": "n165",
       "type": "text",
       "name": "Privacy",
-      "parent": "n105",
+      "parent": "n163",
       "children": [],
       "tag": "a",
       "visible": true,
@@ -3913,11 +6414,11 @@
         "href": "/privacy.html"
       }
     },
-    "n108": {
-      "id": "n108",
+    "n166": {
+      "id": "n166",
       "type": "text",
       "name": "GitHub",
-      "parent": "n105",
+      "parent": "n163",
       "children": [],
       "tag": "a",
       "visible": true,

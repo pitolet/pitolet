@@ -1,5 +1,6 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+import { attach, createDocument, createFrame } from '@pitolet/schema';
 import { createHmac } from 'node:crypto';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import net from 'node:net';
@@ -321,6 +322,21 @@ describe('free plan gates', () => {
     expect(fourth.isError).toBe(true);
     expect(mcpText(fourth)).toMatch(/limited to 3 documents/i);
     expect(mcpText(fourth)).toMatch(/upgrade to Pro/i);
+  });
+
+  it('applies the same document limit to bulk website imports', async () => {
+    const document = createDocument({ id: 'imp_free_limit', name: 'Imported free page' });
+    attach(document, null, createFrame({ name: 'Imported page', width: 1440, height: 'auto' }));
+    const preflight = await api('/w/acme/api/import', { token: acmeToken });
+    expect(preflight.status).toBe(429);
+
+    const result = await api('/w/acme/api/import', {
+      method: 'POST',
+      token: acmeToken,
+      body: document,
+    });
+    expect(result.status).toBe(429);
+    expect(((await result.json()) as { error: string }).error).toMatch(/limited to 3 documents/i);
   });
 
   it('allows the 2nd member, denies the 3rd with 429 naming the limit', async () => {

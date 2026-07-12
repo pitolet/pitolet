@@ -1,4 +1,4 @@
-import { colorToCss, len, type Shadow, type TokenSet } from '@pitolet/schema';
+import { colorToCss, len, type Breakpoint, type Shadow, type TokenSet } from '@pitolet/schema';
 import { isTokenRef } from '@pitolet/schema';
 import { sanitizeTokenName } from './tokenMaps.js';
 
@@ -12,7 +12,14 @@ const SYSTEM_FAMILIES = new Set([
   'Menlo', 'Monaco', 'Courier New', 'sans-serif', 'serif', 'monospace',
 ]);
 
-export function generateThemeCss(tokens: TokenSet): string {
+const TAILWIND_DEFAULT_BREAKPOINTS: Record<string, number> = {
+  sm: 640,
+  md: 768,
+  lg: 1024,
+  xl: 1280,
+};
+
+export function generateThemeCss(tokens: TokenSet, breakpoints: Breakpoint[] = []): string {
   const lines: string[] = [];
   // Web fonts first (CSS requires @import before other rules).
   for (const token of Object.values(tokens.typography.fontFamily)) {
@@ -47,10 +54,20 @@ export function generateThemeCss(tokens: TokenSet): string {
   for (const [name, token] of Object.entries(tokens.typography.fontSize)) {
     lines.push(`  --text-${sanitizeTokenName(name)}: ${len(token.$value)};`);
   }
+  for (const breakpoint of breakpoints) {
+    if (TAILWIND_DEFAULT_BREAKPOINTS[breakpoint.id] === breakpoint.minWidth) continue;
+    lines.push(
+      `  --breakpoint-${sanitizeTokenName(breakpoint.id)}: ${round(breakpoint.minWidth / 16)}rem;`,
+    );
+  }
 
   lines.push('}');
   lines.push('');
   return lines.join('\n');
+}
+
+function round(value: number): number {
+  return Math.round(value * 10_000) / 10_000;
 }
 
 function shadowCss(shadows: Shadow[]): string {

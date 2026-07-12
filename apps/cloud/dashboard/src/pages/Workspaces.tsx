@@ -19,7 +19,7 @@ export function Workspaces({
       <div className="ptl-dash-page-head">
         <div>
           <h1 className="ptl-dash-title">Workspaces</h1>
-          <p className="ptl-dash-subtitle">Open a workspace or spin up a new one.</p>
+          <p className="ptl-dash-subtitle">Choose a workspace or create one.</p>
         </div>
         {!creating && (
           <Button variant="primary" onClick={() => setCreating(true)}>
@@ -40,7 +40,7 @@ export function Workspaces({
 
       {workspaces.length === 0 && !creating ? (
         <div className="ptl-dash-empty">
-          You're not in any workspaces yet. Create your first one to get started.
+          You don't have a workspace yet. Create one to start designing.
         </div>
       ) : (
         <div className="ptl-dash-grid">
