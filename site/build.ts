@@ -10,7 +10,7 @@
  * Run indirectly via `node site/build.mjs` (which boots the tsx TS loader).
  */
 
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -117,13 +117,24 @@ function buildDoc(): { doc: PitoletDocument; frameId: string } {
         alignItems: 'center',
         fontFamily: t('typography.fontFamily.sans'),
         color: t('color.foreground'),
-        fills: fill(t('color.background')),
+        fills: [
+          {
+            type: 'linear',
+            angle: 180,
+            stops: [
+              { color: oklch(0.15, 0.022, 225), position: 0 },
+              { color: oklch(0.125, 0.007, 250), position: 0.48 },
+              { color: oklch(0.145, 0.017, 230), position: 1 },
+            ],
+          },
+        ],
       },
     }),
   );
 
   buildNav(doc, frame.id);
   buildHero(doc, frame.id);
+  buildProofStrip(doc, frame.id);
   buildValueProps(doc, frame.id);
   buildImportCallout(doc, frame.id);
   buildDogfoodNote(doc, frame.id);
@@ -150,7 +161,17 @@ function buildComparisonDoc(): { doc: PitoletDocument; frameId: string } {
         alignItems: 'center',
         fontFamily: t('typography.fontFamily.sans'),
         color: t('color.foreground'),
-        fills: fill(t('color.background')),
+        fills: [
+          {
+            type: 'linear',
+            angle: 180,
+            stops: [
+              { color: oklch(0.15, 0.022, 225), position: 0 },
+              { color: oklch(0.125, 0.007, 250), position: 0.48 },
+              { color: oklch(0.145, 0.017, 230), position: 1 },
+            ],
+          },
+        ],
       },
     }),
   );
@@ -265,9 +286,6 @@ function buildNav(doc: PitoletDocument, frameId: string) {
     padBottom: sp('4'),
     padTopLg: sp('6'),
     padBottomLg: sp('6'),
-    extra: {
-      border: { width: px(1), style: 'solid', color: t('color.border'), sides: { bottom: true } },
-    },
   });
   const nav = attach(
     doc,
@@ -392,105 +410,97 @@ function buildNav(doc: PitoletDocument, frameId: string) {
 
 function buildHero(doc: PitoletDocument, frameId: string) {
   const bandEl = band(doc, frameId, 'Hero Band', {
-    padTop: sp('12'),
-    padBottom: sp('16'),
-    padTopLg: sp('20'),
-    padBottomLg: sp('20'),
-    extra: {
-      fills: [
-        {
-          type: 'radial',
-          stops: [
-            { color: oklch(0.22, 0.045, 215), position: 0 },
-            { color: oklch(0.13, 0.006, 250), position: 0.72 },
-          ],
-        },
-      ],
-    },
+    padTop: sp('20'),
+    padBottom: sp('20'),
+    padTopLg: sp('24'),
+    padBottomLg: sp('24'),
   });
   const hero = contentColumn(doc, bandEl.id, 'Hero', {
-    alignItems: 'center',
-    gap: gap(sp('6'), px(0)),
+    width: 'fill',
     maxWidth: px(1120),
   });
-
-  // Eyebrow pill
-  const eyebrow = attach(
+  const layout = attach(
     doc,
     hero.id,
     createElement({
-      name: 'Eyebrow',
+      name: 'Hero Layout',
       styles: {
         display: 'flex',
-        flexDirection: 'row',
+        flexDirection: 'column',
         alignItems: 'center',
-        gap: gap(px(0), sp('2')),
-        padding: padXY(sp('1'), sp('3')),
-        fills: fill(t('color.surface')),
-        border: { width: px(1), style: 'solid', color: t('color.border') },
-        radius: radAll(rad('full')),
+        gap: gap(sp('10'), sp('12')),
+        width: 'fill',
       },
     }),
   );
-  attach(
+  layout.styles.breakpoints = {
+    lg: {
+      display: 'flex',
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+  };
+
+  const copy = attach(
     doc,
-    eyebrow.id,
-    createText({
-      name: 'Eyebrow Text',
-      tag: 'span',
-      text: 'Real DOM + CSS · shared with your agent',
+    layout.id,
+    createElement({
+      name: 'Hero Copy',
       styles: {
-        fontSize: fs('sm'),
-        fontWeight: 500,
-        color: t('color.muted-foreground'),
-        letterSpacing: px(0.2),
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: gap(sp('6'), px(0)),
+        width: 'fill',
+        minWidth: px(0),
       },
     }),
   );
+  copy.styles.breakpoints = { lg: { display: 'flex', alignItems: 'start' } };
 
   const headline = attach(
     doc,
-    hero.id,
+    copy.id,
     createText({
       name: 'Headline',
       tag: 'h1',
-      text: 'Design the interface. Ship the same thing.',
+      text: 'Give your agent’s designs a human touch.',
       styles: {
         fontSize: fs('5xl'),
         fontWeight: 700,
         letterSpacing: px(-1.5),
-        lineHeight: 1.05,
+        lineHeight: 1.04,
         textAlign: 'center',
-        maxWidth: px(900),
+        maxWidth: px(620),
       },
     }),
   );
-  // Scale the display headline up on larger screens.
   headline.styles.breakpoints = {
     md: { fontSize: fs('6xl'), letterSpacing: px(-2) },
-    lg: { fontSize: fs('7xl') },
+    lg: { fontSize: fs('6xl'), textAlign: 'left' },
   };
-  attach(
+
+  const subhead = attach(
     doc,
-    hero.id,
+    copy.id,
     createText({
       name: 'Subhead',
       tag: 'p',
-      text: 'Pitolet is a browser-based design canvas that you and your coding agent can edit together. It uses real web layout, so the design already behaves like the page you will ship.',
+      text: 'Your coding agent gets the interface close. Pitolet lets you fix the details on the page while your agent sees every change.',
       styles: {
-        fontSize: fs('xl'),
+        fontSize: fs('lg'),
         color: t('color.muted-foreground'),
         textAlign: 'center',
-        maxWidth: px(700),
-        lineHeight: 1.55,
+        maxWidth: px(560),
+        lineHeight: 1.6,
       },
     }),
   );
+  subhead.styles.breakpoints = { lg: { textAlign: 'left' } };
 
-  // CTAs
   const ctas = attach(
     doc,
-    hero.id,
+    copy.id,
     createElement({
       name: 'CTAs',
       styles: {
@@ -498,21 +508,25 @@ function buildHero(doc: PitoletDocument, frameId: string) {
         flexDirection: 'column',
         alignItems: 'center',
         gap: gap(sp('3'), sp('3')),
-        padding: padTRBL(sp('4'), px(0), px(0), px(0)),
+        padding: padTRBL(sp('2'), px(0), px(0), px(0)),
       },
     }),
   );
-  ctas.styles.breakpoints = { sm: { flexDirection: 'row' } };
-  const startFree = attach(
+  ctas.styles.breakpoints = {
+    sm: { display: 'flex', flexDirection: 'row' },
+    lg: { display: 'flex', flexDirection: 'row', alignSelf: 'start' },
+  };
+
+  const openApp = attach(
     doc,
     ctas.id,
     createText({
-      name: 'Start Free',
+      name: 'Open Pitolet',
       tag: 'a',
       text: 'Open Pitolet',
       styles: {
         fontSize: fs('base'),
-        fontWeight: 600,
+        fontWeight: 650,
         color: t('color.primary-foreground'),
         fills: fill(t('color.primary')),
         padding: padXY(sp('3'), sp('6')),
@@ -521,10 +535,9 @@ function buildHero(doc: PitoletDocument, frameId: string) {
       },
     }),
   );
-  startFree.attrs = { href: 'https://app.pitolet.com' };
-  startFree.styles.states = { hover: { fills: fill(t('color.primary-strong')) } };
+  openApp.attrs = { href: 'https://app.pitolet.com' };
+  openApp.styles.states = { hover: { fills: fill(t('color.primary-strong')) } };
 
-  // npx pitolet code chip
   const chip = attach(
     doc,
     ctas.id,
@@ -571,376 +584,183 @@ function buildHero(doc: PitoletDocument, frameId: string) {
     }),
   );
 
-  buildProductPreview(doc, hero.id);
-}
-
-function buildProductPreview(doc: PitoletDocument, parentId: string) {
-  const window = attach(
+  const media = attach(
     doc,
-    parentId,
+    layout.id,
     createElement({
-      name: 'Editor Preview',
-      tag: 'article',
+      name: 'Product Demo',
+      tag: 'figure',
       styles: {
         display: 'flex',
         flexDirection: 'column',
-        width: 'fill',
-        maxWidth: px(1040),
-        margin: padTRBL(sp('6'), px(0), px(0), px(0)),
-        fills: fill(t('color.surface')),
-        border: { width: px(1), style: 'solid', color: t('color.border-strong') },
-        radius: radAll(rad('lg')),
-        overflow: 'hidden',
-        shadows: [
-          {
-            x: 0,
-            y: 24,
-            blur: 64,
-            spread: -24,
-            color: oklch(0.02, 0.01, 250, 0.72),
-          },
-        ],
-      },
-    }),
-  );
-
-  const toolbar = attach(
-    doc,
-    window.id,
-    createElement({
-      name: 'Preview Toolbar',
-      styles: {
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'between',
-        padding: padXY(sp('3'), sp('4')),
-        border: { width: px(1), style: 'solid', color: t('color.border'), sides: { bottom: true } },
-      },
-    }),
-  );
-  const dots = attach(
-    doc,
-    toolbar.id,
-    createElement({
-      name: 'Window Controls',
-      styles: { display: 'flex', flexDirection: 'row', gap: gap(px(0), sp('2')) },
-    }),
-  );
-  for (const name of ['Close', 'Minimize', 'Expand']) {
-    attach(
-      doc,
-      dots.id,
-      createElement({
-        name,
-        styles: {
-          width: px(8),
-          height: px(8),
-          fills: fill(name === 'Expand' ? t('color.primary') : t('color.subtle-foreground')),
-          radius: radAll(rad('full')),
-          opacity: name === 'Expand' ? 0.9 : 0.45,
-        },
-      }),
-    );
-  }
-  attach(
-    doc,
-    toolbar.id,
-    createText({
-      name: 'Preview Document',
-      tag: 'span',
-      text: 'Landing page · Pitolet',
-      styles: { fontSize: fs('xs'), color: t('color.subtle-foreground') },
-    }),
-  );
-  attach(
-    doc,
-    toolbar.id,
-    createText({
-      name: 'Agent Status',
-      tag: 'span',
-      text: 'Agent connected',
-      styles: {
-        fontSize: fs('xs'),
-        fontWeight: 600,
-        color: t('color.primary'),
-        fills: fill(t('color.background')),
-        border: { width: px(1), style: 'solid', color: t('color.border') },
-        padding: padXY(px(3), sp('2')),
-        radius: radAll(rad('full')),
-      },
-    }),
-  );
-
-  const workArea = attach(
-    doc,
-    window.id,
-    createElement({
-      name: 'Preview Work Area',
-      styles: { display: 'flex', flexDirection: 'row', width: 'fill', minHeight: px(430) },
-    }),
-  );
-
-  const layers = attach(
-    doc,
-    workArea.id,
-    createElement({
-      name: 'Preview Layers',
-      styles: {
-        display: 'none',
-        flexDirection: 'column',
-        gap: gap(sp('3'), px(0)),
-        width: px(180),
-        padding: padAll(sp('4')),
-        fills: fill(t('color.background')),
-        border: { width: px(1), style: 'solid', color: t('color.border'), sides: { right: true } },
-      },
-    }),
-  );
-  layers.styles.breakpoints = { md: { display: 'flex' } };
-  attach(
-    doc,
-    layers.id,
-    createText({
-      name: 'Layers Label',
-      tag: 'span',
-      text: 'Layers',
-      styles: { fontSize: fs('xs'), fontWeight: 650, color: t('color.muted-foreground') },
-    }),
-  );
-  for (const [label, indent] of [
-    ['Landing', false],
-    ['Navigation', true],
-    ['Hero', true],
-    ['Feature cards', true],
-  ] as Array<[string, boolean]>) {
-    attach(
-      doc,
-      layers.id,
-      createText({
-        name: `Layer ${label}`,
-        tag: 'span',
-        text: `${indent ? '  ' : ''}${label}`,
-        styles: {
-          fontSize: fs('xs'),
-          color: label === 'Hero' ? t('color.primary') : t('color.subtle-foreground'),
-          fills: label === 'Hero' ? fill(t('color.surface')) : undefined,
-          padding: padXY(sp('1'), sp('2')),
-          radius: radAll(rad('sm')),
-        },
-      }),
-    );
-  }
-
-  const canvas = attach(
-    doc,
-    workArea.id,
-    createElement({
-      name: 'Preview Canvas',
-      styles: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
         gap: gap(sp('3'), px(0)),
         width: 'fill',
         minWidth: px(0),
-        padding: padAll(sp('5')),
-        fills: fill(t('color.background')),
-      },
-    }),
-  );
-  canvas.styles.breakpoints = { md: { padding: padAll(sp('8')) } };
-  attach(
-    doc,
-    canvas.id,
-    createText({
-      name: 'Canvas Width',
-      tag: 'span',
-      text: '1440 px · Desktop',
-      styles: { fontSize: fs('xs'), color: t('color.subtle-foreground') },
-    }),
-  );
-  const page = attach(
-    doc,
-    canvas.id,
-    createElement({
-      name: 'Preview Page',
-      styles: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: gap(sp('5'), px(0)),
-        width: 'fill',
-        maxWidth: px(560),
-        padding: padAll(sp('6')),
+        maxWidth: px(580),
+        padding: padAll(sp('3')),
         fills: fill(t('color.surface-2')),
-        border: { width: px(1), style: 'solid', color: t('color.primary') },
-        radius: radAll(rad('md')),
+        border: { width: px(1), style: 'solid', color: oklch(0.71, 0.125, 215, 0.32) },
+        radius: radAll(rad('lg')),
         shadows: [
           {
             x: 0,
+            y: 28,
+            blur: 70,
+            spread: -28,
+            color: oklch(0.02, 0.01, 250, 0.78),
+          },
+          {
+            x: 0,
             y: 0,
-            blur: 0,
-            spread: 3,
-            color: oklch(0.71, 0.125, 215, 0.12),
+            blur: 48,
+            spread: -20,
+            color: oklch(0.71, 0.125, 215, 0.32),
           },
         ],
       },
     }),
   );
-  const miniNav = attach(
+  attach(
     doc,
-    page.id,
-    createElement({
-      name: 'Preview Page Nav',
+    media.id,
+    createImage({
+      name: 'Agent Editing Demo',
+      src: { url: '/media/pitolet-insert.png' },
+      alt: 'Claude Code adding a section to a Pitolet document while the edit appears on the canvas',
       styles: {
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'between',
+        width: 'fill',
+        height: 'auto',
+        objectFit: 'cover',
+        radius: radAll(rad('md')),
       },
     }),
   );
   attach(
     doc,
-    miniNav.id,
+    media.id,
     createText({
-      name: 'Preview Logo',
-      tag: 'span',
-      text: 'Northstar',
-      styles: { fontSize: fs('sm'), fontWeight: 700 },
-    }),
-  );
-  attach(
-    doc,
-    miniNav.id,
-    createText({
-      name: 'Preview Nav Links',
-      tag: 'span',
-      text: 'Product   Pricing   Log in',
-      styles: { fontSize: fs('xs'), color: t('color.muted-foreground') },
-    }),
-  );
-  attach(
-    doc,
-    page.id,
-    createText({
-      name: 'Preview Eyebrow',
-      tag: 'span',
-      text: 'Built for small teams',
-      styles: { fontSize: fs('xs'), fontWeight: 650, color: t('color.primary') },
-    }),
-  );
-  attach(
-    doc,
-    page.id,
-    createText({
-      name: 'Preview Headline',
-      tag: 'h3',
-      text: 'A calmer way to plan the week.',
+      name: 'Demo Caption',
+      tag: 'figcaption',
+      text: 'Claude Code adds a section directly to the open page.',
       styles: {
-        fontSize: fs('3xl'),
-        fontWeight: 700,
-        letterSpacing: px(-0.8),
-        lineHeight: 1.1,
-        maxWidth: px(390),
-      },
-    }),
-  );
-  attach(
-    doc,
-    page.id,
-    createText({
-      name: 'Preview Body',
-      tag: 'p',
-      text: 'Projects, decisions, and next steps in one clear workspace.',
-      styles: { fontSize: fs('sm'), color: t('color.muted-foreground'), maxWidth: px(390) },
-    }),
-  );
-  const miniActions = attach(
-    doc,
-    page.id,
-    createElement({
-      name: 'Preview Actions',
-      styles: { display: 'flex', flexDirection: 'row', gap: gap(px(0), sp('2')) },
-    }),
-  );
-  attach(
-    doc,
-    miniActions.id,
-    createText({
-      name: 'Preview Primary',
-      tag: 'span',
-      text: 'Start planning',
-      styles: {
-        fontSize: fs('xs'),
-        fontWeight: 650,
-        color: t('color.primary-foreground'),
-        fills: fill(t('color.primary')),
-        padding: padXY(sp('2'), sp('3')),
-        radius: radAll(rad('sm')),
-      },
-    }),
-  );
-  attach(
-    doc,
-    miniActions.id,
-    createText({
-      name: 'Preview Secondary',
-      tag: 'span',
-      text: 'See how it works',
-      styles: {
-        fontSize: fs('xs'),
+        fontSize: fs('sm'),
         color: t('color.muted-foreground'),
-        border: { width: px(1), style: 'solid', color: t('color.border-strong') },
-        padding: padXY(sp('2'), sp('3')),
-        radius: radAll(rad('sm')),
+        lineHeight: 1.5,
+        padding: padTRBL(px(0), sp('2'), sp('1'), sp('2')),
       },
     }),
   );
+}
 
-  const inspector = attach(
+function buildProofStrip(doc: PitoletDocument, frameId: string) {
+  const bandEl = band(doc, frameId, 'Proof Band', {
+    padTop: sp('8'),
+    padBottom: sp('8'),
+    padTopLg: sp('10'),
+    padBottomLg: sp('10'),
+  });
+  const row = attach(
     doc,
-    workArea.id,
+    bandEl.id,
     createElement({
-      name: 'Preview Inspector',
+      name: 'Proof Points',
       styles: {
-        display: 'none',
-        flexDirection: 'column',
-        gap: gap(sp('4'), px(0)),
-        width: px(210),
-        padding: padAll(sp('4')),
-        fills: fill(t('color.background')),
-        border: { width: px(1), style: 'solid', color: t('color.border'), sides: { left: true } },
+        display: 'grid',
+        gridTemplateColumns: [
+          { kind: 'fr', value: 1 },
+          { kind: 'fr', value: 1 },
+        ],
+        gap: gap(sp('5'), sp('5')),
+        width: 'fill',
+        maxWidth: px(1120),
       },
     }),
   );
-  inspector.styles.breakpoints = { lg: { display: 'flex' } };
-  attach(
-    doc,
-    inspector.id,
-    createText({
-      name: 'Inspector Label',
-      tag: 'span',
-      text: 'Layout',
-      styles: { fontSize: fs('xs'), fontWeight: 650, color: t('color.muted-foreground') },
-    }),
-  );
-  for (const value of ['Stack · Vertical', 'Gap · 20', 'Padding · 24', 'Width · Fill']) {
+  row.styles.breakpoints = {
+    md: {
+      display: 'grid',
+      gridTemplateColumns: [
+        { kind: 'fr', value: 1 },
+        { kind: 'fr', value: 1 },
+        { kind: 'fr', value: 1 },
+        { kind: 'fr', value: 1 },
+      ],
+    },
+  };
+  const points: Array<[string, string]> = [
+    ['DOM + CSS', 'Browser layout'],
+    ['MCP', 'Read and write'],
+    ['React or HTML', 'From one document'],
+    ['Cloud or local', 'Your choice'],
+  ];
+  for (const [title, detail] of points) {
+    const point = attach(
+      doc,
+      row.id,
+      createElement({
+        name: `Proof ${title}`,
+        styles: {
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: gap(px(0), sp('3')),
+          minWidth: px(0),
+        },
+      }),
+    );
     attach(
       doc,
-      inspector.id,
-      createText({
-        name: `Inspector ${value}`,
-        tag: 'span',
-        text: value,
+      point.id,
+      createElement({
+        name: 'Proof Marker',
         styles: {
-          fontFamily: t('typography.fontFamily.mono'),
-          fontSize: fs('xs'),
-          color: t('color.subtle-foreground'),
-          fills: fill(t('color.surface')),
-          padding: padXY(sp('2'), sp('3')),
-          radius: radAll(rad('sm')),
+          width: px(8),
+          height: px(8),
+          fills: fill(t('color.primary')),
+          radius: radAll(rad('full')),
+          shadows: [
+            {
+              x: 0,
+              y: 0,
+              blur: 12,
+              spread: 0,
+              color: oklch(0.71, 0.125, 215, 0.45),
+            },
+          ],
         },
+      }),
+    );
+    const pointCopy = attach(
+      doc,
+      point.id,
+      createElement({
+        name: 'Proof Copy',
+        styles: {
+          display: 'flex',
+          flexDirection: 'column',
+          gap: gap(sp('1'), px(0)),
+          minWidth: px(0),
+        },
+      }),
+    );
+    attach(
+      doc,
+      pointCopy.id,
+      createText({
+        name: 'Proof Title',
+        tag: 'span',
+        text: title,
+        styles: { fontSize: fs('sm'), fontWeight: 650, color: t('color.foreground') },
+      }),
+    );
+    attach(
+      doc,
+      pointCopy.id,
+      createText({
+        name: 'Proof Detail',
+        tag: 'span',
+        text: detail,
+        styles: { fontSize: fs('xs'), color: t('color.subtle-foreground') },
       }),
     );
   }
@@ -952,120 +772,234 @@ function buildProductPreview(doc: PitoletDocument, parentId: string) {
 
 function buildValueProps(doc: PitoletDocument, frameId: string) {
   const bandEl = band(doc, frameId, 'Props Band', {
-    padTop: sp('12'),
-    padBottom: sp('12'),
-    padTopLg: sp('16'),
-    padBottomLg: sp('16'),
+    padTop: sp('20'),
+    padBottom: sp('20'),
+    padTopLg: sp('24'),
+    padBottomLg: sp('24'),
   });
   const col = contentColumn(doc, bandEl.id, 'Props', { gap: gap(sp('10'), px(0)) });
 
-  attach(
+  const intro = attach(
     doc,
     col.id,
+    createElement({
+      name: 'Props Introduction',
+      styles: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: gap(sp('4'), sp('8')),
+        width: 'fill',
+      },
+    }),
+  );
+  intro.styles.breakpoints = {
+    md: {
+      display: 'flex',
+      flexDirection: 'row',
+      alignItems: 'end',
+      justifyContent: 'between',
+    },
+  };
+  attach(
+    doc,
+    intro.id,
     createText({
       name: 'Props Heading',
       tag: 'h2',
-      text: 'Design and code stop drifting.',
+      text: 'Fix the parts the prompt missed.',
       styles: {
         fontSize: fs('4xl'),
         fontWeight: 650,
         letterSpacing: px(-1),
-        textAlign: 'center',
-        maxWidth: px(720),
-        alignSelf: 'center',
+        lineHeight: 1.12,
+        maxWidth: px(560),
+      },
+    }),
+  );
+  attach(
+    doc,
+    intro.id,
+    createText({
+      name: 'Props Summary',
+      tag: 'p',
+      text: 'Make the change yourself. Your agent keeps working from the same document.',
+      styles: {
+        fontSize: fs('base'),
+        color: t('color.muted-foreground'),
+        lineHeight: 1.55,
+        maxWidth: px(420),
       },
     }),
   );
 
-  const grid = attach(
+  const layout = attach(
     doc,
     col.id,
     createElement({
-      name: 'Props Row',
+      name: 'Props Layout',
       styles: {
         display: 'flex',
-        flexDirection: 'row',
+        flexDirection: 'column',
         alignItems: 'stretch',
         gap: gap(sp('6'), sp('6')),
         width: 'fill',
       },
     }),
   );
-  // Stack to a single column below the md breakpoint (mobile-first: base is
-  // column, ≥md becomes row). Because codegen is mobile-first, we set the base
-  // to column and add a row override at the md breakpoint.
-  grid.styles.base.flexDirection = 'column';
-  grid.styles.breakpoints = { md: { display: 'flex', flexDirection: 'row' } };
+  layout.styles.breakpoints = { md: { display: 'flex', flexDirection: 'row' } };
 
   const props: Array<[string, string]> = [
     [
-      'The browser is the canvas',
-      'Use real flexbox, grid, breakpoints, and interaction states. Text wraps and layouts respond the way they do on the web.',
+      'Edit the real page',
+      'Change the layout and see the result in place. Pitolet uses the browser’s own layout engine.',
     ],
     [
-      'Your agent works beside you',
-      'Connect any MCP client. Your agent can read the open document, follow comments, edit nodes, and update tokens while you watch.',
+      'Your agent stays in sync',
+      'Connect through MCP. Your agent reads the open document and its edits appear on the canvas.',
     ],
     [
-      'The output is already code',
-      'Export React and Tailwind or plain HTML and CSS from the same document. Your tokens, components, and responsive rules come with it.',
+      'Keep the code',
+      'Export React or HTML from the document you edited. There is no separate mockup to rebuild.',
     ],
   ];
-  for (const [title, body] of props) {
+  function addPropCard(
+    parentId: string,
+    index: number,
+    title: string,
+    body: string,
+    featured = false,
+  ) {
     const card = attach(
       doc,
-      grid.id,
+      parentId,
       createElement({
         name: title,
         tag: 'article',
         styles: {
           display: 'flex',
           flexDirection: 'column',
-          gap: gap(sp('3'), px(0)),
-          padding: padAll(sp('6')),
-          fills: fill(t('color.surface')),
-          border: { width: px(1), style: 'solid', color: t('color.border') },
+          gap: gap(featured ? sp('6') : sp('3'), px(0)),
+          padding: padAll(featured ? sp('8') : sp('6')),
+          fills: featured
+            ? [
+                {
+                  type: 'radial',
+                  stops: [
+                    { color: oklch(0.235, 0.035, 220), position: 0 },
+                    { color: oklch(0.165, 0.008, 250), position: 0.78 },
+                  ],
+                },
+              ]
+            : fill(index === 1 ? t('color.surface-2') : t('color.surface')),
+          border: {
+            width: px(1),
+            style: 'solid',
+            color: featured ? oklch(0.71, 0.125, 215, 0.28) : t('color.border'),
+          },
           radius: radAll(rad('lg')),
+          width: 'fill',
+          shadows: featured
+            ? [
+                {
+                  x: 0,
+                  y: 24,
+                  blur: 56,
+                  spread: -32,
+                  color: oklch(0.71, 0.125, 215, 0.3),
+                },
+              ]
+            : undefined,
+        },
+      }),
+    );
+    if (featured) {
+      card.styles.base.justifyContent = 'between';
+      card.styles.breakpoints = {
+        md: { display: 'flex', padding: padAll(sp('10')), minHeight: px(430) },
+      };
+    } else {
+      card.styles.base.flexGrow = 1;
+    }
+    attach(
+      doc,
+      card.id,
+      createText({
+        name: 'Card Number',
+        tag: 'span',
+        text: String(index + 1).padStart(2, '0'),
+        styles: {
+          fontFamily: t('typography.fontFamily.mono'),
+          fontSize: fs('sm'),
+          fontWeight: 600,
+          color: t('color.primary'),
+          padding: padTRBL(px(0), px(0), featured ? px(0) : sp('3'), px(0)),
+        },
+      }),
+    );
+
+    const cardCopy = attach(
+      doc,
+      card.id,
+      createElement({
+        name: 'Card Copy',
+        styles: {
+          display: 'flex',
+          flexDirection: 'column',
+          gap: gap(featured ? sp('4') : sp('3'), px(0)),
           width: 'fill',
         },
       }),
     );
-    // Accent tick
-    const tick = attach(
+    const cardTitle = attach(
       doc,
-      card.id,
-      createElement({
-        name: 'Tick',
-        styles: {
-          width: px(36),
-          height: px(4),
-          fills: fill(t('color.primary')),
-          radius: radAll(rad('full')),
-        },
-      }),
-    );
-    void tick;
-    attach(
-      doc,
-      card.id,
+      cardCopy.id,
       createText({
         name: 'Card Title',
         tag: 'h3',
         text: title,
-        styles: { fontSize: fs('xl'), fontWeight: 600, letterSpacing: px(-0.3) },
+        styles: {
+          fontSize: featured ? fs('3xl') : fs('xl'),
+          fontWeight: 650,
+          letterSpacing: featured ? px(-0.7) : px(-0.3),
+          lineHeight: 1.16,
+        },
       }),
     );
+    if (featured) cardTitle.styles.breakpoints = { md: { fontSize: fs('4xl') } };
     attach(
       doc,
-      card.id,
+      cardCopy.id,
       createText({
         name: 'Card Body',
         tag: 'p',
         text: body,
-        styles: { fontSize: fs('base'), color: t('color.muted-foreground'), lineHeight: 1.6 },
+        styles: {
+          fontSize: featured ? fs('lg') : fs('base'),
+          color: t('color.muted-foreground'),
+          lineHeight: featured ? 1.7 : 1.6,
+          maxWidth: featured ? px(480) : px(520),
+        },
       }),
     );
   }
+
+  addPropCard(layout.id, 0, props[0][0], props[0][1], true);
+  const secondary = attach(
+    doc,
+    layout.id,
+    createElement({
+      name: 'Secondary Props',
+      styles: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'stretch',
+        gap: gap(sp('6'), px(0)),
+        width: 'fill',
+      },
+    }),
+  );
+  addPropCard(secondary.id, 1, props[1][0], props[1][1]);
+  addPropCard(secondary.id, 2, props[2][0], props[2][1]);
 }
 
 // ---------------------------------------------------------------------------
@@ -1074,26 +1008,34 @@ function buildValueProps(doc: PitoletDocument, frameId: string) {
 
 function buildImportCallout(doc: PitoletDocument, frameId: string) {
   const bandEl = band(doc, frameId, 'Import Band', {
-    padTop: sp('12'),
-    padBottom: sp('12'),
-    padTopLg: sp('16'),
-    padBottomLg: sp('16'),
-    extra: {
-      fills: fill(t('color.surface')),
-      border: {
-        width: px(1),
-        style: 'solid',
-        color: t('color.border'),
-        sides: { top: true, bottom: true },
-      },
-    },
+    padTop: sp('20'),
+    padBottom: sp('20'),
+    padTopLg: sp('24'),
+    padBottomLg: sp('24'),
   });
   const card = contentColumn(doc, bandEl.id, 'Import Existing Site', {
     gap: gap(sp('8'), sp('10')),
     padding: padAll(sp('6')),
-    fills: fill(t('color.background')),
-    border: { width: px(1), style: 'solid', color: t('color.border-strong') },
+    fills: [
+      {
+        type: 'radial',
+        stops: [
+          { color: oklch(0.205, 0.025, 225), position: 0 },
+          { color: oklch(0.13, 0.006, 250), position: 0.82 },
+        ],
+      },
+    ],
+    border: { width: px(1), style: 'solid', color: oklch(0.71, 0.125, 215, 0.24) },
     radius: radAll(rad('lg')),
+    shadows: [
+      {
+        x: 0,
+        y: 32,
+        blur: 70,
+        spread: -44,
+        color: oklch(0.71, 0.125, 215, 0.24),
+      },
+    ],
   });
   card.styles.breakpoints = {
     md: {
@@ -1122,23 +1064,9 @@ function buildImportCallout(doc: PitoletDocument, frameId: string) {
     doc,
     copy.id,
     createText({
-      name: 'Import Eyebrow',
-      tag: 'span',
-      text: 'Import from a URL',
-      styles: {
-        fontSize: fs('sm'),
-        fontWeight: 650,
-        color: t('color.primary'),
-      },
-    }),
-  );
-  attach(
-    doc,
-    copy.id,
-    createText({
       name: 'Import Heading',
       tag: 'h2',
-      text: 'Start with the site you already have.',
+      text: 'Bring in the site you already have.',
       styles: {
         fontSize: fs('4xl'),
         fontWeight: 700,
@@ -1154,7 +1082,7 @@ function buildImportCallout(doc: PitoletDocument, frameId: string) {
     createText({
       name: 'Import Body',
       tag: 'p',
-      text: 'Run one local command to capture an existing page at mobile, tablet, and desktop widths. Pitolet keeps the DOM it understands editable and preserves the rest as images.',
+      text: 'Point Pitolet at a local page. It imports an editable version and keeps unsupported parts as images.',
       styles: {
         fontSize: fs('lg'),
         color: t('color.muted-foreground'),
@@ -1227,13 +1155,13 @@ function buildImportCallout(doc: PitoletDocument, frameId: string) {
   );
   const points: Array<[string, string]> = [
     [
-      'One responsive frame',
-      'Mobile styles form the base; wider layouts become breakpoint overrides.',
+      'One responsive document',
+      'Pitolet captures the page at three widths and stores the differences as breakpoints.',
     ],
-    ['Assets copied in', 'Images move into Pitolet’s asset store instead of staying hotlinked.'],
+    ['Local assets', 'Images are copied into Pitolet instead of staying linked to the source site.'],
     [
-      'A visual report',
-      'Source, imported, and difference images show where the result needs attention.',
+      'See what changed',
+      'The import report shows how closely each width matches the source.',
     ],
   ];
   for (const [title, body] of points) {
@@ -1297,10 +1225,10 @@ function buildImportCallout(doc: PitoletDocument, frameId: string) {
 
 function buildDogfoodNote(doc: PitoletDocument, frameId: string) {
   const bandEl = band(doc, frameId, 'Dogfood Band', {
-    padTop: px(0),
-    padBottom: sp('12'),
-    padTopLg: px(0),
-    padBottomLg: sp('16'),
+    padTop: sp('8'),
+    padBottom: sp('20'),
+    padTopLg: sp('10'),
+    padBottomLg: sp('24'),
   });
   const wrap = attach(
     doc,
@@ -1316,10 +1244,7 @@ function buildDogfoodNote(doc: PitoletDocument, frameId: string) {
         gap: gap(px(0), sp('2')),
         width: 'fill',
         maxWidth: px(1120),
-        padding: padXY(sp('4'), sp('6')),
-        fills: fill(t('color.surface')),
-        border: { width: px(1), style: 'solid', color: t('color.border') },
-        radius: radAll(rad('full')),
+        padding: padXY(sp('2'), sp('6')),
       },
     }),
   );
@@ -1329,7 +1254,7 @@ function buildDogfoodNote(doc: PitoletDocument, frameId: string) {
     createText({
       name: 'Dogfood Text',
       tag: 'p',
-      text: 'This page was designed in Pitolet and exported from the same document.',
+      text: 'This page was made in Pitolet.',
       styles: {
         fontSize: fs('sm'),
         color: t('color.muted-foreground'),
@@ -1343,7 +1268,7 @@ function buildDogfoodNote(doc: PitoletDocument, frameId: string) {
     createText({
       name: 'Dogfood Link',
       tag: 'a',
-      text: 'Read the source →',
+      text: 'View its source',
       styles: { fontSize: fs('sm'), fontWeight: 600, color: t('color.primary') },
     }),
   );
@@ -1356,13 +1281,10 @@ function buildDogfoodNote(doc: PitoletDocument, frameId: string) {
 
 function buildPricing(doc: PitoletDocument, frameId: string) {
   const bandEl = band(doc, frameId, 'Pricing Band', {
-    padTop: sp('12'),
-    padBottom: sp('12'),
-    padTopLg: sp('16'),
-    padBottomLg: sp('16'),
-    extra: {
-      border: { width: px(1), style: 'solid', color: t('color.border'), sides: { top: true } },
-    },
+    padTop: sp('20'),
+    padBottom: sp('20'),
+    padTopLg: sp('24'),
+    padBottomLg: sp('24'),
   });
   const col = contentColumn(doc, bandEl.id, 'Pricing', { gap: gap(sp('10'), px(0)) });
 
@@ -1372,7 +1294,7 @@ function buildPricing(doc: PitoletDocument, frameId: string) {
     createText({
       name: 'Pricing Heading',
       tag: 'h2',
-      text: 'Use the cloud, or run it yourself.',
+      text: 'Use Pitolet on our server or yours.',
       styles: {
         fontSize: fs('4xl'),
         fontWeight: 650,
@@ -1413,14 +1335,14 @@ function buildPricing(doc: PitoletDocument, frameId: string) {
       name: 'Free',
       price: '$0',
       unit: 'forever',
-      blurb: 'For personal projects and a first workspace.',
+      blurb: 'For trying Pitolet on a real project.',
       features: ['1 workspace', '3 documents', 'Hosted MCP for your agent'],
     },
     {
       name: 'Pro',
       price: '$12',
       unit: 'per user / mo',
-      blurb: 'For teams that need more documents, history, and sharing.',
+      blurb: 'For work that needs more room and history.',
       features: [
         'Unlimited documents + tokens',
         'Version history',
@@ -1433,7 +1355,7 @@ function buildPricing(doc: PitoletDocument, frameId: string) {
       name: 'Self-host',
       price: 'Free',
       unit: 'forever · AGPL',
-      blurb: 'Keep the files and server on your own machine.',
+      blurb: 'Run the open source version on your own server.',
       features: ['npx pitolet', 'Runs on your own servers', 'AGPL-3.0 licensed'],
     },
   ];
@@ -1450,7 +1372,17 @@ function buildPricing(doc: PitoletDocument, frameId: string) {
           flexDirection: 'column',
           gap: gap(sp('5'), px(0)),
           padding: padAll(sp('8')),
-          fills: fill(plan.featured ? t('color.surface-2') : t('color.surface')),
+          fills: plan.featured
+            ? [
+                {
+                  type: 'radial',
+                  stops: [
+                    { color: oklch(0.245, 0.035, 220), position: 0 },
+                    { color: oklch(0.18, 0.01, 250), position: 0.82 },
+                  ],
+                },
+              ]
+            : fill(t('color.surface')),
           border: {
             width: px(1),
             style: 'solid',
@@ -1458,6 +1390,17 @@ function buildPricing(doc: PitoletDocument, frameId: string) {
           },
           radius: radAll(rad('lg')),
           width: 'fill',
+          shadows: plan.featured
+            ? [
+                {
+                  x: 0,
+                  y: 28,
+                  blur: 60,
+                  spread: -36,
+                  color: oklch(0.71, 0.125, 215, 0.34),
+                },
+              ]
+            : undefined,
         },
       }),
     );
@@ -1598,7 +1541,7 @@ function buildPricing(doc: PitoletDocument, frameId: string) {
         createText({
           name: 'Check',
           tag: 'span',
-          text: '—',
+          text: '•',
           styles: { fontSize: fs('sm'), color: t('color.primary'), fontWeight: 700 },
         }),
       );
@@ -1622,10 +1565,10 @@ function buildPricing(doc: PitoletDocument, frameId: string) {
 
 function buildComparisonHero(doc: PitoletDocument, frameId: string) {
   const bandEl = band(doc, frameId, 'Comparison Hero Band', {
-    padTop: sp('16'),
-    padBottom: sp('16'),
+    padTop: sp('20'),
+    padBottom: sp('20'),
     padTopLg: sp('24'),
-    padBottomLg: sp('20'),
+    padBottomLg: sp('24'),
   });
   const hero = contentColumn(doc, bandEl.id, 'Comparison Hero', {
     alignItems: 'center',
@@ -1633,33 +1576,13 @@ function buildComparisonHero(doc: PitoletDocument, frameId: string) {
     maxWidth: px(920),
   });
 
-  const eyebrow = attach(
-    doc,
-    hero.id,
-    createText({
-      name: 'Comparison Eyebrow',
-      tag: 'p',
-      text: 'Pitolet vs Figma · for web interface work',
-      styles: {
-        fontSize: fs('sm'),
-        fontWeight: 600,
-        color: t('color.primary'),
-        fills: fill(t('color.surface')),
-        border: { width: px(1), style: 'solid', color: t('color.border') },
-        radius: radAll(rad('full')),
-        padding: padXY(sp('2'), sp('4')),
-      },
-    }),
-  );
-  void eyebrow;
-
   const heading = attach(
     doc,
     hero.id,
     createText({
       name: 'Comparison Headline',
       tag: 'h1',
-      text: 'Use Figma to draw. Use Pitolet to build for the web.',
+      text: 'Use Pitolet when the interface already exists.',
       styles: {
         fontSize: fs('5xl'),
         fontWeight: 700,
@@ -1681,7 +1604,7 @@ function buildComparisonHero(doc: PitoletDocument, frameId: string) {
     createText({
       name: 'Comparison Intro',
       tag: 'p',
-      text: 'Figma is excellent for general design work. Web interfaces are different: the final layout lives in CSS. Pitolet starts there, using real DOM and CSS on the canvas and exporting code from the same document.',
+      text: 'Figma is a broad design tool. Pitolet is made for people who want to change a web interface their coding agent produced.',
       styles: {
         fontSize: fs('xl'),
         color: t('color.muted-foreground'),
@@ -1803,11 +1726,10 @@ function comparisonCell(
 
 function buildComparisonMatrix(doc: PitoletDocument, frameId: string) {
   const bandEl = band(doc, frameId, 'Comparison Matrix Band', {
-    padTop: sp('12'),
-    padBottom: sp('12'),
-    padTopLg: sp('16'),
-    padBottomLg: sp('16'),
-    extra: { fills: fill(t('color.surface')) },
+    padTop: sp('20'),
+    padBottom: sp('20'),
+    padTopLg: sp('24'),
+    padBottomLg: sp('24'),
   });
   const col = contentColumn(doc, bandEl.id, 'Comparison Matrix', { gap: gap(sp('8'), px(0)) });
 
@@ -1817,7 +1739,7 @@ function buildComparisonMatrix(doc: PitoletDocument, frameId: string) {
     createText({
       name: 'Matrix Heading',
       tag: 'h2',
-      text: 'The difference is where the design lives',
+      text: 'What each tool works with',
       styles: {
         fontSize: fs('4xl'),
         fontWeight: 650,
@@ -1875,43 +1797,43 @@ function buildComparisonMatrix(doc: PitoletDocument, frameId: string) {
   const rows: Array<[string, string, string]> = [
     [
       'Layout',
-      "Auto layout, grid, and constraints in Figma's own rendering model.",
-      "Real flexbox and grid rendered by the browser's layout engine.",
+      'Uses Figma’s own layout model.',
+      'Uses flexbox and grid in the browser.',
     ],
     [
       'Responsive design',
-      'Frames, variants, and responsive prototypes that remain design-layer constructs.',
-      'One frame with cascading breakpoint overrides that emit real media queries.',
+      'Responsive work stays in Figma’s design model.',
+      'Breakpoints live in one document and export as media queries.',
     ],
     [
       'Interaction states',
-      'Prototype interactions and component variants.',
-      'Real :hover, :focus, and :active layers that export as CSS.',
+      'Uses prototype interactions and component variants.',
+      'Interaction states export as CSS.',
     ],
     [
       'Code path',
-      'Dev Mode context, Code Connect, plugins, and agents translate the design model into code.',
-      'Deterministic React + Tailwind or HTML + CSS from the same style-resolution pipeline as the canvas.',
+      'Developers or agents translate the design file into code.',
+      'The canvas and exported code use the same style data.',
     ],
     [
       'File format',
-      'Cloud-hosted proprietary design files.',
-      'Readable JSON in your git repository, with normal diffs and history.',
+      'Figma hosts the design file.',
+      'Pitolet stores readable JSON in your repository.',
     ],
     [
       'Coding agents',
-      'Remote MCP can read and write Figma content; write access is beta and depends on client and seat.',
-      'Read/write MCP is built into the editor. Changes appear live, pass validation, and are undoable.',
+      'Its MCP server can read and write Figma files. Write access is still beta.',
+      'The editor includes read and write MCP. You see each change as it happens.',
     ],
     [
       'Design tokens',
-      'Variables and styles, with code workflows through Dev Mode, APIs, and integrations.',
-      'Tokens emit as Tailwind @theme variables and agents can update them on the open canvas.',
+      'Variables and styles can feed code through Dev Mode or integrations.',
+      'Tokens export with the document and stay editable on the canvas.',
     ],
     [
       'Hosting and price',
       'Free starter; paid full design seats currently range from $16 to $90 per month.',
-      'Free hosted tier, Pro at $12 per seat, or self-host the AGPL core for free.',
+      'The hosted version has a free plan, with Pro at $12 per seat. The AGPL core can run on your own server.',
     ],
   ];
 
@@ -1986,10 +1908,10 @@ function buildComparisonMatrix(doc: PitoletDocument, frameId: string) {
 
 function buildFigmaWins(doc: PitoletDocument, frameId: string) {
   const bandEl = band(doc, frameId, 'Figma Wins Band', {
-    padTop: sp('12'),
-    padBottom: sp('12'),
-    padTopLg: sp('16'),
-    padBottomLg: sp('16'),
+    padTop: sp('20'),
+    padBottom: sp('20'),
+    padTopLg: sp('24'),
+    padBottomLg: sp('24'),
   });
   const card = contentColumn(doc, bandEl.id, 'Figma Wins', {
     gap: gap(sp('4'), px(0)),
@@ -2015,7 +1937,7 @@ function buildFigmaWins(doc: PitoletDocument, frameId: string) {
     createText({
       name: 'Figma Wins Body',
       tag: 'p',
-      text: 'Choose Figma for brand work, illustration, advanced vector editing, rich prototypes, large multiplayer teams, or its plugin ecosystem. Pitolet has a narrower job: designing interfaces that will become working web pages.',
+      text: 'Figma is the stronger choice for visual design work beyond web interfaces. It also suits teams that depend on advanced prototyping or its plugin ecosystem.',
       styles: { fontSize: fs('lg'), color: t('color.muted-foreground'), lineHeight: 1.65 },
     }),
   );
@@ -2023,10 +1945,10 @@ function buildFigmaWins(doc: PitoletDocument, frameId: string) {
 
 function buildTeamUseCases(doc: PitoletDocument, frameId: string) {
   const bandEl = band(doc, frameId, 'Use Cases Band', {
-    padTop: sp('12'),
-    padBottom: sp('12'),
-    padTopLg: sp('16'),
-    padBottomLg: sp('16'),
+    padTop: sp('20'),
+    padBottom: sp('20'),
+    padTopLg: sp('24'),
+    padBottomLg: sp('24'),
   });
   const col = contentColumn(doc, bandEl.id, 'Use Cases', { gap: gap(sp('8'), px(0)) });
   attach(
@@ -2035,7 +1957,7 @@ function buildTeamUseCases(doc: PitoletDocument, frameId: string) {
     createText({
       name: 'Use Cases Heading',
       tag: 'h2',
-      text: 'How teams use Pitolet',
+      text: 'Where Pitolet fits',
       styles: {
         fontSize: fs('4xl'),
         fontWeight: 650,
@@ -2062,15 +1984,15 @@ function buildTeamUseCases(doc: PitoletDocument, frameId: string) {
   const cases: Array<[string, string]> = [
     [
       'Design engineers',
-      'Design with the same stacks, tokens, and breakpoints you ship. Export is a component, not a visual reference to rebuild.',
+      'Adjust the interface with the same layout rules used in production. Export the result as a component.',
     ],
     [
       'AI-assisted teams',
-      'Let Claude Code or Codex make the first pass, then review every live, undoable change on the canvas.',
+      'Let your agent make the first pass. Review its work on the canvas and fix what it missed.',
     ],
     [
       'Design in code review',
-      'Keep the readable design document beside the code, and use drift checks to flag when either side changes.',
+      'Keep the Pitolet document beside the code. Drift checks show when they no longer match.',
     ],
   ];
   for (const [title, body] of cases) {
@@ -2117,10 +2039,10 @@ function buildTeamUseCases(doc: PitoletDocument, frameId: string) {
 
 function buildComparisonCta(doc: PitoletDocument, frameId: string) {
   const bandEl = band(doc, frameId, 'Comparison CTA Band', {
-    padTop: sp('12'),
-    padBottom: sp('16'),
-    padTopLg: sp('16'),
-    padBottomLg: sp('20'),
+    padTop: sp('20'),
+    padBottom: sp('20'),
+    padTopLg: sp('24'),
+    padBottomLg: sp('24'),
   });
   const card = contentColumn(doc, bandEl.id, 'Comparison CTA', {
     alignItems: 'center',
@@ -2145,7 +2067,7 @@ function buildComparisonCta(doc: PitoletDocument, frameId: string) {
     createText({
       name: 'CTA Heading',
       tag: 'h2',
-      text: 'Design one page without rebuilding it later.',
+      text: 'Edit your agent’s first pass in Pitolet.',
       styles: {
         fontSize: fs('4xl'),
         fontWeight: 700,
@@ -2160,7 +2082,7 @@ function buildComparisonCta(doc: PitoletDocument, frameId: string) {
     createText({
       name: 'CTA Body',
       tag: 'p',
-      text: 'Open the hosted app for free, or run npx pitolet locally. This comparison page was designed in Pitolet and exported from its source document.',
+      text: 'Try the hosted app for free. You can also run Pitolet on your own server.',
       styles: {
         fontSize: fs('lg'),
         color: t('color.muted-foreground'),
@@ -2176,7 +2098,7 @@ function buildComparisonCta(doc: PitoletDocument, frameId: string) {
     createText({
       name: 'CTA Action',
       tag: 'a',
-      text: 'Start free →',
+      text: 'Open Pitolet',
       styles: {
         fontSize: fs('base'),
         fontWeight: 650,
@@ -2198,13 +2120,10 @@ function buildComparisonCta(doc: PitoletDocument, frameId: string) {
 
 function buildFooter(doc: PitoletDocument, frameId: string) {
   const bandEl = band(doc, frameId, 'Footer Band', {
-    padTop: sp('8'),
-    padBottom: sp('8'),
-    padTopLg: sp('8'),
-    padBottomLg: sp('8'),
-    extra: {
-      border: { width: px(1), style: 'solid', color: t('color.border'), sides: { top: true } },
-    },
+    padTop: sp('12'),
+    padBottom: sp('12'),
+    padTopLg: sp('12'),
+    padBottomLg: sp('12'),
   });
   const footer = attach(
     doc,
@@ -2277,16 +2196,16 @@ function buildFooter(doc: PitoletDocument, frameId: string) {
 type PageMeta = { title: string; description: string; url: string };
 
 const LANDING_META: PageMeta = {
-  title: 'Pitolet — design the real interface',
+  title: 'Pitolet | Edit your coding agent’s interface',
   description:
-    'Design responsive web interfaces with real DOM and CSS. Work on the same canvas as your coding agent, then export React or HTML.',
+    'Pitolet lets you edit the interface your coding agent made. Work on the page and send the result back to your agent.',
   url: 'https://pitolet.com',
 };
 
 const COMPARISON_META: PageMeta = {
   title: 'Pitolet vs Figma for web interface work',
   description:
-    'A straightforward comparison of Pitolet and Figma for responsive web design, code export, agent workflows, file ownership, and pricing.',
+    'See how Pitolet and Figma differ when you need to edit a web interface made by a coding agent.',
   url: 'https://pitolet.com/vs-figma/',
 };
 
@@ -2428,6 +2347,17 @@ function emitPage(opts: {
     ['no /assets-store refs', !page.includes('/assets-store')],
     ['no app-relative asset urls', !page.includes('src="assets/')],
     ['favicon inlined', page.includes('rel="icon"')],
+    ['no em dashes in page copy', !page.includes('—')],
+    [
+      'no stock marketing phrases',
+      !/\b(delv(?:e|es|ed|ing)|tapestry|realm|landscape|leverage|robust|seamless(?:ly)?|nuanced|foster|navigate|underscore|pivotal|crucial|comprehensive|intricate|effortless(?:ly)?|revolutionary|game-changing|supercharge|unlock)\b/i.test(page),
+    ],
+    [
+      'no formulaic AI phrases',
+      !/\b(not only|not just|it is worth noting|it’s worth noting|in today’s|whether you are|let’s dive|more than just)\b/i.test(
+        page,
+      ),
+    ],
   ];
   const checks = [
     ...commonChecks,
@@ -2445,15 +2375,22 @@ function emitPage(opts: {
 }
 
 function main() {
+  const mediaDir = resolve(repoRoot, 'deploy/static/media');
+  mkdirSync(mediaDir, { recursive: true });
+  copyFileSync(
+    resolve(repoRoot, 'marketing/assets/pitolet-insert.png'),
+    resolve(mediaDir, 'pitolet-insert.png'),
+  );
+
   emitPage({
     built: buildDoc(),
     docPath: 'site/landing.pitolet.json',
     outPath: 'deploy/static/index.html',
     meta: LANDING_META,
     checks: [
-      ['contains headline', (page) => page.includes('Ship the same thing.')],
+      ['contains headline', (page) => page.includes('Give your agent’s designs a human touch.')],
       ['contains npx chip', (page) => page.includes('npx pitolet')],
-      ['contains website import', (page) => page.includes('Start with the site you already have.')],
+      ['contains website import', (page) => page.includes('Bring in the site you already have.')],
       ['links comparison page', (page) => page.includes('href="/vs-figma/"')],
     ],
   });
@@ -2464,7 +2401,10 @@ function main() {
     outPath: 'deploy/static/vs-figma/index.html',
     meta: COMPARISON_META,
     checks: [
-      ['contains comparison headline', (page) => page.includes('Use Figma to draw.')],
+      [
+        'contains comparison headline',
+        (page) => page.includes('Use Pitolet when the interface already exists.'),
+      ],
       [
         'contains honest Figma section',
         (page) => page.includes('When Figma is still the better tool'),

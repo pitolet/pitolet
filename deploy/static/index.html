@@ -4,17 +4,17 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="color-scheme" content="dark" />
-  <title>Pitolet — design the real interface</title>
-  <meta name="description" content="Design responsive web interfaces with real DOM and CSS. Work on the same canvas as your coding agent, then export React or HTML." />
+  <title>Pitolet | Edit your coding agent’s interface</title>
+  <meta name="description" content="Pitolet lets you edit the interface your coding agent made. Work on the page and send the result back to your agent." />
   <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2232%22%20height%3D%2232%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22oklch(0.165%200.008%20250)%22%2F%3E%3Cpath%20d%3D%22M5%2022%20L11%208%20L15%2015%20L18%2010%20L27%2022%22%20fill%3D%22none%22%20stroke%3D%22oklch(0.71%200.125%20215)%22%20stroke-width%3D%222.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Pitolet" />
-  <meta property="og:title" content="Pitolet — design the real interface" />
-  <meta property="og:description" content="Design responsive web interfaces with real DOM and CSS. Work on the same canvas as your coding agent, then export React or HTML." />
+  <meta property="og:title" content="Pitolet | Edit your coding agent’s interface" />
+  <meta property="og:description" content="Pitolet lets you edit the interface your coding agent made. Work on the page and send the result back to your agent." />
   <meta property="og:url" content="https://pitolet.com" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Pitolet — design the real interface" />
-  <meta name="twitter:description" content="Design responsive web interfaces with real DOM and CSS. Work on the same canvas as your coding agent, then export React or HTML." />
+  <meta name="twitter:title" content="Pitolet | Edit your coding agent’s interface" />
+  <meta name="twitter:description" content="Pitolet lets you edit the interface your coding agent made. Work on the page and send the result back to your agent." />
   <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; border: 0 solid; font: inherit; color: inherit; }
 html, body { min-height: 100%; }
@@ -29,7 +29,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
   align-items: center;
   font-family: Inter, system-ui, sans-serif;
   color: oklch(0.95 0.006 250);
-  background-color: oklch(0.13 0.006 250);
+  background-image: linear-gradient(180deg, oklch(0.15 0.022 225) 0%, oklch(0.125 0.007 250) 48%, oklch(0.145 0.017 230) 100%);
 }
 
 .nav-band {
@@ -41,7 +41,6 @@ button, input, select, textarea { background: transparent; appearance: none; }
   padding-bottom: 16px;
   padding-left: 20px;
   width: 100%;
-  border-bottom: 1px solid oklch(1 0 0 / 0.09);
 }
 
 @media (min-width: 768px) {
@@ -161,19 +160,18 @@ button, input, select, textarea { background: transparent; appearance: none; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 48px;
+  padding-top: 80px;
   padding-right: 20px;
-  padding-bottom: 64px;
+  padding-bottom: 80px;
   padding-left: 20px;
   width: 100%;
-  background-image: radial-gradient(circle, oklch(0.22 0.045 215) 0%, oklch(0.13 0.006 250) 72%);
 }
 
 @media (min-width: 768px) {
   .hero-band {
-    padding-top: 80px;
+    padding-top: 96px;
     padding-right: 40px;
-    padding-bottom: 80px;
+    padding-bottom: 96px;
     padding-left: 40px;
   }
 }
@@ -181,38 +179,47 @@ button, input, select, textarea { background: transparent; appearance: none; }
 .hero {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 24px 0px;
   width: 100%;
   max-width: 1120px;
 }
 
-.eyebrow {
+.hero-layout {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
-  gap: 0px 8px;
-  padding-top: 4px;
-  padding-right: 12px;
-  padding-bottom: 4px;
-  padding-left: 12px;
-  background-color: oklch(0.165 0.008 250);
-  border: 1px solid oklch(1 0 0 / 0.09);
-  border-radius: 9999px;
+  gap: 40px 48px;
+  width: 100%;
 }
 
-.eyebrow-text {
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: 0.2px;
-  color: oklch(0.7 0.012 250);
+@media (min-width: 1024px) {
+  .hero-layout {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.hero-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px 0px;
+  width: 100%;
+  min-width: 0px;
+}
+
+@media (min-width: 1024px) {
+  .hero-copy {
+    display: flex;
+    align-items: flex-start;
+  }
 }
 
 .headline {
-  max-width: 900px;
+  max-width: 620px;
   font-size: 48px;
   font-weight: 700;
-  line-height: 1.05;
+  line-height: 1.04;
   letter-spacing: -1.5px;
   text-align: center;
 }
@@ -226,16 +233,23 @@ button, input, select, textarea { background: transparent; appearance: none; }
 
 @media (min-width: 1024px) {
   .headline {
-    font-size: 72px;
+    font-size: 60px;
+    text-align: left;
   }
 }
 
 .subhead {
-  max-width: 700px;
-  font-size: 20px;
-  line-height: 1.55;
+  max-width: 560px;
+  font-size: 18px;
+  line-height: 1.6;
   text-align: center;
   color: oklch(0.7 0.012 250);
+}
+
+@media (min-width: 1024px) {
+  .subhead {
+    text-align: left;
+  }
 }
 
 .ctas {
@@ -243,26 +257,41 @@ button, input, select, textarea { background: transparent; appearance: none; }
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  padding-top: 16px;
+  padding-top: 8px;
   padding-right: 0px;
   padding-bottom: 0px;
   padding-left: 0px;
 }
 
-.start-free {
+@media (min-width: 640px) {
+  .ctas {
+    display: flex;
+    flex-direction: row;
+  }
+}
+
+@media (min-width: 1024px) {
+  .ctas {
+    display: flex;
+    flex-direction: row;
+    align-self: flex-start;
+  }
+}
+
+.open-pitolet {
   padding-top: 12px;
   padding-right: 24px;
   padding-bottom: 12px;
   padding-left: 24px;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 650;
   color: oklch(0.14 0.02 222);
   background-color: oklch(0.71 0.125 215);
   border-radius: 8px;
   cursor: pointer;
 }
 
-.start-free:hover {
+.open-pitolet:hover {
   background-color: oklch(0.6 0.14 222);
 }
 
@@ -292,360 +321,235 @@ button, input, select, textarea { background: transparent; appearance: none; }
   color: oklch(0.95 0.006 250);
 }
 
-.editor-preview {
+.product-demo {
   display: flex;
   flex-direction: column;
-  margin-top: 24px;
-  margin-right: 0px;
-  margin-bottom: 0px;
-  margin-left: 0px;
-  width: 100%;
-  max-width: 1040px;
-  background-color: oklch(0.165 0.008 250);
-  border: 1px solid oklch(1 0 0 / 0.16);
-  border-radius: 12px;
-  box-shadow: 0px 24px 64px -24px oklch(0.02 0.01 250 / 0.72);
-  overflow: hidden;
-}
-
-.preview-toolbar {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
+  gap: 12px 0px;
   padding-top: 12px;
-  padding-right: 16px;
+  padding-right: 12px;
   padding-bottom: 12px;
-  padding-left: 16px;
-  border-bottom: 1px solid oklch(1 0 0 / 0.09);
-}
-
-.window-controls {
-  display: flex;
-  flex-direction: row;
-  gap: 0px 8px;
-}
-
-.close {
-  display: flex;
-  flex-direction: column;
-  width: 8px;
-  height: 8px;
-  background-color: oklch(0.55 0.014 250);
-  border-radius: 9999px;
-  opacity: 0.45;
-}
-
-.minimize {
-  display: flex;
-  flex-direction: column;
-  width: 8px;
-  height: 8px;
-  background-color: oklch(0.55 0.014 250);
-  border-radius: 9999px;
-  opacity: 0.45;
-}
-
-.expand {
-  display: flex;
-  flex-direction: column;
-  width: 8px;
-  height: 8px;
-  background-color: oklch(0.71 0.125 215);
-  border-radius: 9999px;
-  opacity: 0.9;
-}
-
-.preview-document {
-  font-size: 12px;
-  color: oklch(0.55 0.014 250);
-}
-
-.agent-status {
-  padding-top: 3px;
-  padding-right: 8px;
-  padding-bottom: 3px;
-  padding-left: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  color: oklch(0.71 0.125 215);
-  background-color: oklch(0.13 0.006 250);
-  border: 1px solid oklch(1 0 0 / 0.09);
-  border-radius: 9999px;
-}
-
-.preview-work-area {
-  display: flex;
-  flex-direction: row;
+  padding-left: 12px;
   width: 100%;
-  min-height: 430px;
-}
-
-.preview-layers {
-  display: none;
-  gap: 12px 0px;
-  padding-top: 16px;
-  padding-right: 16px;
-  padding-bottom: 16px;
-  padding-left: 16px;
-  width: 180px;
-  background-color: oklch(0.13 0.006 250);
-  border-right: 1px solid oklch(1 0 0 / 0.09);
-}
-
-@media (min-width: 768px) {
-  .preview-layers {
-    display: flex;
-  }
-}
-
-.layers-label {
-  font-size: 12px;
-  font-weight: 650;
-  color: oklch(0.7 0.012 250);
-}
-
-.layer-landing {
-  padding-top: 4px;
-  padding-right: 8px;
-  padding-bottom: 4px;
-  padding-left: 8px;
-  font-size: 12px;
-  color: oklch(0.55 0.014 250);
-  border-radius: 4px;
-}
-
-.layer-navigation {
-  padding-top: 4px;
-  padding-right: 8px;
-  padding-bottom: 4px;
-  padding-left: 8px;
-  font-size: 12px;
-  color: oklch(0.55 0.014 250);
-  border-radius: 4px;
-}
-
-.layer-hero {
-  padding-top: 4px;
-  padding-right: 8px;
-  padding-bottom: 4px;
-  padding-left: 8px;
-  font-size: 12px;
-  color: oklch(0.71 0.125 215);
-  background-color: oklch(0.165 0.008 250);
-  border-radius: 4px;
-}
-
-.layer-feature-cards {
-  padding-top: 4px;
-  padding-right: 8px;
-  padding-bottom: 4px;
-  padding-left: 8px;
-  font-size: 12px;
-  color: oklch(0.55 0.014 250);
-  border-radius: 4px;
-}
-
-.preview-canvas {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px 0px;
-  padding-top: 20px;
-  padding-right: 20px;
-  padding-bottom: 20px;
-  padding-left: 20px;
-  flex-grow: 1;
-  flex-shrink: 1;
-  flex-basis: 0%;
   min-width: 0px;
-  background-color: oklch(0.13 0.006 250);
+  max-width: 580px;
+  background-color: oklch(0.2 0.009 250);
+  border: 1px solid oklch(0.71 0.125 215 / 0.32);
+  border-radius: 12px;
+  box-shadow: 0px 28px 70px -28px oklch(0.02 0.01 250 / 0.78), 0px 0px 48px -20px oklch(0.71 0.125 215 / 0.32);
+}
+
+.agent-editing-demo {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.demo-caption {
+  padding-top: 0px;
+  padding-right: 8px;
+  padding-bottom: 4px;
+  padding-left: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: oklch(0.7 0.012 250);
+}
+
+.proof-band {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 32px;
+  padding-right: 20px;
+  padding-bottom: 32px;
+  padding-left: 20px;
+  width: 100%;
 }
 
 @media (min-width: 768px) {
-  .preview-canvas {
-    padding-top: 32px;
-    padding-right: 32px;
-    padding-bottom: 32px;
-    padding-left: 32px;
+  .proof-band {
+    padding-top: 40px;
+    padding-right: 40px;
+    padding-bottom: 40px;
+    padding-left: 40px;
   }
 }
 
-.canvas-width {
-  font-size: 12px;
-  color: oklch(0.55 0.014 250);
-}
-
-.preview-page {
-  display: flex;
-  flex-direction: column;
-  gap: 20px 0px;
-  padding-top: 24px;
-  padding-right: 24px;
-  padding-bottom: 24px;
-  padding-left: 24px;
+.proof-points {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: 1fr 1fr;
   width: 100%;
-  max-width: 560px;
-  background-color: oklch(0.2 0.009 250);
-  border: 1px solid oklch(0.71 0.125 215);
-  border-radius: 8px;
-  box-shadow: 0px 0px 0px 3px oklch(0.71 0.125 215 / 0.12);
+  max-width: 1120px;
 }
 
-.preview-page-nav {
+@media (min-width: 768px) {
+  .proof-points {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+  }
+}
+
+.proof-dom-css {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-between;
+  gap: 0px 12px;
+  min-width: 0px;
 }
 
-.preview-logo {
+.proof-marker {
+  display: flex;
+  flex-direction: column;
+  width: 8px;
+  height: 8px;
+  background-color: oklch(0.71 0.125 215);
+  border-radius: 9999px;
+  box-shadow: 0px 0px 12px 0px oklch(0.71 0.125 215 / 0.45);
+}
+
+.proof-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px 0px;
+  min-width: 0px;
+}
+
+.proof-title {
   font-size: 14px;
-  font-weight: 700;
-}
-
-.preview-nav-links {
-  font-size: 12px;
-  color: oklch(0.7 0.012 250);
-}
-
-.preview-eyebrow {
-  font-size: 12px;
   font-weight: 650;
-  color: oklch(0.71 0.125 215);
+  color: oklch(0.95 0.006 250);
 }
 
-.preview-headline {
-  max-width: 390px;
-  font-size: 30px;
-  font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: -0.8px;
+.proof-detail {
+  font-size: 12px;
+  color: oklch(0.55 0.014 250);
 }
 
-.preview-body {
-  max-width: 390px;
-  font-size: 14px;
-  color: oklch(0.7 0.012 250);
-}
-
-.preview-actions {
+.proof-mcp {
   display: flex;
   flex-direction: row;
-  gap: 0px 8px;
+  align-items: center;
+  gap: 0px 12px;
+  min-width: 0px;
 }
 
-.preview-primary {
-  padding-top: 8px;
-  padding-right: 12px;
-  padding-bottom: 8px;
-  padding-left: 12px;
-  font-size: 12px;
-  font-weight: 650;
-  color: oklch(0.14 0.02 222);
+.proof-marker-2 {
+  display: flex;
+  flex-direction: column;
+  width: 8px;
+  height: 8px;
   background-color: oklch(0.71 0.125 215);
-  border-radius: 4px;
+  border-radius: 9999px;
+  box-shadow: 0px 0px 12px 0px oklch(0.71 0.125 215 / 0.45);
 }
 
-.preview-secondary {
-  padding-top: 8px;
-  padding-right: 12px;
-  padding-bottom: 8px;
-  padding-left: 12px;
-  font-size: 12px;
-  color: oklch(0.7 0.012 250);
-  border: 1px solid oklch(1 0 0 / 0.16);
-  border-radius: 4px;
+.proof-copy-2 {
+  display: flex;
+  flex-direction: column;
+  gap: 4px 0px;
+  min-width: 0px;
 }
 
-.preview-inspector {
-  display: none;
-  gap: 16px 0px;
-  padding-top: 16px;
-  padding-right: 16px;
-  padding-bottom: 16px;
-  padding-left: 16px;
-  width: 210px;
-  background-color: oklch(0.13 0.006 250);
-  border-left: 1px solid oklch(1 0 0 / 0.09);
-}
-
-@media (min-width: 1024px) {
-  .preview-inspector {
-    display: flex;
-  }
-}
-
-.inspector-label {
-  font-size: 12px;
+.proof-title-2 {
+  font-size: 14px;
   font-weight: 650;
-  color: oklch(0.7 0.012 250);
+  color: oklch(0.95 0.006 250);
 }
 
-.inspector-stack-vertical {
-  padding-top: 8px;
-  padding-right: 12px;
-  padding-bottom: 8px;
-  padding-left: 12px;
-  font-family: 'JetBrains Mono', system-ui, sans-serif;
+.proof-detail-2 {
   font-size: 12px;
   color: oklch(0.55 0.014 250);
-  background-color: oklch(0.165 0.008 250);
-  border-radius: 4px;
 }
 
-.inspector-gap-20 {
-  padding-top: 8px;
-  padding-right: 12px;
-  padding-bottom: 8px;
-  padding-left: 12px;
-  font-family: 'JetBrains Mono', system-ui, sans-serif;
-  font-size: 12px;
-  color: oklch(0.55 0.014 250);
-  background-color: oklch(0.165 0.008 250);
-  border-radius: 4px;
+.proof-react-or-html {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0px 12px;
+  min-width: 0px;
 }
 
-.inspector-padding-24 {
-  padding-top: 8px;
-  padding-right: 12px;
-  padding-bottom: 8px;
-  padding-left: 12px;
-  font-family: 'JetBrains Mono', system-ui, sans-serif;
-  font-size: 12px;
-  color: oklch(0.55 0.014 250);
-  background-color: oklch(0.165 0.008 250);
-  border-radius: 4px;
+.proof-marker-3 {
+  display: flex;
+  flex-direction: column;
+  width: 8px;
+  height: 8px;
+  background-color: oklch(0.71 0.125 215);
+  border-radius: 9999px;
+  box-shadow: 0px 0px 12px 0px oklch(0.71 0.125 215 / 0.45);
 }
 
-.inspector-width-fill {
-  padding-top: 8px;
-  padding-right: 12px;
-  padding-bottom: 8px;
-  padding-left: 12px;
-  font-family: 'JetBrains Mono', system-ui, sans-serif;
+.proof-copy-3 {
+  display: flex;
+  flex-direction: column;
+  gap: 4px 0px;
+  min-width: 0px;
+}
+
+.proof-title-3 {
+  font-size: 14px;
+  font-weight: 650;
+  color: oklch(0.95 0.006 250);
+}
+
+.proof-detail-3 {
   font-size: 12px;
   color: oklch(0.55 0.014 250);
-  background-color: oklch(0.165 0.008 250);
-  border-radius: 4px;
+}
+
+.proof-cloud-or-local {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0px 12px;
+  min-width: 0px;
+}
+
+.proof-marker-4 {
+  display: flex;
+  flex-direction: column;
+  width: 8px;
+  height: 8px;
+  background-color: oklch(0.71 0.125 215);
+  border-radius: 9999px;
+  box-shadow: 0px 0px 12px 0px oklch(0.71 0.125 215 / 0.45);
+}
+
+.proof-copy-4 {
+  display: flex;
+  flex-direction: column;
+  gap: 4px 0px;
+  min-width: 0px;
+}
+
+.proof-title-4 {
+  font-size: 14px;
+  font-weight: 650;
+  color: oklch(0.95 0.006 250);
+}
+
+.proof-detail-4 {
+  font-size: 12px;
+  color: oklch(0.55 0.014 250);
 }
 
 .props-band {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 48px;
+  padding-top: 80px;
   padding-right: 20px;
-  padding-bottom: 48px;
+  padding-bottom: 80px;
   padding-left: 20px;
   width: 100%;
 }
 
 @media (min-width: 768px) {
   .props-band {
-    padding-top: 64px;
+    padding-top: 96px;
     padding-right: 40px;
-    padding-bottom: 64px;
+    padding-bottom: 96px;
     padding-left: 40px;
   }
 }
@@ -658,16 +562,38 @@ button, input, select, textarea { background: transparent; appearance: none; }
   max-width: 1120px;
 }
 
-.props-heading {
-  align-self: center;
-  max-width: 720px;
-  font-size: 36px;
-  font-weight: 650;
-  letter-spacing: -1px;
-  text-align: center;
+.props-introduction {
+  display: flex;
+  flex-direction: column;
+  gap: 16px 32px;
+  width: 100%;
 }
 
-.props-row {
+@media (min-width: 768px) {
+  .props-introduction {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+}
+
+.props-heading {
+  max-width: 560px;
+  font-size: 36px;
+  font-weight: 650;
+  line-height: 1.12;
+  letter-spacing: -1px;
+}
+
+.props-summary {
+  max-width: 420px;
+  font-size: 16px;
+  line-height: 1.55;
+  color: oklch(0.7 0.012 250);
+}
+
+.props-layout {
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -676,86 +602,137 @@ button, input, select, textarea { background: transparent; appearance: none; }
 }
 
 @media (min-width: 768px) {
-  .props-row {
+  .props-layout {
     display: flex;
     flex-direction: row;
   }
 }
 
-.the-browser-is-the-canvas {
+.edit-the-real-page {
   display: flex;
   flex-direction: column;
-  gap: 12px 0px;
-  padding-top: 24px;
-  padding-right: 24px;
-  padding-bottom: 24px;
-  padding-left: 24px;
+  justify-content: space-between;
+  gap: 24px 0px;
+  padding-top: 32px;
+  padding-right: 32px;
+  padding-bottom: 32px;
+  padding-left: 32px;
   width: 100%;
-  background-color: oklch(0.165 0.008 250);
-  border: 1px solid oklch(1 0 0 / 0.09);
+  background-image: radial-gradient(circle, oklch(0.235 0.035 220) 0%, oklch(0.165 0.008 250) 78%);
+  border: 1px solid oklch(0.71 0.125 215 / 0.28);
   border-radius: 12px;
+  box-shadow: 0px 24px 56px -32px oklch(0.71 0.125 215 / 0.3);
 }
 
-.tick {
+@media (min-width: 768px) {
+  .edit-the-real-page {
+    display: flex;
+    padding-top: 40px;
+    padding-right: 40px;
+    padding-bottom: 40px;
+    padding-left: 40px;
+    min-height: 430px;
+  }
+}
+
+.card-number {
+  padding-top: 0px;
+  padding-right: 0px;
+  padding-bottom: 0px;
+  padding-left: 0px;
+  font-family: 'JetBrains Mono', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: oklch(0.71 0.125 215);
+}
+
+.card-copy {
   display: flex;
   flex-direction: column;
-  width: 36px;
-  height: 4px;
-  background-color: oklch(0.71 0.125 215);
-  border-radius: 9999px;
+  gap: 16px 0px;
+  width: 100%;
 }
 
 .card-title {
-  font-size: 20px;
-  font-weight: 600;
-  letter-spacing: -0.3px;
+  font-size: 30px;
+  font-weight: 650;
+  line-height: 1.16;
+  letter-spacing: -0.7px;
+}
+
+@media (min-width: 768px) {
+  .card-title {
+    font-size: 36px;
+  }
 }
 
 .card-body {
-  font-size: 16px;
-  line-height: 1.6;
+  max-width: 480px;
+  font-size: 18px;
+  line-height: 1.7;
   color: oklch(0.7 0.012 250);
 }
 
-.your-agent-works-beside-you {
+.secondary-props {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 24px 0px;
+  width: 100%;
+}
+
+.your-agent-stays-in-sync {
   display: flex;
   flex-direction: column;
   gap: 12px 0px;
+  flex-grow: 1;
   padding-top: 24px;
   padding-right: 24px;
   padding-bottom: 24px;
   padding-left: 24px;
   width: 100%;
-  background-color: oklch(0.165 0.008 250);
+  background-color: oklch(0.2 0.009 250);
   border: 1px solid oklch(1 0 0 / 0.09);
   border-radius: 12px;
 }
 
-.tick-2 {
+.card-number-2 {
+  padding-top: 0px;
+  padding-right: 0px;
+  padding-bottom: 12px;
+  padding-left: 0px;
+  font-family: 'JetBrains Mono', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: oklch(0.71 0.125 215);
+}
+
+.card-copy-2 {
   display: flex;
   flex-direction: column;
-  width: 36px;
-  height: 4px;
-  background-color: oklch(0.71 0.125 215);
-  border-radius: 9999px;
+  gap: 12px 0px;
+  width: 100%;
 }
 
 .card-title-2 {
   font-size: 20px;
-  font-weight: 600;
+  font-weight: 650;
+  line-height: 1.16;
   letter-spacing: -0.3px;
 }
 
 .card-body-2 {
+  max-width: 520px;
   font-size: 16px;
   line-height: 1.6;
   color: oklch(0.7 0.012 250);
 }
 
-.the-output-is-already-code {
+.keep-the-code {
   display: flex;
   flex-direction: column;
   gap: 12px 0px;
+  flex-grow: 1;
   padding-top: 24px;
   padding-right: 24px;
   padding-bottom: 24px;
@@ -766,22 +743,33 @@ button, input, select, textarea { background: transparent; appearance: none; }
   border-radius: 12px;
 }
 
-.tick-3 {
+.card-number-3 {
+  padding-top: 0px;
+  padding-right: 0px;
+  padding-bottom: 12px;
+  padding-left: 0px;
+  font-family: 'JetBrains Mono', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: oklch(0.71 0.125 215);
+}
+
+.card-copy-3 {
   display: flex;
   flex-direction: column;
-  width: 36px;
-  height: 4px;
-  background-color: oklch(0.71 0.125 215);
-  border-radius: 9999px;
+  gap: 12px 0px;
+  width: 100%;
 }
 
 .card-title-3 {
   font-size: 20px;
-  font-weight: 600;
+  font-weight: 650;
+  line-height: 1.16;
   letter-spacing: -0.3px;
 }
 
 .card-body-3 {
+  max-width: 520px;
   font-size: 16px;
   line-height: 1.6;
   color: oklch(0.7 0.012 250);
@@ -791,21 +779,18 @@ button, input, select, textarea { background: transparent; appearance: none; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 48px;
+  padding-top: 80px;
   padding-right: 20px;
-  padding-bottom: 48px;
+  padding-bottom: 80px;
   padding-left: 20px;
   width: 100%;
-  background-color: oklch(0.165 0.008 250);
-  border-top: 1px solid oklch(1 0 0 / 0.09);
-  border-bottom: 1px solid oklch(1 0 0 / 0.09);
 }
 
 @media (min-width: 768px) {
   .import-band {
-    padding-top: 64px;
+    padding-top: 96px;
     padding-right: 40px;
-    padding-bottom: 64px;
+    padding-bottom: 96px;
     padding-left: 40px;
   }
 }
@@ -820,9 +805,10 @@ button, input, select, textarea { background: transparent; appearance: none; }
   padding-left: 24px;
   width: 100%;
   max-width: 1120px;
-  background-color: oklch(0.13 0.006 250);
-  border: 1px solid oklch(1 0 0 / 0.16);
+  background-image: radial-gradient(circle, oklch(0.205 0.025 225) 0%, oklch(0.13 0.006 250) 82%);
+  border: 1px solid oklch(0.71 0.125 215 / 0.24);
   border-radius: 12px;
+  box-shadow: 0px 32px 70px -44px oklch(0.71 0.125 215 / 0.24);
 }
 
 @media (min-width: 768px) {
@@ -843,12 +829,6 @@ button, input, select, textarea { background: transparent; appearance: none; }
   gap: 16px 0px;
   width: 100%;
   min-width: 0px;
-}
-
-.import-eyebrow {
-  font-size: 14px;
-  font-weight: 650;
-  color: oklch(0.71 0.125 215);
 }
 
 .import-heading {
@@ -902,7 +882,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
   min-width: 0px;
 }
 
-.one-responsive-frame {
+.one-responsive-document {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
@@ -932,7 +912,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
   color: oklch(0.7 0.012 250);
 }
 
-.assets-copied-in {
+.local-assets {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
@@ -962,7 +942,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
   color: oklch(0.7 0.012 250);
 }
 
-.a-visual-report {
+.see-what-changed {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
@@ -996,18 +976,18 @@ button, input, select, textarea { background: transparent; appearance: none; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 0px;
+  padding-top: 32px;
   padding-right: 20px;
-  padding-bottom: 48px;
+  padding-bottom: 80px;
   padding-left: 20px;
   width: 100%;
 }
 
 @media (min-width: 768px) {
   .dogfood-band {
-    padding-top: 0px;
+    padding-top: 40px;
     padding-right: 40px;
-    padding-bottom: 64px;
+    padding-bottom: 96px;
     padding-left: 40px;
   }
 }
@@ -1019,15 +999,12 @@ button, input, select, textarea { background: transparent; appearance: none; }
   align-items: center;
   justify-content: center;
   gap: 0px 8px;
-  padding-top: 16px;
+  padding-top: 8px;
   padding-right: 24px;
-  padding-bottom: 16px;
+  padding-bottom: 8px;
   padding-left: 24px;
   width: 100%;
   max-width: 1120px;
-  background-color: oklch(0.165 0.008 250);
-  border: 1px solid oklch(1 0 0 / 0.09);
-  border-radius: 9999px;
 }
 
 .dogfood-text {
@@ -1046,19 +1023,18 @@ button, input, select, textarea { background: transparent; appearance: none; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 48px;
+  padding-top: 80px;
   padding-right: 20px;
-  padding-bottom: 48px;
+  padding-bottom: 80px;
   padding-left: 20px;
   width: 100%;
-  border-top: 1px solid oklch(1 0 0 / 0.09);
 }
 
 @media (min-width: 768px) {
   .pricing-band {
-    padding-top: 64px;
+    padding-top: 96px;
     padding-right: 40px;
-    padding-bottom: 64px;
+    padding-bottom: 96px;
     padding-left: 40px;
   }
 }
@@ -1214,9 +1190,10 @@ button, input, select, textarea { background: transparent; appearance: none; }
   padding-bottom: 32px;
   padding-left: 32px;
   width: 100%;
-  background-color: oklch(0.2 0.009 250);
+  background-image: radial-gradient(circle, oklch(0.245 0.035 220) 0%, oklch(0.18 0.01 250) 82%);
   border: 1px solid oklch(0.71 0.125 215);
   border-radius: 12px;
+  box-shadow: 0px 28px 60px -36px oklch(0.71 0.125 215 / 0.34);
 }
 
 .plan-head-2 {
@@ -1466,19 +1443,18 @@ button, input, select, textarea { background: transparent; appearance: none; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 32px;
+  padding-top: 48px;
   padding-right: 20px;
-  padding-bottom: 32px;
+  padding-bottom: 48px;
   padding-left: 20px;
   width: 100%;
-  border-top: 1px solid oklch(1 0 0 / 0.09);
 }
 
 @media (min-width: 768px) {
   .footer-band {
-    padding-top: 32px;
+    padding-top: 48px;
     padding-right: 40px;
-    padding-bottom: 32px;
+    padding-bottom: 48px;
     padding-left: 40px;
   }
 }
@@ -1559,116 +1535,120 @@ button, input, select, textarea { background: transparent; appearance: none; }
   </section>
   <section class="hero-band">
     <div class="hero">
-      <div class="eyebrow">
-        <span class="eyebrow-text">Real DOM + CSS · shared with your agent</span>
-      </div>
-      <h1 class="headline">Design the interface. Ship the same thing.</h1>
-      <p class="subhead">Pitolet is a browser-based design canvas that you and your coding agent can edit together. It uses real web layout, so the design already behaves like the page you will ship.</p>
-      <div class="ctas">
-        <a class="start-free" href="https://app.pitolet.com">Open Pitolet</a>
-        <div class="npx-chip">
-          <span class="chip-prompt">$</span>
-          <code class="chip-command">npx pitolet</code>
-        </div>
-      </div>
-      <article class="editor-preview">
-        <div class="preview-toolbar">
-          <div class="window-controls">
-            <div class="close"></div>
-            <div class="minimize"></div>
-            <div class="expand"></div>
-          </div>
-          <span class="preview-document">Landing page · Pitolet</span>
-          <span class="agent-status">Agent connected</span>
-        </div>
-        <div class="preview-work-area">
-          <div class="preview-layers">
-            <span class="layers-label">Layers</span>
-            <span class="layer-landing">Landing</span>
-            <span class="layer-navigation">  Navigation</span>
-            <span class="layer-hero">  Hero</span>
-            <span class="layer-feature-cards">  Feature cards</span>
-          </div>
-          <div class="preview-canvas">
-            <span class="canvas-width">1440 px · Desktop</span>
-            <div class="preview-page">
-              <div class="preview-page-nav">
-                <span class="preview-logo">Northstar</span>
-                <span class="preview-nav-links">Product   Pricing   Log in</span>
-              </div>
-              <span class="preview-eyebrow">Built for small teams</span>
-              <h3 class="preview-headline">A calmer way to plan the week.</h3>
-              <p class="preview-body">Projects, decisions, and next steps in one clear workspace.</p>
-              <div class="preview-actions">
-                <span class="preview-primary">Start planning</span>
-                <span class="preview-secondary">See how it works</span>
-              </div>
+      <div class="hero-layout">
+        <div class="hero-copy">
+          <h1 class="headline">Give your agent’s designs a human touch.</h1>
+          <p class="subhead">Your coding agent gets the interface close. Pitolet lets you fix the details on the page while your agent sees every change.</p>
+          <div class="ctas">
+            <a class="open-pitolet" href="https://app.pitolet.com">Open Pitolet</a>
+            <div class="npx-chip">
+              <span class="chip-prompt">$</span>
+              <code class="chip-command">npx pitolet</code>
             </div>
           </div>
-          <div class="preview-inspector">
-            <span class="inspector-label">Layout</span>
-            <span class="inspector-stack-vertical">Stack · Vertical</span>
-            <span class="inspector-gap-20">Gap · 20</span>
-            <span class="inspector-padding-24">Padding · 24</span>
-            <span class="inspector-width-fill">Width · Fill</span>
-          </div>
         </div>
-      </article>
+        <figure class="product-demo">
+          <img class="agent-editing-demo" src="/media/pitolet-insert.png" alt="Claude Code adding a section to a Pitolet document while the edit appears on the canvas">
+          <figcaption class="demo-caption">Claude Code adds a section directly to the open page.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+  <section class="proof-band">
+    <div class="proof-points">
+      <div class="proof-dom-css">
+        <div class="proof-marker"></div>
+        <div class="proof-copy">
+          <span class="proof-title">DOM + CSS</span>
+          <span class="proof-detail">Browser layout</span>
+        </div>
+      </div>
+      <div class="proof-mcp">
+        <div class="proof-marker-2"></div>
+        <div class="proof-copy-2">
+          <span class="proof-title-2">MCP</span>
+          <span class="proof-detail-2">Read and write</span>
+        </div>
+      </div>
+      <div class="proof-react-or-html">
+        <div class="proof-marker-3"></div>
+        <div class="proof-copy-3">
+          <span class="proof-title-3">React or HTML</span>
+          <span class="proof-detail-3">From one document</span>
+        </div>
+      </div>
+      <div class="proof-cloud-or-local">
+        <div class="proof-marker-4"></div>
+        <div class="proof-copy-4">
+          <span class="proof-title-4">Cloud or local</span>
+          <span class="proof-detail-4">Your choice</span>
+        </div>
+      </div>
     </div>
   </section>
   <section class="props-band">
     <div class="props">
-      <h2 class="props-heading">Design and code stop drifting.</h2>
-      <div class="props-row">
-        <article class="the-browser-is-the-canvas">
-          <div class="tick"></div>
-          <h3 class="card-title">The browser is the canvas</h3>
-          <p class="card-body">Use real flexbox, grid, breakpoints, and interaction states. Text wraps and layouts respond the way they do on the web.</p>
+      <div class="props-introduction">
+        <h2 class="props-heading">Fix the parts the prompt missed.</h2>
+        <p class="props-summary">Make the change yourself. Your agent keeps working from the same document.</p>
+      </div>
+      <div class="props-layout">
+        <article class="edit-the-real-page">
+          <span class="card-number">01</span>
+          <div class="card-copy">
+            <h3 class="card-title">Edit the real page</h3>
+            <p class="card-body">Change the layout and see the result in place. Pitolet uses the browser’s own layout engine.</p>
+          </div>
         </article>
-        <article class="your-agent-works-beside-you">
-          <div class="tick-2"></div>
-          <h3 class="card-title-2">Your agent works beside you</h3>
-          <p class="card-body-2">Connect any MCP client. Your agent can read the open document, follow comments, edit nodes, and update tokens while you watch.</p>
-        </article>
-        <article class="the-output-is-already-code">
-          <div class="tick-3"></div>
-          <h3 class="card-title-3">The output is already code</h3>
-          <p class="card-body-3">Export React and Tailwind or plain HTML and CSS from the same document. Your tokens, components, and responsive rules come with it.</p>
-        </article>
+        <div class="secondary-props">
+          <article class="your-agent-stays-in-sync">
+            <span class="card-number-2">02</span>
+            <div class="card-copy-2">
+              <h3 class="card-title-2">Your agent stays in sync</h3>
+              <p class="card-body-2">Connect through MCP. Your agent reads the open document and its edits appear on the canvas.</p>
+            </div>
+          </article>
+          <article class="keep-the-code">
+            <span class="card-number-3">03</span>
+            <div class="card-copy-3">
+              <h3 class="card-title-3">Keep the code</h3>
+              <p class="card-body-3">Export React or HTML from the document you edited. There is no separate mockup to rebuild.</p>
+            </div>
+          </article>
+        </div>
       </div>
     </div>
   </section>
   <section class="import-band">
     <div class="import-existing-site">
       <div class="import-copy">
-        <span class="import-eyebrow">Import from a URL</span>
-        <h2 class="import-heading">Start with the site you already have.</h2>
-        <p class="import-body">Run one local command to capture an existing page at mobile, tablet, and desktop widths. Pitolet keeps the DOM it understands editable and preserves the rest as images.</p>
+        <h2 class="import-heading">Bring in the site you already have.</h2>
+        <p class="import-body">Point Pitolet at a local page. It imports an editable version and keeps unsupported parts as images.</p>
         <div class="import-command">
           <span class="import-prompt">$</span>
           <code class="import-code">pitolet import http://localhost:3000 --to …</code>
         </div>
       </div>
       <div class="import-details">
-        <div class="one-responsive-frame">
+        <div class="one-responsive-document">
           <span class="import-check">✓</span>
           <div class="import-point-copy">
-            <h3 class="import-point-title">One responsive frame</h3>
-            <p class="import-point-body">Mobile styles form the base; wider layouts become breakpoint overrides.</p>
+            <h3 class="import-point-title">One responsive document</h3>
+            <p class="import-point-body">Pitolet captures the page at three widths and stores the differences as breakpoints.</p>
           </div>
         </div>
-        <div class="assets-copied-in">
+        <div class="local-assets">
           <span class="import-check-2">✓</span>
           <div class="import-point-copy-2">
-            <h3 class="import-point-title-2">Assets copied in</h3>
-            <p class="import-point-body-2">Images move into Pitolet’s asset store instead of staying hotlinked.</p>
+            <h3 class="import-point-title-2">Local assets</h3>
+            <p class="import-point-body-2">Images are copied into Pitolet instead of staying linked to the source site.</p>
           </div>
         </div>
-        <div class="a-visual-report">
+        <div class="see-what-changed">
           <span class="import-check-3">✓</span>
           <div class="import-point-copy-3">
-            <h3 class="import-point-title-3">A visual report</h3>
-            <p class="import-point-body-3">Source, imported, and difference images show where the result needs attention.</p>
+            <h3 class="import-point-title-3">See what changed</h3>
+            <p class="import-point-body-3">The import report shows how closely each width matches the source.</p>
           </div>
         </div>
       </div>
@@ -1676,13 +1656,13 @@ button, input, select, textarea { background: transparent; appearance: none; }
   </section>
   <section class="dogfood-band">
     <div class="dogfood">
-      <p class="dogfood-text">This page was designed in Pitolet and exported from the same document.</p>
-      <a class="dogfood-link" href="https://github.com/pitolet/pitolet/tree/main/site">Read the source →</a>
+      <p class="dogfood-text">This page was made in Pitolet.</p>
+      <a class="dogfood-link" href="https://github.com/pitolet/pitolet/tree/main/site">View its source</a>
     </div>
   </section>
   <section class="pricing-band">
     <div class="pricing">
-      <h2 class="pricing-heading">Use the cloud, or run it yourself.</h2>
+      <h2 class="pricing-heading">Use Pitolet on our server or yours.</h2>
       <div class="plans">
         <article class="plan-free">
           <div class="plan-head">
@@ -1692,18 +1672,18 @@ button, input, select, textarea { background: transparent; appearance: none; }
             <span class="price">$0</span>
             <span class="price-unit">forever</span>
           </div>
-          <p class="plan-blurb">For personal projects and a first workspace.</p>
+          <p class="plan-blurb">For trying Pitolet on a real project.</p>
           <ul class="features">
             <li class="feature">
-              <span class="check">—</span>
+              <span class="check">•</span>
               <span class="feature-text">1 workspace</span>
             </li>
             <li class="feature-2">
-              <span class="check-2">—</span>
+              <span class="check-2">•</span>
               <span class="feature-text-2">3 documents</span>
             </li>
             <li class="feature-3">
-              <span class="check-3">—</span>
+              <span class="check-3">•</span>
               <span class="feature-text-3">Hosted MCP for your agent</span>
             </li>
           </ul>
@@ -1719,22 +1699,22 @@ button, input, select, textarea { background: transparent; appearance: none; }
             <span class="price-2">$12</span>
             <span class="price-unit-2">per user / mo</span>
           </div>
-          <p class="plan-blurb-2">For teams that need more documents, history, and sharing.</p>
+          <p class="plan-blurb-2">For work that needs more room and history.</p>
           <ul class="features-2">
             <li class="feature-4">
-              <span class="check-4">—</span>
+              <span class="check-4">•</span>
               <span class="feature-text-4">Unlimited documents + tokens</span>
             </li>
             <li class="feature-5">
-              <span class="check-5">—</span>
+              <span class="check-5">•</span>
               <span class="feature-text-5">Version history</span>
             </li>
             <li class="feature-6">
-              <span class="check-6">—</span>
+              <span class="check-6">•</span>
               <span class="feature-text-6">Share links</span>
             </li>
             <li class="feature-7">
-              <span class="check-7">—</span>
+              <span class="check-7">•</span>
               <span class="feature-text-7">Everything in Free</span>
             </li>
           </ul>
@@ -1747,18 +1727,18 @@ button, input, select, textarea { background: transparent; appearance: none; }
             <span class="price-3">Free</span>
             <span class="price-unit-3">forever · AGPL</span>
           </div>
-          <p class="plan-blurb-3">Keep the files and server on your own machine.</p>
+          <p class="plan-blurb-3">Run the open source version on your own server.</p>
           <ul class="features-3">
             <li class="feature-8">
-              <span class="check-8">—</span>
+              <span class="check-8">•</span>
               <span class="feature-text-8">npx pitolet</span>
             </li>
             <li class="feature-9">
-              <span class="check-9">—</span>
+              <span class="check-9">•</span>
               <span class="feature-text-9">Runs on your own servers</span>
             </li>
             <li class="feature-10">
-              <span class="check-10">—</span>
+              <span class="check-10">•</span>
               <span class="feature-text-10">AGPL-3.0 licensed</span>
             </li>
           </ul>

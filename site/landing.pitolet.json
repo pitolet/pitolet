@@ -14,11 +14,12 @@
       "children": [
         "n1",
         "n11",
-        "n55",
-        "n71",
-        "n96",
-        "n100",
-        "n160"
+        "n25",
+        "n47",
+        "n69",
+        "n93",
+        "n97",
+        "n157"
       ],
       "tag": "div",
       "visible": true,
@@ -35,10 +36,37 @@
           "flexDirection": "column",
           "fills": [
             {
-              "type": "solid",
-              "color": {
-                "$token": "color.background"
-              }
+              "type": "linear",
+              "angle": 180,
+              "stops": [
+                {
+                  "color": {
+                    "space": "oklch",
+                    "l": 0.15,
+                    "c": 0.022,
+                    "h": 225
+                  },
+                  "position": 0
+                },
+                {
+                  "color": {
+                    "space": "oklch",
+                    "l": 0.125,
+                    "c": 0.007,
+                    "h": 250
+                  },
+                  "position": 0.48
+                },
+                {
+                  "color": {
+                    "space": "oklch",
+                    "l": 0.145,
+                    "c": 0.017,
+                    "h": 230
+                  },
+                  "position": 1
+                }
+              ]
             }
           ],
           "alignItems": "center",
@@ -80,19 +108,6 @@
             },
             "left": {
               "$token": "spacing.5"
-            }
-          },
-          "border": {
-            "width": {
-              "value": 1,
-              "unit": "px"
-            },
-            "style": "solid",
-            "color": {
-              "$token": "color.border"
-            },
-            "sides": {
-              "bottom": true
             }
           }
         },
@@ -483,55 +498,30 @@
           "width": "fill",
           "padding": {
             "top": {
-              "$token": "spacing.12"
+              "$token": "spacing.20"
             },
             "right": {
               "$token": "spacing.5"
             },
             "bottom": {
-              "$token": "spacing.16"
+              "$token": "spacing.20"
             },
             "left": {
               "$token": "spacing.5"
             }
-          },
-          "fills": [
-            {
-              "type": "radial",
-              "stops": [
-                {
-                  "color": {
-                    "space": "oklch",
-                    "l": 0.22,
-                    "c": 0.045,
-                    "h": 215
-                  },
-                  "position": 0
-                },
-                {
-                  "color": {
-                    "space": "oklch",
-                    "l": 0.13,
-                    "c": 0.006,
-                    "h": 250
-                  },
-                  "position": 0.72
-                }
-              ]
-            }
-          ]
+          }
         },
         "breakpoints": {
           "md": {
             "padding": {
               "top": {
-                "$token": "spacing.20"
+                "$token": "spacing.24"
               },
               "right": {
                 "$token": "spacing.10"
               },
               "bottom": {
-                "$token": "spacing.20"
+                "$token": "spacing.24"
               },
               "left": {
                 "$token": "spacing.10"
@@ -547,11 +537,7 @@
       "name": "Hero",
       "parent": "n11",
       "children": [
-        "n13",
-        "n15",
-        "n16",
-        "n17",
-        "n22"
+        "n13"
       ],
       "tag": "div",
       "visible": true,
@@ -564,7 +550,63 @@
           "maxWidth": {
             "value": 1120,
             "unit": "px"
+          }
+        }
+      }
+    },
+    "n13": {
+      "id": "n13",
+      "type": "element",
+      "name": "Hero Layout",
+      "parent": "n12",
+      "children": [
+        "n14",
+        "n22"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "alignItems": "center",
+          "gap": {
+            "row": {
+              "$token": "spacing.10"
+            },
+            "column": {
+              "$token": "spacing.12"
+            }
           },
+          "width": "fill"
+        },
+        "breakpoints": {
+          "lg": {
+            "display": "flex",
+            "flexDirection": "row",
+            "alignItems": "center"
+          }
+        }
+      }
+    },
+    "n14": {
+      "id": "n14",
+      "type": "element",
+      "name": "Hero Copy",
+      "parent": "n13",
+      "children": [
+        "n15",
+        "n16",
+        "n17"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
           "alignItems": "center",
           "gap": {
             "row": {
@@ -574,110 +616,17 @@
               "value": 0,
               "unit": "px"
             }
-          }
-        }
-      }
-    },
-    "n13": {
-      "id": "n13",
-      "type": "element",
-      "name": "Eyebrow",
-      "parent": "n12",
-      "children": [
-        "n14"
-      ],
-      "tag": "div",
-      "visible": true,
-      "locked": false,
-      "styles": {
-        "base": {
-          "display": "flex",
-          "flexDirection": "row",
-          "alignItems": "center",
-          "gap": {
-            "row": {
-              "value": 0,
-              "unit": "px"
-            },
-            "column": {
-              "$token": "spacing.2"
-            }
           },
-          "padding": {
-            "top": {
-              "$token": "spacing.1"
-            },
-            "bottom": {
-              "$token": "spacing.1"
-            },
-            "left": {
-              "$token": "spacing.3"
-            },
-            "right": {
-              "$token": "spacing.3"
-            }
-          },
-          "fills": [
-            {
-              "type": "solid",
-              "color": {
-                "$token": "color.surface"
-              }
-            }
-          ],
-          "border": {
-            "width": {
-              "value": 1,
-              "unit": "px"
-            },
-            "style": "solid",
-            "color": {
-              "$token": "color.border"
-            }
-          },
-          "radius": {
-            "tl": {
-              "$token": "radius.full"
-            },
-            "tr": {
-              "$token": "radius.full"
-            },
-            "br": {
-              "$token": "radius.full"
-            },
-            "bl": {
-              "$token": "radius.full"
-            }
-          }
-        }
-      }
-    },
-    "n14": {
-      "id": "n14",
-      "type": "text",
-      "name": "Eyebrow Text",
-      "parent": "n13",
-      "children": [],
-      "tag": "span",
-      "visible": true,
-      "locked": false,
-      "content": [
-        {
-          "text": "Real DOM + CSS · shared with your agent"
-        }
-      ],
-      "styles": {
-        "base": {
-          "fontSize": {
-            "$token": "typography.fontSize.sm"
-          },
-          "fontWeight": 500,
-          "color": {
-            "$token": "color.muted-foreground"
-          },
-          "letterSpacing": {
-            "value": 0.2,
+          "width": "fill",
+          "minWidth": {
+            "value": 0,
             "unit": "px"
+          }
+        },
+        "breakpoints": {
+          "lg": {
+            "display": "flex",
+            "alignItems": "start"
           }
         }
       }
@@ -686,14 +635,14 @@
       "id": "n15",
       "type": "text",
       "name": "Headline",
-      "parent": "n12",
+      "parent": "n14",
       "children": [],
       "tag": "h1",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "Design the interface. Ship the same thing."
+          "text": "Give your agent’s designs a human touch."
         }
       ],
       "styles": {
@@ -706,10 +655,10 @@
             "value": -1.5,
             "unit": "px"
           },
-          "lineHeight": 1.05,
+          "lineHeight": 1.04,
           "textAlign": "center",
           "maxWidth": {
-            "value": 900,
+            "value": 620,
             "unit": "px"
           }
         },
@@ -725,8 +674,9 @@
           },
           "lg": {
             "fontSize": {
-              "$token": "typography.fontSize.7xl"
-            }
+              "$token": "typography.fontSize.6xl"
+            },
+            "textAlign": "left"
           }
         }
       }
@@ -735,30 +685,35 @@
       "id": "n16",
       "type": "text",
       "name": "Subhead",
-      "parent": "n12",
+      "parent": "n14",
       "children": [],
       "tag": "p",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "Pitolet is a browser-based design canvas that you and your coding agent can edit together. It uses real web layout, so the design already behaves like the page you will ship."
+          "text": "Your coding agent gets the interface close. Pitolet lets you fix the details on the page while your agent sees every change."
         }
       ],
       "styles": {
         "base": {
           "fontSize": {
-            "$token": "typography.fontSize.xl"
+            "$token": "typography.fontSize.lg"
           },
           "color": {
             "$token": "color.muted-foreground"
           },
           "textAlign": "center",
           "maxWidth": {
-            "value": 700,
+            "value": 560,
             "unit": "px"
           },
-          "lineHeight": 1.55
+          "lineHeight": 1.6
+        },
+        "breakpoints": {
+          "lg": {
+            "textAlign": "left"
+          }
         }
       }
     },
@@ -766,7 +721,7 @@
       "id": "n17",
       "type": "element",
       "name": "CTAs",
-      "parent": "n12",
+      "parent": "n14",
       "children": [
         "n18",
         "n19"
@@ -789,7 +744,7 @@
           },
           "padding": {
             "top": {
-              "$token": "spacing.4"
+              "$token": "spacing.2"
             },
             "right": {
               "value": 0,
@@ -807,7 +762,13 @@
         },
         "breakpoints": {
           "sm": {
+            "display": "flex",
             "flexDirection": "row"
+          },
+          "lg": {
+            "display": "flex",
+            "flexDirection": "row",
+            "alignSelf": "start"
           }
         }
       }
@@ -815,7 +776,7 @@
     "n18": {
       "id": "n18",
       "type": "text",
-      "name": "Start Free",
+      "name": "Open Pitolet",
       "parent": "n17",
       "children": [],
       "tag": "a",
@@ -831,7 +792,7 @@
           "fontSize": {
             "$token": "typography.fontSize.base"
           },
-          "fontWeight": 600,
+          "fontWeight": 650,
           "color": {
             "$token": "color.primary-foreground"
           },
@@ -1024,46 +985,56 @@
     "n22": {
       "id": "n22",
       "type": "element",
-      "name": "Editor Preview",
-      "parent": "n12",
+      "name": "Product Demo",
+      "parent": "n13",
       "children": [
         "n23",
-        "n30"
+        "n24"
       ],
-      "tag": "article",
+      "tag": "figure",
       "visible": true,
       "locked": false,
       "styles": {
         "base": {
           "display": "flex",
           "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.3"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
           "width": "fill",
-          "maxWidth": {
-            "value": 1040,
+          "minWidth": {
+            "value": 0,
             "unit": "px"
           },
-          "margin": {
+          "maxWidth": {
+            "value": 580,
+            "unit": "px"
+          },
+          "padding": {
             "top": {
-              "$token": "spacing.6"
+              "$token": "spacing.3"
             },
             "right": {
-              "value": 0,
-              "unit": "px"
+              "$token": "spacing.3"
             },
             "bottom": {
-              "value": 0,
-              "unit": "px"
+              "$token": "spacing.3"
             },
             "left": {
-              "value": 0,
-              "unit": "px"
+              "$token": "spacing.3"
             }
           },
           "fills": [
             {
               "type": "solid",
               "color": {
-                "$token": "color.surface"
+                "$token": "color.surface-2"
               }
             }
           ],
@@ -1074,7 +1045,11 @@
             },
             "style": "solid",
             "color": {
-              "$token": "color.border-strong"
+              "space": "oklch",
+              "l": 0.71,
+              "c": 0.125,
+              "h": 215,
+              "alpha": 0.32
             }
           },
           "radius": {
@@ -1091,19 +1066,31 @@
               "$token": "radius.lg"
             }
           },
-          "overflow": "hidden",
           "shadows": [
             {
               "x": 0,
-              "y": 24,
-              "blur": 64,
-              "spread": -24,
+              "y": 28,
+              "blur": 70,
+              "spread": -28,
               "color": {
                 "space": "oklch",
                 "l": 0.02,
                 "c": 0.01,
                 "h": 250,
-                "alpha": 0.72
+                "alpha": 0.78
+              }
+            },
+            {
+              "x": 0,
+              "y": 0,
+              "blur": 48,
+              "spread": -20,
+              "color": {
+                "space": "oklch",
+                "l": 0.71,
+                "c": 0.125,
+                "h": 215,
+                "alpha": 0.32
               }
             }
           ]
@@ -1112,11 +1099,205 @@
     },
     "n23": {
       "id": "n23",
-      "type": "element",
-      "name": "Preview Toolbar",
+      "type": "image",
+      "name": "Agent Editing Demo",
       "parent": "n22",
+      "children": [],
+      "tag": "img",
+      "visible": true,
+      "locked": false,
+      "src": {
+        "url": "/media/pitolet-insert.png"
+      },
+      "alt": "Claude Code adding a section to a Pitolet document while the edit appears on the canvas",
+      "styles": {
+        "base": {
+          "width": "fill",
+          "height": "auto",
+          "objectFit": "cover",
+          "radius": {
+            "tl": {
+              "$token": "radius.md"
+            },
+            "tr": {
+              "$token": "radius.md"
+            },
+            "br": {
+              "$token": "radius.md"
+            },
+            "bl": {
+              "$token": "radius.md"
+            }
+          }
+        }
+      }
+    },
+    "n24": {
+      "id": "n24",
+      "type": "text",
+      "name": "Demo Caption",
+      "parent": "n22",
+      "children": [],
+      "tag": "figcaption",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Claude Code adds a section directly to the open page."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "lineHeight": 1.5,
+          "padding": {
+            "top": {
+              "value": 0,
+              "unit": "px"
+            },
+            "right": {
+              "$token": "spacing.2"
+            },
+            "bottom": {
+              "$token": "spacing.1"
+            },
+            "left": {
+              "$token": "spacing.2"
+            }
+          }
+        }
+      }
+    },
+    "n25": {
+      "id": "n25",
+      "type": "element",
+      "name": "Proof Band",
+      "parent": "n0",
       "children": [
-        "n24",
+        "n26"
+      ],
+      "tag": "section",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "alignItems": "center",
+          "width": "fill",
+          "padding": {
+            "top": {
+              "$token": "spacing.8"
+            },
+            "right": {
+              "$token": "spacing.5"
+            },
+            "bottom": {
+              "$token": "spacing.8"
+            },
+            "left": {
+              "$token": "spacing.5"
+            }
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "padding": {
+              "top": {
+                "$token": "spacing.10"
+              },
+              "right": {
+                "$token": "spacing.10"
+              },
+              "bottom": {
+                "$token": "spacing.10"
+              },
+              "left": {
+                "$token": "spacing.10"
+              }
+            }
+          }
+        }
+      }
+    },
+    "n26": {
+      "id": "n26",
+      "type": "element",
+      "name": "Proof Points",
+      "parent": "n25",
+      "children": [
+        "n27",
+        "n32",
+        "n37",
+        "n42"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "grid",
+          "flexDirection": "column",
+          "gridTemplateColumns": [
+            {
+              "kind": "fr",
+              "value": 1
+            },
+            {
+              "kind": "fr",
+              "value": 1
+            }
+          ],
+          "gap": {
+            "row": {
+              "$token": "spacing.5"
+            },
+            "column": {
+              "$token": "spacing.5"
+            }
+          },
+          "width": "fill",
+          "maxWidth": {
+            "value": 1120,
+            "unit": "px"
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "display": "grid",
+            "gridTemplateColumns": [
+              {
+                "kind": "fr",
+                "value": 1
+              },
+              {
+                "kind": "fr",
+                "value": 1
+              },
+              {
+                "kind": "fr",
+                "value": 1
+              },
+              {
+                "kind": "fr",
+                "value": 1
+              }
+            ]
+          }
+        }
+      }
+    },
+    "n27": {
+      "id": "n27",
+      "type": "element",
+      "name": "Proof DOM + CSS",
+      "parent": "n26",
+      "children": [
         "n28",
         "n29"
       ],
@@ -1128,165 +1309,27 @@
           "display": "flex",
           "flexDirection": "row",
           "alignItems": "center",
-          "justifyContent": "between",
-          "padding": {
-            "top": {
-              "$token": "spacing.3"
-            },
-            "bottom": {
-              "$token": "spacing.3"
-            },
-            "left": {
-              "$token": "spacing.4"
-            },
-            "right": {
-              "$token": "spacing.4"
-            }
-          },
-          "border": {
-            "width": {
-              "value": 1,
-              "unit": "px"
-            },
-            "style": "solid",
-            "color": {
-              "$token": "color.border"
-            },
-            "sides": {
-              "bottom": true
-            }
-          }
-        }
-      }
-    },
-    "n24": {
-      "id": "n24",
-      "type": "element",
-      "name": "Window Controls",
-      "parent": "n23",
-      "children": [
-        "n25",
-        "n26",
-        "n27"
-      ],
-      "tag": "div",
-      "visible": true,
-      "locked": false,
-      "styles": {
-        "base": {
-          "display": "flex",
-          "flexDirection": "row",
           "gap": {
             "row": {
               "value": 0,
               "unit": "px"
             },
             "column": {
-              "$token": "spacing.2"
+              "$token": "spacing.3"
             }
+          },
+          "minWidth": {
+            "value": 0,
+            "unit": "px"
           }
         }
       }
     },
-    "n25": {
-      "id": "n25",
+    "n28": {
+      "id": "n28",
       "type": "element",
-      "name": "Close",
-      "parent": "n24",
-      "children": [],
-      "tag": "div",
-      "visible": true,
-      "locked": false,
-      "styles": {
-        "base": {
-          "display": "flex",
-          "flexDirection": "column",
-          "width": {
-            "value": 8,
-            "unit": "px"
-          },
-          "height": {
-            "value": 8,
-            "unit": "px"
-          },
-          "fills": [
-            {
-              "type": "solid",
-              "color": {
-                "$token": "color.subtle-foreground"
-              }
-            }
-          ],
-          "radius": {
-            "tl": {
-              "$token": "radius.full"
-            },
-            "tr": {
-              "$token": "radius.full"
-            },
-            "br": {
-              "$token": "radius.full"
-            },
-            "bl": {
-              "$token": "radius.full"
-            }
-          },
-          "opacity": 0.45
-        }
-      }
-    },
-    "n26": {
-      "id": "n26",
-      "type": "element",
-      "name": "Minimize",
-      "parent": "n24",
-      "children": [],
-      "tag": "div",
-      "visible": true,
-      "locked": false,
-      "styles": {
-        "base": {
-          "display": "flex",
-          "flexDirection": "column",
-          "width": {
-            "value": 8,
-            "unit": "px"
-          },
-          "height": {
-            "value": 8,
-            "unit": "px"
-          },
-          "fills": [
-            {
-              "type": "solid",
-              "color": {
-                "$token": "color.subtle-foreground"
-              }
-            }
-          ],
-          "radius": {
-            "tl": {
-              "$token": "radius.full"
-            },
-            "tr": {
-              "$token": "radius.full"
-            },
-            "br": {
-              "$token": "radius.full"
-            },
-            "bl": {
-              "$token": "radius.full"
-            }
-          },
-          "opacity": 0.45
-        }
-      }
-    },
-    "n27": {
-      "id": "n27",
-      "type": "element",
-      "name": "Expand",
-      "parent": "n24",
+      "name": "Proof Marker",
+      "parent": "n27",
       "children": [],
       "tag": "div",
       "visible": true,
@@ -1325,22 +1368,94 @@
               "$token": "radius.full"
             }
           },
-          "opacity": 0.9
+          "shadows": [
+            {
+              "x": 0,
+              "y": 0,
+              "blur": 12,
+              "spread": 0,
+              "color": {
+                "space": "oklch",
+                "l": 0.71,
+                "c": 0.125,
+                "h": 215,
+                "alpha": 0.45
+              }
+            }
+          ]
         }
       }
     },
-    "n28": {
-      "id": "n28",
+    "n29": {
+      "id": "n29",
+      "type": "element",
+      "name": "Proof Copy",
+      "parent": "n27",
+      "children": [
+        "n30",
+        "n31"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.1"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "minWidth": {
+            "value": 0,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n30": {
+      "id": "n30",
       "type": "text",
-      "name": "Preview Document",
-      "parent": "n23",
+      "name": "Proof Title",
+      "parent": "n29",
       "children": [],
       "tag": "span",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "Landing page · Pitolet"
+          "text": "DOM + CSS"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "fontWeight": 650,
+          "color": {
+            "$token": "color.foreground"
+          }
+        }
+      }
+    },
+    "n31": {
+      "id": "n31",
+      "type": "text",
+      "name": "Proof Detail",
+      "parent": "n29",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Browser layout"
         }
       ],
       "styles": {
@@ -1354,89 +1469,14 @@
         }
       }
     },
-    "n29": {
-      "id": "n29",
-      "type": "text",
-      "name": "Agent Status",
-      "parent": "n23",
-      "children": [],
-      "tag": "span",
-      "visible": true,
-      "locked": false,
-      "content": [
-        {
-          "text": "Agent connected"
-        }
-      ],
-      "styles": {
-        "base": {
-          "fontSize": {
-            "$token": "typography.fontSize.xs"
-          },
-          "fontWeight": 600,
-          "color": {
-            "$token": "color.primary"
-          },
-          "fills": [
-            {
-              "type": "solid",
-              "color": {
-                "$token": "color.background"
-              }
-            }
-          ],
-          "border": {
-            "width": {
-              "value": 1,
-              "unit": "px"
-            },
-            "style": "solid",
-            "color": {
-              "$token": "color.border"
-            }
-          },
-          "padding": {
-            "top": {
-              "value": 3,
-              "unit": "px"
-            },
-            "bottom": {
-              "value": 3,
-              "unit": "px"
-            },
-            "left": {
-              "$token": "spacing.2"
-            },
-            "right": {
-              "$token": "spacing.2"
-            }
-          },
-          "radius": {
-            "tl": {
-              "$token": "radius.full"
-            },
-            "tr": {
-              "$token": "radius.full"
-            },
-            "br": {
-              "$token": "radius.full"
-            },
-            "bl": {
-              "$token": "radius.full"
-            }
-          }
-        }
-      }
-    },
-    "n30": {
-      "id": "n30",
+    "n32": {
+      "id": "n32",
       "type": "element",
-      "name": "Preview Work Area",
-      "parent": "n22",
+      "name": "Proof MCP",
+      "parent": "n26",
       "children": [
-        "n31",
-        "n37",
-        "n49"
+        "n33",
+        "n34"
       ],
       "tag": "div",
       "visible": true,
@@ -1445,23 +1485,90 @@
         "base": {
           "display": "flex",
           "flexDirection": "row",
-          "width": "fill",
-          "minHeight": {
-            "value": 430,
+          "alignItems": "center",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.3"
+            }
+          },
+          "minWidth": {
+            "value": 0,
             "unit": "px"
           }
         }
       }
     },
-    "n31": {
-      "id": "n31",
+    "n33": {
+      "id": "n33",
       "type": "element",
-      "name": "Preview Layers",
-      "parent": "n30",
+      "name": "Proof Marker",
+      "parent": "n32",
+      "children": [],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "width": {
+            "value": 8,
+            "unit": "px"
+          },
+          "height": {
+            "value": 8,
+            "unit": "px"
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.primary"
+              }
+            }
+          ],
+          "radius": {
+            "tl": {
+              "$token": "radius.full"
+            },
+            "tr": {
+              "$token": "radius.full"
+            },
+            "br": {
+              "$token": "radius.full"
+            },
+            "bl": {
+              "$token": "radius.full"
+            }
+          },
+          "shadows": [
+            {
+              "x": 0,
+              "y": 0,
+              "blur": 12,
+              "spread": 0,
+              "color": {
+                "space": "oklch",
+                "l": 0.71,
+                "c": 0.125,
+                "h": 215,
+                "alpha": 0.45
+              }
+            }
+          ]
+        }
+      }
+    },
+    "n34": {
+      "id": "n34",
+      "type": "element",
+      "name": "Proof Copy",
+      "parent": "n32",
       "children": [
-        "n32",
-        "n33",
-        "n34",
         "n35",
         "n36"
       ],
@@ -1470,192 +1577,20 @@
       "locked": false,
       "styles": {
         "base": {
-          "display": "none",
+          "display": "flex",
           "flexDirection": "column",
           "gap": {
             "row": {
-              "$token": "spacing.3"
+              "$token": "spacing.1"
             },
             "column": {
               "value": 0,
               "unit": "px"
             }
           },
-          "width": {
-            "value": 180,
+          "minWidth": {
+            "value": 0,
             "unit": "px"
-          },
-          "padding": {
-            "top": {
-              "$token": "spacing.4"
-            },
-            "right": {
-              "$token": "spacing.4"
-            },
-            "bottom": {
-              "$token": "spacing.4"
-            },
-            "left": {
-              "$token": "spacing.4"
-            }
-          },
-          "fills": [
-            {
-              "type": "solid",
-              "color": {
-                "$token": "color.background"
-              }
-            }
-          ],
-          "border": {
-            "width": {
-              "value": 1,
-              "unit": "px"
-            },
-            "style": "solid",
-            "color": {
-              "$token": "color.border"
-            },
-            "sides": {
-              "right": true
-            }
-          }
-        },
-        "breakpoints": {
-          "md": {
-            "display": "flex"
-          }
-        }
-      }
-    },
-    "n32": {
-      "id": "n32",
-      "type": "text",
-      "name": "Layers Label",
-      "parent": "n31",
-      "children": [],
-      "tag": "span",
-      "visible": true,
-      "locked": false,
-      "content": [
-        {
-          "text": "Layers"
-        }
-      ],
-      "styles": {
-        "base": {
-          "fontSize": {
-            "$token": "typography.fontSize.xs"
-          },
-          "fontWeight": 650,
-          "color": {
-            "$token": "color.muted-foreground"
-          }
-        }
-      }
-    },
-    "n33": {
-      "id": "n33",
-      "type": "text",
-      "name": "Layer Landing",
-      "parent": "n31",
-      "children": [],
-      "tag": "span",
-      "visible": true,
-      "locked": false,
-      "content": [
-        {
-          "text": "Landing"
-        }
-      ],
-      "styles": {
-        "base": {
-          "fontSize": {
-            "$token": "typography.fontSize.xs"
-          },
-          "color": {
-            "$token": "color.subtle-foreground"
-          },
-          "padding": {
-            "top": {
-              "$token": "spacing.1"
-            },
-            "bottom": {
-              "$token": "spacing.1"
-            },
-            "left": {
-              "$token": "spacing.2"
-            },
-            "right": {
-              "$token": "spacing.2"
-            }
-          },
-          "radius": {
-            "tl": {
-              "$token": "radius.sm"
-            },
-            "tr": {
-              "$token": "radius.sm"
-            },
-            "br": {
-              "$token": "radius.sm"
-            },
-            "bl": {
-              "$token": "radius.sm"
-            }
-          }
-        }
-      }
-    },
-    "n34": {
-      "id": "n34",
-      "type": "text",
-      "name": "Layer Navigation",
-      "parent": "n31",
-      "children": [],
-      "tag": "span",
-      "visible": true,
-      "locked": false,
-      "content": [
-        {
-          "text": "  Navigation"
-        }
-      ],
-      "styles": {
-        "base": {
-          "fontSize": {
-            "$token": "typography.fontSize.xs"
-          },
-          "color": {
-            "$token": "color.subtle-foreground"
-          },
-          "padding": {
-            "top": {
-              "$token": "spacing.1"
-            },
-            "bottom": {
-              "$token": "spacing.1"
-            },
-            "left": {
-              "$token": "spacing.2"
-            },
-            "right": {
-              "$token": "spacing.2"
-            }
-          },
-          "radius": {
-            "tl": {
-              "$token": "radius.sm"
-            },
-            "tr": {
-              "$token": "radius.sm"
-            },
-            "br": {
-              "$token": "radius.sm"
-            },
-            "bl": {
-              "$token": "radius.sm"
-            }
           }
         }
       }
@@ -1663,60 +1598,25 @@
     "n35": {
       "id": "n35",
       "type": "text",
-      "name": "Layer Hero",
-      "parent": "n31",
+      "name": "Proof Title",
+      "parent": "n34",
       "children": [],
       "tag": "span",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "  Hero"
+          "text": "MCP"
         }
       ],
       "styles": {
         "base": {
           "fontSize": {
-            "$token": "typography.fontSize.xs"
+            "$token": "typography.fontSize.sm"
           },
+          "fontWeight": 650,
           "color": {
-            "$token": "color.primary"
-          },
-          "fills": [
-            {
-              "type": "solid",
-              "color": {
-                "$token": "color.surface"
-              }
-            }
-          ],
-          "padding": {
-            "top": {
-              "$token": "spacing.1"
-            },
-            "bottom": {
-              "$token": "spacing.1"
-            },
-            "left": {
-              "$token": "spacing.2"
-            },
-            "right": {
-              "$token": "spacing.2"
-            }
-          },
-          "radius": {
-            "tl": {
-              "$token": "radius.sm"
-            },
-            "tr": {
-              "$token": "radius.sm"
-            },
-            "br": {
-              "$token": "radius.sm"
-            },
-            "bl": {
-              "$token": "radius.sm"
-            }
+            "$token": "color.foreground"
           }
         }
       }
@@ -1724,15 +1624,15 @@
     "n36": {
       "id": "n36",
       "type": "text",
-      "name": "Layer Feature cards",
-      "parent": "n31",
+      "name": "Proof Detail",
+      "parent": "n34",
       "children": [],
       "tag": "span",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "  Feature cards"
+          "text": "Read and write"
         }
       ],
       "styles": {
@@ -1742,34 +1642,6 @@
           },
           "color": {
             "$token": "color.subtle-foreground"
-          },
-          "padding": {
-            "top": {
-              "$token": "spacing.1"
-            },
-            "bottom": {
-              "$token": "spacing.1"
-            },
-            "left": {
-              "$token": "spacing.2"
-            },
-            "right": {
-              "$token": "spacing.2"
-            }
-          },
-          "radius": {
-            "tl": {
-              "$token": "radius.sm"
-            },
-            "tr": {
-              "$token": "radius.sm"
-            },
-            "br": {
-              "$token": "radius.sm"
-            },
-            "bl": {
-              "$token": "radius.sm"
-            }
           }
         }
       }
@@ -1777,8 +1649,8 @@
     "n37": {
       "id": "n37",
       "type": "element",
-      "name": "Preview Canvas",
-      "parent": "n30",
+      "name": "Proof React or HTML",
+      "parent": "n26",
       "children": [
         "n38",
         "n39"
@@ -1789,77 +1661,155 @@
       "styles": {
         "base": {
           "display": "flex",
-          "flexDirection": "column",
+          "flexDirection": "row",
           "alignItems": "center",
           "gap": {
             "row": {
-              "$token": "spacing.3"
-            },
-            "column": {
               "value": 0,
               "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.3"
             }
           },
-          "width": "fill",
           "minWidth": {
             "value": 0,
             "unit": "px"
-          },
-          "padding": {
-            "top": {
-              "$token": "spacing.5"
-            },
-            "right": {
-              "$token": "spacing.5"
-            },
-            "bottom": {
-              "$token": "spacing.5"
-            },
-            "left": {
-              "$token": "spacing.5"
-            }
-          },
-          "fills": [
-            {
-              "type": "solid",
-              "color": {
-                "$token": "color.background"
-              }
-            }
-          ]
-        },
-        "breakpoints": {
-          "md": {
-            "padding": {
-              "top": {
-                "$token": "spacing.8"
-              },
-              "right": {
-                "$token": "spacing.8"
-              },
-              "bottom": {
-                "$token": "spacing.8"
-              },
-              "left": {
-                "$token": "spacing.8"
-              }
-            }
           }
         }
       }
     },
     "n38": {
       "id": "n38",
-      "type": "text",
-      "name": "Canvas Width",
+      "type": "element",
+      "name": "Proof Marker",
       "parent": "n37",
+      "children": [],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "width": {
+            "value": 8,
+            "unit": "px"
+          },
+          "height": {
+            "value": 8,
+            "unit": "px"
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.primary"
+              }
+            }
+          ],
+          "radius": {
+            "tl": {
+              "$token": "radius.full"
+            },
+            "tr": {
+              "$token": "radius.full"
+            },
+            "br": {
+              "$token": "radius.full"
+            },
+            "bl": {
+              "$token": "radius.full"
+            }
+          },
+          "shadows": [
+            {
+              "x": 0,
+              "y": 0,
+              "blur": 12,
+              "spread": 0,
+              "color": {
+                "space": "oklch",
+                "l": 0.71,
+                "c": 0.125,
+                "h": 215,
+                "alpha": 0.45
+              }
+            }
+          ]
+        }
+      }
+    },
+    "n39": {
+      "id": "n39",
+      "type": "element",
+      "name": "Proof Copy",
+      "parent": "n37",
+      "children": [
+        "n40",
+        "n41"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.1"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "minWidth": {
+            "value": 0,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n40": {
+      "id": "n40",
+      "type": "text",
+      "name": "Proof Title",
+      "parent": "n39",
       "children": [],
       "tag": "span",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "1440 px · Desktop"
+          "text": "React or HTML"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "fontWeight": 650,
+          "color": {
+            "$token": "color.foreground"
+          }
+        }
+      }
+    },
+    "n41": {
+      "id": "n41",
+      "type": "text",
+      "name": "Proof Detail",
+      "parent": "n39",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "From one document"
         }
       ],
       "styles": {
@@ -1873,15 +1823,106 @@
         }
       }
     },
-    "n39": {
-      "id": "n39",
+    "n42": {
+      "id": "n42",
       "type": "element",
-      "name": "Preview Page",
-      "parent": "n37",
+      "name": "Proof Cloud or local",
+      "parent": "n26",
       "children": [
-        "n40",
         "n43",
-        "n44",
+        "n44"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "center",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.3"
+            }
+          },
+          "minWidth": {
+            "value": 0,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n43": {
+      "id": "n43",
+      "type": "element",
+      "name": "Proof Marker",
+      "parent": "n42",
+      "children": [],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "width": {
+            "value": 8,
+            "unit": "px"
+          },
+          "height": {
+            "value": 8,
+            "unit": "px"
+          },
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.primary"
+              }
+            }
+          ],
+          "radius": {
+            "tl": {
+              "$token": "radius.full"
+            },
+            "tr": {
+              "$token": "radius.full"
+            },
+            "br": {
+              "$token": "radius.full"
+            },
+            "bl": {
+              "$token": "radius.full"
+            }
+          },
+          "shadows": [
+            {
+              "x": 0,
+              "y": 0,
+              "blur": 12,
+              "spread": 0,
+              "color": {
+                "space": "oklch",
+                "l": 0.71,
+                "c": 0.125,
+                "h": 215,
+                "alpha": 0.45
+              }
+            }
+          ]
+        }
+      }
+    },
+    "n44": {
+      "id": "n44",
+      "type": "element",
+      "name": "Proof Copy",
+      "parent": "n42",
+      "children": [
         "n45",
         "n46"
       ],
@@ -1894,17 +1935,619 @@
           "flexDirection": "column",
           "gap": {
             "row": {
-              "$token": "spacing.5"
+              "$token": "spacing.1"
             },
             "column": {
               "value": 0,
               "unit": "px"
             }
           },
+          "minWidth": {
+            "value": 0,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n45": {
+      "id": "n45",
+      "type": "text",
+      "name": "Proof Title",
+      "parent": "n44",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Cloud or local"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "fontWeight": 650,
+          "color": {
+            "$token": "color.foreground"
+          }
+        }
+      }
+    },
+    "n46": {
+      "id": "n46",
+      "type": "text",
+      "name": "Proof Detail",
+      "parent": "n44",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Your choice"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.xs"
+          },
+          "color": {
+            "$token": "color.subtle-foreground"
+          }
+        }
+      }
+    },
+    "n47": {
+      "id": "n47",
+      "type": "element",
+      "name": "Props Band",
+      "parent": "n0",
+      "children": [
+        "n48"
+      ],
+      "tag": "section",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "alignItems": "center",
           "width": "fill",
+          "padding": {
+            "top": {
+              "$token": "spacing.20"
+            },
+            "right": {
+              "$token": "spacing.5"
+            },
+            "bottom": {
+              "$token": "spacing.20"
+            },
+            "left": {
+              "$token": "spacing.5"
+            }
+          }
+        },
+        "breakpoints": {
+          "md": {
+            "padding": {
+              "top": {
+                "$token": "spacing.24"
+              },
+              "right": {
+                "$token": "spacing.10"
+              },
+              "bottom": {
+                "$token": "spacing.24"
+              },
+              "left": {
+                "$token": "spacing.10"
+              }
+            }
+          }
+        }
+      }
+    },
+    "n48": {
+      "id": "n48",
+      "type": "element",
+      "name": "Props",
+      "parent": "n47",
+      "children": [
+        "n49",
+        "n52"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "width": "fill",
+          "maxWidth": {
+            "value": 1120,
+            "unit": "px"
+          },
+          "gap": {
+            "row": {
+              "$token": "spacing.10"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          }
+        }
+      }
+    },
+    "n49": {
+      "id": "n49",
+      "type": "element",
+      "name": "Props Introduction",
+      "parent": "n48",
+      "children": [
+        "n50",
+        "n51"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.4"
+            },
+            "column": {
+              "$token": "spacing.8"
+            }
+          },
+          "width": "fill"
+        },
+        "breakpoints": {
+          "md": {
+            "display": "flex",
+            "flexDirection": "row",
+            "alignItems": "end",
+            "justifyContent": "between"
+          }
+        }
+      }
+    },
+    "n50": {
+      "id": "n50",
+      "type": "text",
+      "name": "Props Heading",
+      "parent": "n49",
+      "children": [],
+      "tag": "h2",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Fix the parts the prompt missed."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.4xl"
+          },
+          "fontWeight": 650,
+          "letterSpacing": {
+            "value": -1,
+            "unit": "px"
+          },
+          "lineHeight": 1.12,
           "maxWidth": {
             "value": 560,
             "unit": "px"
+          }
+        }
+      }
+    },
+    "n51": {
+      "id": "n51",
+      "type": "text",
+      "name": "Props Summary",
+      "parent": "n49",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Make the change yourself. Your agent keeps working from the same document."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "lineHeight": 1.55,
+          "maxWidth": {
+            "value": 420,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n52": {
+      "id": "n52",
+      "type": "element",
+      "name": "Props Layout",
+      "parent": "n48",
+      "children": [
+        "n53",
+        "n58"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "alignItems": "stretch",
+          "gap": {
+            "row": {
+              "$token": "spacing.6"
+            },
+            "column": {
+              "$token": "spacing.6"
+            }
+          },
+          "width": "fill"
+        },
+        "breakpoints": {
+          "md": {
+            "display": "flex",
+            "flexDirection": "row"
+          }
+        }
+      }
+    },
+    "n53": {
+      "id": "n53",
+      "type": "element",
+      "name": "Edit the real page",
+      "parent": "n52",
+      "children": [
+        "n54",
+        "n55"
+      ],
+      "tag": "article",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.6"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "padding": {
+            "top": {
+              "$token": "spacing.8"
+            },
+            "right": {
+              "$token": "spacing.8"
+            },
+            "bottom": {
+              "$token": "spacing.8"
+            },
+            "left": {
+              "$token": "spacing.8"
+            }
+          },
+          "fills": [
+            {
+              "type": "radial",
+              "stops": [
+                {
+                  "color": {
+                    "space": "oklch",
+                    "l": 0.235,
+                    "c": 0.035,
+                    "h": 220
+                  },
+                  "position": 0
+                },
+                {
+                  "color": {
+                    "space": "oklch",
+                    "l": 0.165,
+                    "c": 0.008,
+                    "h": 250
+                  },
+                  "position": 0.78
+                }
+              ]
+            }
+          ],
+          "border": {
+            "width": {
+              "value": 1,
+              "unit": "px"
+            },
+            "style": "solid",
+            "color": {
+              "space": "oklch",
+              "l": 0.71,
+              "c": 0.125,
+              "h": 215,
+              "alpha": 0.28
+            }
+          },
+          "radius": {
+            "tl": {
+              "$token": "radius.lg"
+            },
+            "tr": {
+              "$token": "radius.lg"
+            },
+            "br": {
+              "$token": "radius.lg"
+            },
+            "bl": {
+              "$token": "radius.lg"
+            }
+          },
+          "width": "fill",
+          "shadows": [
+            {
+              "x": 0,
+              "y": 24,
+              "blur": 56,
+              "spread": -32,
+              "color": {
+                "space": "oklch",
+                "l": 0.71,
+                "c": 0.125,
+                "h": 215,
+                "alpha": 0.3
+              }
+            }
+          ],
+          "justifyContent": "between"
+        },
+        "breakpoints": {
+          "md": {
+            "display": "flex",
+            "padding": {
+              "top": {
+                "$token": "spacing.10"
+              },
+              "right": {
+                "$token": "spacing.10"
+              },
+              "bottom": {
+                "$token": "spacing.10"
+              },
+              "left": {
+                "$token": "spacing.10"
+              }
+            },
+            "minHeight": {
+              "value": 430,
+              "unit": "px"
+            }
+          }
+        }
+      }
+    },
+    "n54": {
+      "id": "n54",
+      "type": "text",
+      "name": "Card Number",
+      "parent": "n53",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "01"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontFamily": {
+            "$token": "typography.fontFamily.mono"
+          },
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "fontWeight": 600,
+          "color": {
+            "$token": "color.primary"
+          },
+          "padding": {
+            "top": {
+              "value": 0,
+              "unit": "px"
+            },
+            "right": {
+              "value": 0,
+              "unit": "px"
+            },
+            "bottom": {
+              "value": 0,
+              "unit": "px"
+            },
+            "left": {
+              "value": 0,
+              "unit": "px"
+            }
+          }
+        }
+      }
+    },
+    "n55": {
+      "id": "n55",
+      "type": "element",
+      "name": "Card Copy",
+      "parent": "n53",
+      "children": [
+        "n56",
+        "n57"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.4"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "width": "fill"
+        }
+      }
+    },
+    "n56": {
+      "id": "n56",
+      "type": "text",
+      "name": "Card Title",
+      "parent": "n55",
+      "children": [],
+      "tag": "h3",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Edit the real page"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.3xl"
+          },
+          "fontWeight": 650,
+          "letterSpacing": {
+            "value": -0.7,
+            "unit": "px"
+          },
+          "lineHeight": 1.16
+        },
+        "breakpoints": {
+          "md": {
+            "fontSize": {
+              "$token": "typography.fontSize.4xl"
+            }
+          }
+        }
+      }
+    },
+    "n57": {
+      "id": "n57",
+      "type": "text",
+      "name": "Card Body",
+      "parent": "n55",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Change the layout and see the result in place. Pitolet uses the browser’s own layout engine."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.lg"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "lineHeight": 1.7,
+          "maxWidth": {
+            "value": 480,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n58": {
+      "id": "n58",
+      "type": "element",
+      "name": "Secondary Props",
+      "parent": "n52",
+      "children": [
+        "n59",
+        "n64"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "alignItems": "stretch",
+          "gap": {
+            "row": {
+              "$token": "spacing.6"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "width": "fill"
+        }
+      }
+    },
+    "n59": {
+      "id": "n59",
+      "type": "element",
+      "name": "Your agent stays in sync",
+      "parent": "n58",
+      "children": [
+        "n60",
+        "n61"
+      ],
+      "tag": "article",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.3"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
           },
           "padding": {
             "top": {
@@ -1935,916 +2578,6 @@
             },
             "style": "solid",
             "color": {
-              "$token": "color.primary"
-            }
-          },
-          "radius": {
-            "tl": {
-              "$token": "radius.md"
-            },
-            "tr": {
-              "$token": "radius.md"
-            },
-            "br": {
-              "$token": "radius.md"
-            },
-            "bl": {
-              "$token": "radius.md"
-            }
-          },
-          "shadows": [
-            {
-              "x": 0,
-              "y": 0,
-              "blur": 0,
-              "spread": 3,
-              "color": {
-                "space": "oklch",
-                "l": 0.71,
-                "c": 0.125,
-                "h": 215,
-                "alpha": 0.12
-              }
-            }
-          ]
-        }
-      }
-    },
-    "n40": {
-      "id": "n40",
-      "type": "element",
-      "name": "Preview Page Nav",
-      "parent": "n39",
-      "children": [
-        "n41",
-        "n42"
-      ],
-      "tag": "div",
-      "visible": true,
-      "locked": false,
-      "styles": {
-        "base": {
-          "display": "flex",
-          "flexDirection": "row",
-          "alignItems": "center",
-          "justifyContent": "between"
-        }
-      }
-    },
-    "n41": {
-      "id": "n41",
-      "type": "text",
-      "name": "Preview Logo",
-      "parent": "n40",
-      "children": [],
-      "tag": "span",
-      "visible": true,
-      "locked": false,
-      "content": [
-        {
-          "text": "Northstar"
-        }
-      ],
-      "styles": {
-        "base": {
-          "fontSize": {
-            "$token": "typography.fontSize.sm"
-          },
-          "fontWeight": 700
-        }
-      }
-    },
-    "n42": {
-      "id": "n42",
-      "type": "text",
-      "name": "Preview Nav Links",
-      "parent": "n40",
-      "children": [],
-      "tag": "span",
-      "visible": true,
-      "locked": false,
-      "content": [
-        {
-          "text": "Product   Pricing   Log in"
-        }
-      ],
-      "styles": {
-        "base": {
-          "fontSize": {
-            "$token": "typography.fontSize.xs"
-          },
-          "color": {
-            "$token": "color.muted-foreground"
-          }
-        }
-      }
-    },
-    "n43": {
-      "id": "n43",
-      "type": "text",
-      "name": "Preview Eyebrow",
-      "parent": "n39",
-      "children": [],
-      "tag": "span",
-      "visible": true,
-      "locked": false,
-      "content": [
-        {
-          "text": "Built for small teams"
-        }
-      ],
-      "styles": {
-        "base": {
-          "fontSize": {
-            "$token": "typography.fontSize.xs"
-          },
-          "fontWeight": 650,
-          "color": {
-            "$token": "color.primary"
-          }
-        }
-      }
-    },
-    "n44": {
-      "id": "n44",
-      "type": "text",
-      "name": "Preview Headline",
-      "parent": "n39",
-      "children": [],
-      "tag": "h3",
-      "visible": true,
-      "locked": false,
-      "content": [
-        {
-          "text": "A calmer way to plan the week."
-        }
-      ],
-      "styles": {
-        "base": {
-          "fontSize": {
-            "$token": "typography.fontSize.3xl"
-          },
-          "fontWeight": 700,
-          "letterSpacing": {
-            "value": -0.8,
-            "unit": "px"
-          },
-          "lineHeight": 1.1,
-          "maxWidth": {
-            "value": 390,
-            "unit": "px"
-          }
-        }
-      }
-    },
-    "n45": {
-      "id": "n45",
-      "type": "text",
-      "name": "Preview Body",
-      "parent": "n39",
-      "children": [],
-      "tag": "p",
-      "visible": true,
-      "locked": false,
-      "content": [
-        {
-          "text": "Projects, decisions, and next steps in one clear workspace."
-        }
-      ],
-      "styles": {
-        "base": {
-          "fontSize": {
-            "$token": "typography.fontSize.sm"
-          },
-          "color": {
-            "$token": "color.muted-foreground"
-          },
-          "maxWidth": {
-            "value": 390,
-            "unit": "px"
-          }
-        }
-      }
-    },
-    "n46": {
-      "id": "n46",
-      "type": "element",
-      "name": "Preview Actions",
-      "parent": "n39",
-      "children": [
-        "n47",
-        "n48"
-      ],
-      "tag": "div",
-      "visible": true,
-      "locked": false,
-      "styles": {
-        "base": {
-          "display": "flex",
-          "flexDirection": "row",
-          "gap": {
-            "row": {
-              "value": 0,
-              "unit": "px"
-            },
-            "column": {
-              "$token": "spacing.2"
-            }
-          }
-        }
-      }
-    },
-    "n47": {
-      "id": "n47",
-      "type": "text",
-      "name": "Preview Primary",
-      "parent": "n46",
-      "children": [],
-      "tag": "span",
-      "visible": true,
-      "locked": false,
-      "content": [
-        {
-          "text": "Start planning"
-        }
-      ],
-      "styles": {
-        "base": {
-          "fontSize": {
-            "$token": "typography.fontSize.xs"
-          },
-          "fontWeight": 650,
-          "color": {
-            "$token": "color.primary-foreground"
-          },
-          "fills": [
-            {
-              "type": "solid",
-              "color": {
-                "$token": "color.primary"
-              }
-            }
-          ],
-          "padding": {
-            "top": {
-              "$token": "spacing.2"
-            },
-            "bottom": {
-              "$token": "spacing.2"
-            },
-            "left": {
-              "$token": "spacing.3"
-            },
-            "right": {
-              "$token": "spacing.3"
-            }
-          },
-          "radius": {
-            "tl": {
-              "$token": "radius.sm"
-            },
-            "tr": {
-              "$token": "radius.sm"
-            },
-            "br": {
-              "$token": "radius.sm"
-            },
-            "bl": {
-              "$token": "radius.sm"
-            }
-          }
-        }
-      }
-    },
-    "n48": {
-      "id": "n48",
-      "type": "text",
-      "name": "Preview Secondary",
-      "parent": "n46",
-      "children": [],
-      "tag": "span",
-      "visible": true,
-      "locked": false,
-      "content": [
-        {
-          "text": "See how it works"
-        }
-      ],
-      "styles": {
-        "base": {
-          "fontSize": {
-            "$token": "typography.fontSize.xs"
-          },
-          "color": {
-            "$token": "color.muted-foreground"
-          },
-          "border": {
-            "width": {
-              "value": 1,
-              "unit": "px"
-            },
-            "style": "solid",
-            "color": {
-              "$token": "color.border-strong"
-            }
-          },
-          "padding": {
-            "top": {
-              "$token": "spacing.2"
-            },
-            "bottom": {
-              "$token": "spacing.2"
-            },
-            "left": {
-              "$token": "spacing.3"
-            },
-            "right": {
-              "$token": "spacing.3"
-            }
-          },
-          "radius": {
-            "tl": {
-              "$token": "radius.sm"
-            },
-            "tr": {
-              "$token": "radius.sm"
-            },
-            "br": {
-              "$token": "radius.sm"
-            },
-            "bl": {
-              "$token": "radius.sm"
-            }
-          }
-        }
-      }
-    },
-    "n49": {
-      "id": "n49",
-      "type": "element",
-      "name": "Preview Inspector",
-      "parent": "n30",
-      "children": [
-        "n50",
-        "n51",
-        "n52",
-        "n53",
-        "n54"
-      ],
-      "tag": "div",
-      "visible": true,
-      "locked": false,
-      "styles": {
-        "base": {
-          "display": "none",
-          "flexDirection": "column",
-          "gap": {
-            "row": {
-              "$token": "spacing.4"
-            },
-            "column": {
-              "value": 0,
-              "unit": "px"
-            }
-          },
-          "width": {
-            "value": 210,
-            "unit": "px"
-          },
-          "padding": {
-            "top": {
-              "$token": "spacing.4"
-            },
-            "right": {
-              "$token": "spacing.4"
-            },
-            "bottom": {
-              "$token": "spacing.4"
-            },
-            "left": {
-              "$token": "spacing.4"
-            }
-          },
-          "fills": [
-            {
-              "type": "solid",
-              "color": {
-                "$token": "color.background"
-              }
-            }
-          ],
-          "border": {
-            "width": {
-              "value": 1,
-              "unit": "px"
-            },
-            "style": "solid",
-            "color": {
-              "$token": "color.border"
-            },
-            "sides": {
-              "left": true
-            }
-          }
-        },
-        "breakpoints": {
-          "lg": {
-            "display": "flex"
-          }
-        }
-      }
-    },
-    "n50": {
-      "id": "n50",
-      "type": "text",
-      "name": "Inspector Label",
-      "parent": "n49",
-      "children": [],
-      "tag": "span",
-      "visible": true,
-      "locked": false,
-      "content": [
-        {
-          "text": "Layout"
-        }
-      ],
-      "styles": {
-        "base": {
-          "fontSize": {
-            "$token": "typography.fontSize.xs"
-          },
-          "fontWeight": 650,
-          "color": {
-            "$token": "color.muted-foreground"
-          }
-        }
-      }
-    },
-    "n51": {
-      "id": "n51",
-      "type": "text",
-      "name": "Inspector Stack · Vertical",
-      "parent": "n49",
-      "children": [],
-      "tag": "span",
-      "visible": true,
-      "locked": false,
-      "content": [
-        {
-          "text": "Stack · Vertical"
-        }
-      ],
-      "styles": {
-        "base": {
-          "fontFamily": {
-            "$token": "typography.fontFamily.mono"
-          },
-          "fontSize": {
-            "$token": "typography.fontSize.xs"
-          },
-          "color": {
-            "$token": "color.subtle-foreground"
-          },
-          "fills": [
-            {
-              "type": "solid",
-              "color": {
-                "$token": "color.surface"
-              }
-            }
-          ],
-          "padding": {
-            "top": {
-              "$token": "spacing.2"
-            },
-            "bottom": {
-              "$token": "spacing.2"
-            },
-            "left": {
-              "$token": "spacing.3"
-            },
-            "right": {
-              "$token": "spacing.3"
-            }
-          },
-          "radius": {
-            "tl": {
-              "$token": "radius.sm"
-            },
-            "tr": {
-              "$token": "radius.sm"
-            },
-            "br": {
-              "$token": "radius.sm"
-            },
-            "bl": {
-              "$token": "radius.sm"
-            }
-          }
-        }
-      }
-    },
-    "n52": {
-      "id": "n52",
-      "type": "text",
-      "name": "Inspector Gap · 20",
-      "parent": "n49",
-      "children": [],
-      "tag": "span",
-      "visible": true,
-      "locked": false,
-      "content": [
-        {
-          "text": "Gap · 20"
-        }
-      ],
-      "styles": {
-        "base": {
-          "fontFamily": {
-            "$token": "typography.fontFamily.mono"
-          },
-          "fontSize": {
-            "$token": "typography.fontSize.xs"
-          },
-          "color": {
-            "$token": "color.subtle-foreground"
-          },
-          "fills": [
-            {
-              "type": "solid",
-              "color": {
-                "$token": "color.surface"
-              }
-            }
-          ],
-          "padding": {
-            "top": {
-              "$token": "spacing.2"
-            },
-            "bottom": {
-              "$token": "spacing.2"
-            },
-            "left": {
-              "$token": "spacing.3"
-            },
-            "right": {
-              "$token": "spacing.3"
-            }
-          },
-          "radius": {
-            "tl": {
-              "$token": "radius.sm"
-            },
-            "tr": {
-              "$token": "radius.sm"
-            },
-            "br": {
-              "$token": "radius.sm"
-            },
-            "bl": {
-              "$token": "radius.sm"
-            }
-          }
-        }
-      }
-    },
-    "n53": {
-      "id": "n53",
-      "type": "text",
-      "name": "Inspector Padding · 24",
-      "parent": "n49",
-      "children": [],
-      "tag": "span",
-      "visible": true,
-      "locked": false,
-      "content": [
-        {
-          "text": "Padding · 24"
-        }
-      ],
-      "styles": {
-        "base": {
-          "fontFamily": {
-            "$token": "typography.fontFamily.mono"
-          },
-          "fontSize": {
-            "$token": "typography.fontSize.xs"
-          },
-          "color": {
-            "$token": "color.subtle-foreground"
-          },
-          "fills": [
-            {
-              "type": "solid",
-              "color": {
-                "$token": "color.surface"
-              }
-            }
-          ],
-          "padding": {
-            "top": {
-              "$token": "spacing.2"
-            },
-            "bottom": {
-              "$token": "spacing.2"
-            },
-            "left": {
-              "$token": "spacing.3"
-            },
-            "right": {
-              "$token": "spacing.3"
-            }
-          },
-          "radius": {
-            "tl": {
-              "$token": "radius.sm"
-            },
-            "tr": {
-              "$token": "radius.sm"
-            },
-            "br": {
-              "$token": "radius.sm"
-            },
-            "bl": {
-              "$token": "radius.sm"
-            }
-          }
-        }
-      }
-    },
-    "n54": {
-      "id": "n54",
-      "type": "text",
-      "name": "Inspector Width · Fill",
-      "parent": "n49",
-      "children": [],
-      "tag": "span",
-      "visible": true,
-      "locked": false,
-      "content": [
-        {
-          "text": "Width · Fill"
-        }
-      ],
-      "styles": {
-        "base": {
-          "fontFamily": {
-            "$token": "typography.fontFamily.mono"
-          },
-          "fontSize": {
-            "$token": "typography.fontSize.xs"
-          },
-          "color": {
-            "$token": "color.subtle-foreground"
-          },
-          "fills": [
-            {
-              "type": "solid",
-              "color": {
-                "$token": "color.surface"
-              }
-            }
-          ],
-          "padding": {
-            "top": {
-              "$token": "spacing.2"
-            },
-            "bottom": {
-              "$token": "spacing.2"
-            },
-            "left": {
-              "$token": "spacing.3"
-            },
-            "right": {
-              "$token": "spacing.3"
-            }
-          },
-          "radius": {
-            "tl": {
-              "$token": "radius.sm"
-            },
-            "tr": {
-              "$token": "radius.sm"
-            },
-            "br": {
-              "$token": "radius.sm"
-            },
-            "bl": {
-              "$token": "radius.sm"
-            }
-          }
-        }
-      }
-    },
-    "n55": {
-      "id": "n55",
-      "type": "element",
-      "name": "Props Band",
-      "parent": "n0",
-      "children": [
-        "n56"
-      ],
-      "tag": "section",
-      "visible": true,
-      "locked": false,
-      "styles": {
-        "base": {
-          "display": "flex",
-          "flexDirection": "column",
-          "alignItems": "center",
-          "width": "fill",
-          "padding": {
-            "top": {
-              "$token": "spacing.12"
-            },
-            "right": {
-              "$token": "spacing.5"
-            },
-            "bottom": {
-              "$token": "spacing.12"
-            },
-            "left": {
-              "$token": "spacing.5"
-            }
-          }
-        },
-        "breakpoints": {
-          "md": {
-            "padding": {
-              "top": {
-                "$token": "spacing.16"
-              },
-              "right": {
-                "$token": "spacing.10"
-              },
-              "bottom": {
-                "$token": "spacing.16"
-              },
-              "left": {
-                "$token": "spacing.10"
-              }
-            }
-          }
-        }
-      }
-    },
-    "n56": {
-      "id": "n56",
-      "type": "element",
-      "name": "Props",
-      "parent": "n55",
-      "children": [
-        "n57",
-        "n58"
-      ],
-      "tag": "div",
-      "visible": true,
-      "locked": false,
-      "styles": {
-        "base": {
-          "display": "flex",
-          "flexDirection": "column",
-          "width": "fill",
-          "maxWidth": {
-            "value": 1120,
-            "unit": "px"
-          },
-          "gap": {
-            "row": {
-              "$token": "spacing.10"
-            },
-            "column": {
-              "value": 0,
-              "unit": "px"
-            }
-          }
-        }
-      }
-    },
-    "n57": {
-      "id": "n57",
-      "type": "text",
-      "name": "Props Heading",
-      "parent": "n56",
-      "children": [],
-      "tag": "h2",
-      "visible": true,
-      "locked": false,
-      "content": [
-        {
-          "text": "Design and code stop drifting."
-        }
-      ],
-      "styles": {
-        "base": {
-          "fontSize": {
-            "$token": "typography.fontSize.4xl"
-          },
-          "fontWeight": 650,
-          "letterSpacing": {
-            "value": -1,
-            "unit": "px"
-          },
-          "textAlign": "center",
-          "maxWidth": {
-            "value": 720,
-            "unit": "px"
-          },
-          "alignSelf": "center"
-        }
-      }
-    },
-    "n58": {
-      "id": "n58",
-      "type": "element",
-      "name": "Props Row",
-      "parent": "n56",
-      "children": [
-        "n59",
-        "n63",
-        "n67"
-      ],
-      "tag": "div",
-      "visible": true,
-      "locked": false,
-      "styles": {
-        "base": {
-          "display": "flex",
-          "flexDirection": "column",
-          "alignItems": "stretch",
-          "gap": {
-            "row": {
-              "$token": "spacing.6"
-            },
-            "column": {
-              "$token": "spacing.6"
-            }
-          },
-          "width": "fill"
-        },
-        "breakpoints": {
-          "md": {
-            "display": "flex",
-            "flexDirection": "row"
-          }
-        }
-      }
-    },
-    "n59": {
-      "id": "n59",
-      "type": "element",
-      "name": "The browser is the canvas",
-      "parent": "n58",
-      "children": [
-        "n60",
-        "n61",
-        "n62"
-      ],
-      "tag": "article",
-      "visible": true,
-      "locked": false,
-      "styles": {
-        "base": {
-          "display": "flex",
-          "flexDirection": "column",
-          "gap": {
-            "row": {
-              "$token": "spacing.3"
-            },
-            "column": {
-              "value": 0,
-              "unit": "px"
-            }
-          },
-          "padding": {
-            "top": {
-              "$token": "spacing.6"
-            },
-            "right": {
-              "$token": "spacing.6"
-            },
-            "bottom": {
-              "$token": "spacing.6"
-            },
-            "left": {
-              "$token": "spacing.6"
-            }
-          },
-          "fills": [
-            {
-              "type": "solid",
-              "color": {
-                "$token": "color.surface"
-              }
-            }
-          ],
-          "border": {
-            "width": {
-              "value": 1,
-              "unit": "px"
-            },
-            "style": "solid",
-            "color": {
               "$token": "color.border"
             }
           },
@@ -2862,51 +2595,52 @@
               "$token": "radius.lg"
             }
           },
-          "width": "fill"
+          "width": "fill",
+          "flexGrow": 1
         }
       }
     },
     "n60": {
       "id": "n60",
-      "type": "element",
-      "name": "Tick",
+      "type": "text",
+      "name": "Card Number",
       "parent": "n59",
       "children": [],
-      "tag": "div",
+      "tag": "span",
       "visible": true,
       "locked": false,
+      "content": [
+        {
+          "text": "02"
+        }
+      ],
       "styles": {
         "base": {
-          "display": "flex",
-          "flexDirection": "column",
-          "width": {
-            "value": 36,
-            "unit": "px"
+          "fontFamily": {
+            "$token": "typography.fontFamily.mono"
           },
-          "height": {
-            "value": 4,
-            "unit": "px"
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
           },
-          "fills": [
-            {
-              "type": "solid",
-              "color": {
-                "$token": "color.primary"
-              }
-            }
-          ],
-          "radius": {
-            "tl": {
-              "$token": "radius.full"
+          "fontWeight": 600,
+          "color": {
+            "$token": "color.primary"
+          },
+          "padding": {
+            "top": {
+              "value": 0,
+              "unit": "px"
             },
-            "tr": {
-              "$token": "radius.full"
+            "right": {
+              "value": 0,
+              "unit": "px"
             },
-            "br": {
-              "$token": "radius.full"
+            "bottom": {
+              "$token": "spacing.3"
             },
-            "bl": {
-              "$token": "radius.full"
+            "left": {
+              "value": 0,
+              "unit": "px"
             }
           }
         }
@@ -2914,16 +2648,45 @@
     },
     "n61": {
       "id": "n61",
+      "type": "element",
+      "name": "Card Copy",
+      "parent": "n59",
+      "children": [
+        "n62",
+        "n63"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.3"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "width": "fill"
+        }
+      }
+    },
+    "n62": {
+      "id": "n62",
       "type": "text",
       "name": "Card Title",
-      "parent": "n59",
+      "parent": "n61",
       "children": [],
       "tag": "h3",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "The browser is the canvas"
+          "text": "Your agent stays in sync"
         }
       ],
       "styles": {
@@ -2931,26 +2694,27 @@
           "fontSize": {
             "$token": "typography.fontSize.xl"
           },
-          "fontWeight": 600,
+          "fontWeight": 650,
           "letterSpacing": {
             "value": -0.3,
             "unit": "px"
-          }
+          },
+          "lineHeight": 1.16
         }
       }
     },
-    "n62": {
-      "id": "n62",
+    "n63": {
+      "id": "n63",
       "type": "text",
       "name": "Card Body",
-      "parent": "n59",
+      "parent": "n61",
       "children": [],
       "tag": "p",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "Use real flexbox, grid, breakpoints, and interaction states. Text wraps and layouts respond the way they do on the web."
+          "text": "Connect through MCP. Your agent reads the open document and its edits appear on the canvas."
         }
       ],
       "styles": {
@@ -2961,17 +2725,20 @@
           "color": {
             "$token": "color.muted-foreground"
           },
-          "lineHeight": 1.6
+          "lineHeight": 1.6,
+          "maxWidth": {
+            "value": 520,
+            "unit": "px"
+          }
         }
       }
     },
-    "n63": {
-      "id": "n63",
+    "n64": {
+      "id": "n64",
       "type": "element",
-      "name": "Your agent works beside you",
+      "name": "Keep the code",
       "parent": "n58",
       "children": [
-        "n64",
         "n65",
         "n66"
       ],
@@ -3037,120 +2804,67 @@
               "$token": "radius.lg"
             }
           },
-          "width": "fill"
-        }
-      }
-    },
-    "n64": {
-      "id": "n64",
-      "type": "element",
-      "name": "Tick",
-      "parent": "n63",
-      "children": [],
-      "tag": "div",
-      "visible": true,
-      "locked": false,
-      "styles": {
-        "base": {
-          "display": "flex",
-          "flexDirection": "column",
-          "width": {
-            "value": 36,
-            "unit": "px"
-          },
-          "height": {
-            "value": 4,
-            "unit": "px"
-          },
-          "fills": [
-            {
-              "type": "solid",
-              "color": {
-                "$token": "color.primary"
-              }
-            }
-          ],
-          "radius": {
-            "tl": {
-              "$token": "radius.full"
-            },
-            "tr": {
-              "$token": "radius.full"
-            },
-            "br": {
-              "$token": "radius.full"
-            },
-            "bl": {
-              "$token": "radius.full"
-            }
-          }
+          "width": "fill",
+          "flexGrow": 1
         }
       }
     },
     "n65": {
       "id": "n65",
       "type": "text",
-      "name": "Card Title",
-      "parent": "n63",
+      "name": "Card Number",
+      "parent": "n64",
       "children": [],
-      "tag": "h3",
+      "tag": "span",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "Your agent works beside you"
+          "text": "03"
         }
       ],
       "styles": {
         "base": {
+          "fontFamily": {
+            "$token": "typography.fontFamily.mono"
+          },
           "fontSize": {
-            "$token": "typography.fontSize.xl"
+            "$token": "typography.fontSize.sm"
           },
           "fontWeight": 600,
-          "letterSpacing": {
-            "value": -0.3,
-            "unit": "px"
+          "color": {
+            "$token": "color.primary"
+          },
+          "padding": {
+            "top": {
+              "value": 0,
+              "unit": "px"
+            },
+            "right": {
+              "value": 0,
+              "unit": "px"
+            },
+            "bottom": {
+              "$token": "spacing.3"
+            },
+            "left": {
+              "value": 0,
+              "unit": "px"
+            }
           }
         }
       }
     },
     "n66": {
       "id": "n66",
-      "type": "text",
-      "name": "Card Body",
-      "parent": "n63",
-      "children": [],
-      "tag": "p",
-      "visible": true,
-      "locked": false,
-      "content": [
-        {
-          "text": "Connect any MCP client. Your agent can read the open document, follow comments, edit nodes, and update tokens while you watch."
-        }
-      ],
-      "styles": {
-        "base": {
-          "fontSize": {
-            "$token": "typography.fontSize.base"
-          },
-          "color": {
-            "$token": "color.muted-foreground"
-          },
-          "lineHeight": 1.6
-        }
-      }
-    },
-    "n67": {
-      "id": "n67",
       "type": "element",
-      "name": "The output is already code",
-      "parent": "n58",
+      "name": "Card Copy",
+      "parent": "n64",
       "children": [
-        "n68",
-        "n69",
-        "n70"
+        "n67",
+        "n68"
       ],
-      "tag": "article",
+      "tag": "div",
       "visible": true,
       "locked": false,
       "styles": {
@@ -3166,114 +2880,22 @@
               "unit": "px"
             }
           },
-          "padding": {
-            "top": {
-              "$token": "spacing.6"
-            },
-            "right": {
-              "$token": "spacing.6"
-            },
-            "bottom": {
-              "$token": "spacing.6"
-            },
-            "left": {
-              "$token": "spacing.6"
-            }
-          },
-          "fills": [
-            {
-              "type": "solid",
-              "color": {
-                "$token": "color.surface"
-              }
-            }
-          ],
-          "border": {
-            "width": {
-              "value": 1,
-              "unit": "px"
-            },
-            "style": "solid",
-            "color": {
-              "$token": "color.border"
-            }
-          },
-          "radius": {
-            "tl": {
-              "$token": "radius.lg"
-            },
-            "tr": {
-              "$token": "radius.lg"
-            },
-            "br": {
-              "$token": "radius.lg"
-            },
-            "bl": {
-              "$token": "radius.lg"
-            }
-          },
           "width": "fill"
         }
       }
     },
-    "n68": {
-      "id": "n68",
-      "type": "element",
-      "name": "Tick",
-      "parent": "n67",
-      "children": [],
-      "tag": "div",
-      "visible": true,
-      "locked": false,
-      "styles": {
-        "base": {
-          "display": "flex",
-          "flexDirection": "column",
-          "width": {
-            "value": 36,
-            "unit": "px"
-          },
-          "height": {
-            "value": 4,
-            "unit": "px"
-          },
-          "fills": [
-            {
-              "type": "solid",
-              "color": {
-                "$token": "color.primary"
-              }
-            }
-          ],
-          "radius": {
-            "tl": {
-              "$token": "radius.full"
-            },
-            "tr": {
-              "$token": "radius.full"
-            },
-            "br": {
-              "$token": "radius.full"
-            },
-            "bl": {
-              "$token": "radius.full"
-            }
-          }
-        }
-      }
-    },
-    "n69": {
-      "id": "n69",
+    "n67": {
+      "id": "n67",
       "type": "text",
       "name": "Card Title",
-      "parent": "n67",
+      "parent": "n66",
       "children": [],
       "tag": "h3",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "The output is already code"
+          "text": "Keep the code"
         }
       ],
       "styles": {
@@ -3281,26 +2903,27 @@
           "fontSize": {
             "$token": "typography.fontSize.xl"
           },
-          "fontWeight": 600,
+          "fontWeight": 650,
           "letterSpacing": {
             "value": -0.3,
             "unit": "px"
-          }
+          },
+          "lineHeight": 1.16
         }
       }
     },
-    "n70": {
-      "id": "n70",
+    "n68": {
+      "id": "n68",
       "type": "text",
       "name": "Card Body",
-      "parent": "n67",
+      "parent": "n66",
       "children": [],
       "tag": "p",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "Export React and Tailwind or plain HTML and CSS from the same document. Your tokens, components, and responsive rules come with it."
+          "text": "Export React or HTML from the document you edited. There is no separate mockup to rebuild."
         }
       ],
       "styles": {
@@ -3311,17 +2934,21 @@
           "color": {
             "$token": "color.muted-foreground"
           },
-          "lineHeight": 1.6
+          "lineHeight": 1.6,
+          "maxWidth": {
+            "value": 520,
+            "unit": "px"
+          }
         }
       }
     },
-    "n71": {
-      "id": "n71",
+    "n69": {
+      "id": "n69",
       "type": "element",
       "name": "Import Band",
       "parent": "n0",
       "children": [
-        "n72"
+        "n70"
       ],
       "tag": "section",
       "visible": true,
@@ -3334,38 +2961,16 @@
           "width": "fill",
           "padding": {
             "top": {
-              "$token": "spacing.12"
+              "$token": "spacing.20"
             },
             "right": {
               "$token": "spacing.5"
             },
             "bottom": {
-              "$token": "spacing.12"
+              "$token": "spacing.20"
             },
             "left": {
               "$token": "spacing.5"
-            }
-          },
-          "fills": [
-            {
-              "type": "solid",
-              "color": {
-                "$token": "color.surface"
-              }
-            }
-          ],
-          "border": {
-            "width": {
-              "value": 1,
-              "unit": "px"
-            },
-            "style": "solid",
-            "color": {
-              "$token": "color.border"
-            },
-            "sides": {
-              "top": true,
-              "bottom": true
             }
           }
         },
@@ -3373,13 +2978,13 @@
           "md": {
             "padding": {
               "top": {
-                "$token": "spacing.16"
+                "$token": "spacing.24"
               },
               "right": {
                 "$token": "spacing.10"
               },
               "bottom": {
-                "$token": "spacing.16"
+                "$token": "spacing.24"
               },
               "left": {
                 "$token": "spacing.10"
@@ -3389,14 +2994,14 @@
         }
       }
     },
-    "n72": {
-      "id": "n72",
+    "n70": {
+      "id": "n70",
       "type": "element",
       "name": "Import Existing Site",
-      "parent": "n71",
+      "parent": "n69",
       "children": [
-        "n73",
-        "n80"
+        "n71",
+        "n77"
       ],
       "tag": "div",
       "visible": true,
@@ -3434,10 +3039,27 @@
           },
           "fills": [
             {
-              "type": "solid",
-              "color": {
-                "$token": "color.background"
-              }
+              "type": "radial",
+              "stops": [
+                {
+                  "color": {
+                    "space": "oklch",
+                    "l": 0.205,
+                    "c": 0.025,
+                    "h": 225
+                  },
+                  "position": 0
+                },
+                {
+                  "color": {
+                    "space": "oklch",
+                    "l": 0.13,
+                    "c": 0.006,
+                    "h": 250
+                  },
+                  "position": 0.82
+                }
+              ]
             }
           ],
           "border": {
@@ -3447,7 +3069,11 @@
             },
             "style": "solid",
             "color": {
-              "$token": "color.border-strong"
+              "space": "oklch",
+              "l": 0.71,
+              "c": 0.125,
+              "h": 215,
+              "alpha": 0.24
             }
           },
           "radius": {
@@ -3463,7 +3089,22 @@
             "bl": {
               "$token": "radius.lg"
             }
-          }
+          },
+          "shadows": [
+            {
+              "x": 0,
+              "y": 32,
+              "blur": 70,
+              "spread": -44,
+              "color": {
+                "space": "oklch",
+                "l": 0.71,
+                "c": 0.125,
+                "h": 215,
+                "alpha": 0.24
+              }
+            }
+          ]
         },
         "breakpoints": {
           "md": {
@@ -3488,16 +3129,15 @@
         }
       }
     },
-    "n73": {
-      "id": "n73",
+    "n71": {
+      "id": "n71",
       "type": "element",
       "name": "Import Copy",
-      "parent": "n72",
+      "parent": "n70",
       "children": [
-        "n74",
-        "n75",
-        "n76",
-        "n77"
+        "n72",
+        "n73",
+        "n74"
       ],
       "tag": "div",
       "visible": true,
@@ -3523,44 +3163,18 @@
         }
       }
     },
-    "n74": {
-      "id": "n74",
-      "type": "text",
-      "name": "Import Eyebrow",
-      "parent": "n73",
-      "children": [],
-      "tag": "span",
-      "visible": true,
-      "locked": false,
-      "content": [
-        {
-          "text": "Import from a URL"
-        }
-      ],
-      "styles": {
-        "base": {
-          "fontSize": {
-            "$token": "typography.fontSize.sm"
-          },
-          "fontWeight": 650,
-          "color": {
-            "$token": "color.primary"
-          }
-        }
-      }
-    },
-    "n75": {
-      "id": "n75",
+    "n72": {
+      "id": "n72",
       "type": "text",
       "name": "Import Heading",
-      "parent": "n73",
+      "parent": "n71",
       "children": [],
       "tag": "h2",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "Start with the site you already have."
+          "text": "Bring in the site you already have."
         }
       ],
       "styles": {
@@ -3581,18 +3195,18 @@
         }
       }
     },
-    "n76": {
-      "id": "n76",
+    "n73": {
+      "id": "n73",
       "type": "text",
       "name": "Import Body",
-      "parent": "n73",
+      "parent": "n71",
       "children": [],
       "tag": "p",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "Run one local command to capture an existing page at mobile, tablet, and desktop widths. Pitolet keeps the DOM it understands editable and preserves the rest as images."
+          "text": "Point Pitolet at a local page. It imports an editable version and keeps unsupported parts as images."
         }
       ],
       "styles": {
@@ -3611,14 +3225,14 @@
         }
       }
     },
-    "n77": {
-      "id": "n77",
+    "n74": {
+      "id": "n74",
       "type": "element",
       "name": "Import Command",
-      "parent": "n73",
+      "parent": "n71",
       "children": [
-        "n78",
-        "n79"
+        "n75",
+        "n76"
       ],
       "tag": "div",
       "visible": true,
@@ -3688,11 +3302,11 @@
         }
       }
     },
-    "n78": {
-      "id": "n78",
+    "n75": {
+      "id": "n75",
       "type": "text",
       "name": "Import Prompt",
-      "parent": "n77",
+      "parent": "n74",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -3716,11 +3330,11 @@
         }
       }
     },
-    "n79": {
-      "id": "n79",
+    "n76": {
+      "id": "n76",
       "type": "text",
       "name": "Import Code",
-      "parent": "n77",
+      "parent": "n74",
       "children": [],
       "tag": "code",
       "visible": true,
@@ -3744,15 +3358,15 @@
         }
       }
     },
-    "n80": {
-      "id": "n80",
+    "n77": {
+      "id": "n77",
       "type": "element",
       "name": "Import Details",
-      "parent": "n72",
+      "parent": "n70",
       "children": [
-        "n81",
-        "n86",
-        "n91"
+        "n78",
+        "n83",
+        "n88"
       ],
       "tag": "div",
       "visible": true,
@@ -3778,14 +3392,14 @@
         }
       }
     },
-    "n81": {
-      "id": "n81",
+    "n78": {
+      "id": "n78",
       "type": "element",
-      "name": "One responsive frame",
-      "parent": "n80",
+      "name": "One responsive document",
+      "parent": "n77",
       "children": [
-        "n82",
-        "n83"
+        "n79",
+        "n80"
       ],
       "tag": "div",
       "visible": true,
@@ -3807,11 +3421,11 @@
         }
       }
     },
-    "n82": {
-      "id": "n82",
+    "n79": {
+      "id": "n79",
       "type": "text",
       "name": "Import Check",
-      "parent": "n81",
+      "parent": "n78",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -3833,11 +3447,88 @@
         }
       }
     },
+    "n80": {
+      "id": "n80",
+      "type": "element",
+      "name": "Import Point Copy",
+      "parent": "n78",
+      "children": [
+        "n81",
+        "n82"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.1"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          }
+        }
+      }
+    },
+    "n81": {
+      "id": "n81",
+      "type": "text",
+      "name": "Import Point Title",
+      "parent": "n80",
+      "children": [],
+      "tag": "h3",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "One responsive document"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "fontWeight": 650
+        }
+      }
+    },
+    "n82": {
+      "id": "n82",
+      "type": "text",
+      "name": "Import Point Body",
+      "parent": "n80",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Pitolet captures the page at three widths and stores the differences as breakpoints."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "lineHeight": 1.5
+        }
+      }
+    },
     "n83": {
       "id": "n83",
       "type": "element",
-      "name": "Import Point Copy",
-      "parent": "n81",
+      "name": "Local assets",
+      "parent": "n77",
       "children": [
         "n84",
         "n85"
@@ -3848,83 +3539,6 @@
       "styles": {
         "base": {
           "display": "flex",
-          "flexDirection": "column",
-          "gap": {
-            "row": {
-              "$token": "spacing.1"
-            },
-            "column": {
-              "value": 0,
-              "unit": "px"
-            }
-          }
-        }
-      }
-    },
-    "n84": {
-      "id": "n84",
-      "type": "text",
-      "name": "Import Point Title",
-      "parent": "n83",
-      "children": [],
-      "tag": "h3",
-      "visible": true,
-      "locked": false,
-      "content": [
-        {
-          "text": "One responsive frame"
-        }
-      ],
-      "styles": {
-        "base": {
-          "fontSize": {
-            "$token": "typography.fontSize.base"
-          },
-          "fontWeight": 650
-        }
-      }
-    },
-    "n85": {
-      "id": "n85",
-      "type": "text",
-      "name": "Import Point Body",
-      "parent": "n83",
-      "children": [],
-      "tag": "p",
-      "visible": true,
-      "locked": false,
-      "content": [
-        {
-          "text": "Mobile styles form the base; wider layouts become breakpoint overrides."
-        }
-      ],
-      "styles": {
-        "base": {
-          "fontSize": {
-            "$token": "typography.fontSize.sm"
-          },
-          "color": {
-            "$token": "color.muted-foreground"
-          },
-          "lineHeight": 1.5
-        }
-      }
-    },
-    "n86": {
-      "id": "n86",
-      "type": "element",
-      "name": "Assets copied in",
-      "parent": "n80",
-      "children": [
-        "n87",
-        "n88"
-      ],
-      "tag": "div",
-      "visible": true,
-      "locked": false,
-      "styles": {
-        "base": {
-          "display": "flex",
           "flexDirection": "row",
           "alignItems": "start",
           "gap": {
@@ -3939,11 +3553,11 @@
         }
       }
     },
-    "n87": {
-      "id": "n87",
+    "n84": {
+      "id": "n84",
       "type": "text",
       "name": "Import Check",
-      "parent": "n86",
+      "parent": "n83",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -3965,11 +3579,88 @@
         }
       }
     },
+    "n85": {
+      "id": "n85",
+      "type": "element",
+      "name": "Import Point Copy",
+      "parent": "n83",
+      "children": [
+        "n86",
+        "n87"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gap": {
+            "row": {
+              "$token": "spacing.1"
+            },
+            "column": {
+              "value": 0,
+              "unit": "px"
+            }
+          }
+        }
+      }
+    },
+    "n86": {
+      "id": "n86",
+      "type": "text",
+      "name": "Import Point Title",
+      "parent": "n85",
+      "children": [],
+      "tag": "h3",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Local assets"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.base"
+          },
+          "fontWeight": 650
+        }
+      }
+    },
+    "n87": {
+      "id": "n87",
+      "type": "text",
+      "name": "Import Point Body",
+      "parent": "n85",
+      "children": [],
+      "tag": "p",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Images are copied into Pitolet instead of staying linked to the source site."
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          },
+          "lineHeight": 1.5
+        }
+      }
+    },
     "n88": {
       "id": "n88",
       "type": "element",
-      "name": "Import Point Copy",
-      "parent": "n86",
+      "name": "See what changed",
+      "parent": "n77",
       "children": [
         "n89",
         "n90"
@@ -3980,83 +3671,6 @@
       "styles": {
         "base": {
           "display": "flex",
-          "flexDirection": "column",
-          "gap": {
-            "row": {
-              "$token": "spacing.1"
-            },
-            "column": {
-              "value": 0,
-              "unit": "px"
-            }
-          }
-        }
-      }
-    },
-    "n89": {
-      "id": "n89",
-      "type": "text",
-      "name": "Import Point Title",
-      "parent": "n88",
-      "children": [],
-      "tag": "h3",
-      "visible": true,
-      "locked": false,
-      "content": [
-        {
-          "text": "Assets copied in"
-        }
-      ],
-      "styles": {
-        "base": {
-          "fontSize": {
-            "$token": "typography.fontSize.base"
-          },
-          "fontWeight": 650
-        }
-      }
-    },
-    "n90": {
-      "id": "n90",
-      "type": "text",
-      "name": "Import Point Body",
-      "parent": "n88",
-      "children": [],
-      "tag": "p",
-      "visible": true,
-      "locked": false,
-      "content": [
-        {
-          "text": "Images move into Pitolet’s asset store instead of staying hotlinked."
-        }
-      ],
-      "styles": {
-        "base": {
-          "fontSize": {
-            "$token": "typography.fontSize.sm"
-          },
-          "color": {
-            "$token": "color.muted-foreground"
-          },
-          "lineHeight": 1.5
-        }
-      }
-    },
-    "n91": {
-      "id": "n91",
-      "type": "element",
-      "name": "A visual report",
-      "parent": "n80",
-      "children": [
-        "n92",
-        "n93"
-      ],
-      "tag": "div",
-      "visible": true,
-      "locked": false,
-      "styles": {
-        "base": {
-          "display": "flex",
           "flexDirection": "row",
           "alignItems": "start",
           "gap": {
@@ -4071,11 +3685,11 @@
         }
       }
     },
-    "n92": {
-      "id": "n92",
+    "n89": {
+      "id": "n89",
       "type": "text",
       "name": "Import Check",
-      "parent": "n91",
+      "parent": "n88",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -4097,14 +3711,14 @@
         }
       }
     },
-    "n93": {
-      "id": "n93",
+    "n90": {
+      "id": "n90",
       "type": "element",
       "name": "Import Point Copy",
-      "parent": "n91",
+      "parent": "n88",
       "children": [
-        "n94",
-        "n95"
+        "n91",
+        "n92"
       ],
       "tag": "div",
       "visible": true,
@@ -4125,18 +3739,18 @@
         }
       }
     },
-    "n94": {
-      "id": "n94",
+    "n91": {
+      "id": "n91",
       "type": "text",
       "name": "Import Point Title",
-      "parent": "n93",
+      "parent": "n90",
       "children": [],
       "tag": "h3",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "A visual report"
+          "text": "See what changed"
         }
       ],
       "styles": {
@@ -4148,18 +3762,18 @@
         }
       }
     },
-    "n95": {
-      "id": "n95",
+    "n92": {
+      "id": "n92",
       "type": "text",
       "name": "Import Point Body",
-      "parent": "n93",
+      "parent": "n90",
       "children": [],
       "tag": "p",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "Source, imported, and difference images show where the result needs attention."
+          "text": "The import report shows how closely each width matches the source."
         }
       ],
       "styles": {
@@ -4174,13 +3788,13 @@
         }
       }
     },
-    "n96": {
-      "id": "n96",
+    "n93": {
+      "id": "n93",
       "type": "element",
       "name": "Dogfood Band",
       "parent": "n0",
       "children": [
-        "n97"
+        "n94"
       ],
       "tag": "section",
       "visible": true,
@@ -4193,14 +3807,13 @@
           "width": "fill",
           "padding": {
             "top": {
-              "value": 0,
-              "unit": "px"
+              "$token": "spacing.8"
             },
             "right": {
               "$token": "spacing.5"
             },
             "bottom": {
-              "$token": "spacing.12"
+              "$token": "spacing.20"
             },
             "left": {
               "$token": "spacing.5"
@@ -4211,14 +3824,13 @@
           "md": {
             "padding": {
               "top": {
-                "value": 0,
-                "unit": "px"
+                "$token": "spacing.10"
               },
               "right": {
                 "$token": "spacing.10"
               },
               "bottom": {
-                "$token": "spacing.16"
+                "$token": "spacing.24"
               },
               "left": {
                 "$token": "spacing.10"
@@ -4228,14 +3840,14 @@
         }
       }
     },
-    "n97": {
-      "id": "n97",
+    "n94": {
+      "id": "n94",
       "type": "element",
       "name": "Dogfood",
-      "parent": "n96",
+      "parent": "n93",
       "children": [
-        "n98",
-        "n99"
+        "n95",
+        "n96"
       ],
       "tag": "div",
       "visible": true,
@@ -4263,10 +3875,10 @@
           },
           "padding": {
             "top": {
-              "$token": "spacing.4"
+              "$token": "spacing.2"
             },
             "bottom": {
-              "$token": "spacing.4"
+              "$token": "spacing.2"
             },
             "left": {
               "$token": "spacing.6"
@@ -4274,54 +3886,22 @@
             "right": {
               "$token": "spacing.6"
             }
-          },
-          "fills": [
-            {
-              "type": "solid",
-              "color": {
-                "$token": "color.surface"
-              }
-            }
-          ],
-          "border": {
-            "width": {
-              "value": 1,
-              "unit": "px"
-            },
-            "style": "solid",
-            "color": {
-              "$token": "color.border"
-            }
-          },
-          "radius": {
-            "tl": {
-              "$token": "radius.full"
-            },
-            "tr": {
-              "$token": "radius.full"
-            },
-            "br": {
-              "$token": "radius.full"
-            },
-            "bl": {
-              "$token": "radius.full"
-            }
           }
         }
       }
     },
-    "n98": {
-      "id": "n98",
+    "n95": {
+      "id": "n95",
       "type": "text",
       "name": "Dogfood Text",
-      "parent": "n97",
+      "parent": "n94",
       "children": [],
       "tag": "p",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "This page was designed in Pitolet and exported from the same document."
+          "text": "This page was made in Pitolet."
         }
       ],
       "styles": {
@@ -4336,18 +3916,18 @@
         }
       }
     },
-    "n99": {
-      "id": "n99",
+    "n96": {
+      "id": "n96",
       "type": "text",
       "name": "Dogfood Link",
-      "parent": "n97",
+      "parent": "n94",
       "children": [],
       "tag": "a",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "Read the source →"
+          "text": "View its source"
         }
       ],
       "styles": {
@@ -4365,13 +3945,13 @@
         "href": "https://github.com/pitolet/pitolet/tree/main/site"
       }
     },
-    "n100": {
-      "id": "n100",
+    "n97": {
+      "id": "n97",
       "type": "element",
       "name": "Pricing Band",
       "parent": "n0",
       "children": [
-        "n101"
+        "n98"
       ],
       "tag": "section",
       "visible": true,
@@ -4384,29 +3964,16 @@
           "width": "fill",
           "padding": {
             "top": {
-              "$token": "spacing.12"
+              "$token": "spacing.20"
             },
             "right": {
               "$token": "spacing.5"
             },
             "bottom": {
-              "$token": "spacing.12"
+              "$token": "spacing.20"
             },
             "left": {
               "$token": "spacing.5"
-            }
-          },
-          "border": {
-            "width": {
-              "value": 1,
-              "unit": "px"
-            },
-            "style": "solid",
-            "color": {
-              "$token": "color.border"
-            },
-            "sides": {
-              "top": true
             }
           }
         },
@@ -4414,13 +3981,13 @@
           "md": {
             "padding": {
               "top": {
-                "$token": "spacing.16"
+                "$token": "spacing.24"
               },
               "right": {
                 "$token": "spacing.10"
               },
               "bottom": {
-                "$token": "spacing.16"
+                "$token": "spacing.24"
               },
               "left": {
                 "$token": "spacing.10"
@@ -4430,14 +3997,14 @@
         }
       }
     },
-    "n101": {
-      "id": "n101",
+    "n98": {
+      "id": "n98",
       "type": "element",
       "name": "Pricing",
-      "parent": "n100",
+      "parent": "n97",
       "children": [
-        "n102",
-        "n103"
+        "n99",
+        "n100"
       ],
       "tag": "div",
       "visible": true,
@@ -4463,18 +4030,18 @@
         }
       }
     },
-    "n102": {
-      "id": "n102",
+    "n99": {
+      "id": "n99",
       "type": "text",
       "name": "Pricing Heading",
-      "parent": "n101",
+      "parent": "n98",
       "children": [],
       "tag": "h2",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "Use the cloud, or run it yourself."
+          "text": "Use Pitolet on our server or yours."
         }
       ],
       "styles": {
@@ -4496,15 +4063,15 @@
         }
       }
     },
-    "n103": {
-      "id": "n103",
+    "n100": {
+      "id": "n100",
       "type": "element",
       "name": "Plans",
-      "parent": "n101",
+      "parent": "n98",
       "children": [
-        "n104",
-        "n121",
-        "n143"
+        "n101",
+        "n118",
+        "n140"
       ],
       "tag": "div",
       "visible": true,
@@ -4532,16 +4099,16 @@
         }
       }
     },
-    "n104": {
-      "id": "n104",
+    "n101": {
+      "id": "n101",
       "type": "element",
       "name": "Plan Free",
-      "parent": "n103",
+      "parent": "n100",
       "children": [
-        "n105",
+        "n102",
+        "n104",
         "n107",
-        "n110",
-        "n111"
+        "n108"
       ],
       "tag": "article",
       "visible": true,
@@ -4609,13 +4176,13 @@
         }
       }
     },
-    "n105": {
-      "id": "n105",
+    "n102": {
+      "id": "n102",
       "type": "element",
       "name": "Plan Head",
-      "parent": "n104",
+      "parent": "n101",
       "children": [
-        "n106"
+        "n103"
       ],
       "tag": "div",
       "visible": true,
@@ -4629,11 +4196,11 @@
         }
       }
     },
-    "n106": {
-      "id": "n106",
+    "n103": {
+      "id": "n103",
       "type": "text",
       "name": "Plan Name",
-      "parent": "n105",
+      "parent": "n102",
       "children": [],
       "tag": "h3",
       "visible": true,
@@ -4652,14 +4219,14 @@
         }
       }
     },
-    "n107": {
-      "id": "n107",
+    "n104": {
+      "id": "n104",
       "type": "element",
       "name": "Price Row",
-      "parent": "n104",
+      "parent": "n101",
       "children": [
-        "n108",
-        "n109"
+        "n105",
+        "n106"
       ],
       "tag": "div",
       "visible": true,
@@ -4681,11 +4248,11 @@
         }
       }
     },
-    "n108": {
-      "id": "n108",
+    "n105": {
+      "id": "n105",
       "type": "text",
       "name": "Price",
-      "parent": "n107",
+      "parent": "n104",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -4708,11 +4275,11 @@
         }
       }
     },
-    "n109": {
-      "id": "n109",
+    "n106": {
+      "id": "n106",
       "type": "text",
       "name": "Price Unit",
-      "parent": "n107",
+      "parent": "n104",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -4733,18 +4300,18 @@
         }
       }
     },
-    "n110": {
-      "id": "n110",
+    "n107": {
+      "id": "n107",
       "type": "text",
       "name": "Plan Blurb",
-      "parent": "n104",
+      "parent": "n101",
       "children": [],
       "tag": "p",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "For personal projects and a first workspace."
+          "text": "For trying Pitolet on a real project."
         }
       ],
       "styles": {
@@ -4759,15 +4326,15 @@
         }
       }
     },
-    "n111": {
-      "id": "n111",
+    "n108": {
+      "id": "n108",
       "type": "element",
       "name": "Features",
-      "parent": "n104",
+      "parent": "n101",
       "children": [
+        "n109",
         "n112",
-        "n115",
-        "n118"
+        "n115"
       ],
       "tag": "ul",
       "visible": true,
@@ -4788,11 +4355,91 @@
         }
       }
     },
+    "n109": {
+      "id": "n109",
+      "type": "element",
+      "name": "Feature",
+      "parent": "n108",
+      "children": [
+        "n110",
+        "n111"
+      ],
+      "tag": "li",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "baseline",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.2"
+            }
+          }
+        }
+      }
+    },
+    "n110": {
+      "id": "n110",
+      "type": "text",
+      "name": "Check",
+      "parent": "n109",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "•"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.primary"
+          },
+          "fontWeight": 700
+        }
+      }
+    },
+    "n111": {
+      "id": "n111",
+      "type": "text",
+      "name": "Feature Text",
+      "parent": "n109",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "1 workspace"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          }
+        }
+      }
+    },
     "n112": {
       "id": "n112",
       "type": "element",
       "name": "Feature",
-      "parent": "n111",
+      "parent": "n108",
       "children": [
         "n113",
         "n114"
@@ -4828,7 +4475,7 @@
       "locked": false,
       "content": [
         {
-          "text": "—"
+          "text": "•"
         }
       ],
       "styles": {
@@ -4854,7 +4501,7 @@
       "locked": false,
       "content": [
         {
-          "text": "1 workspace"
+          "text": "3 documents"
         }
       ],
       "styles": {
@@ -4872,7 +4519,7 @@
       "id": "n115",
       "type": "element",
       "name": "Feature",
-      "parent": "n111",
+      "parent": "n108",
       "children": [
         "n116",
         "n117"
@@ -4908,7 +4555,7 @@
       "locked": false,
       "content": [
         {
-          "text": "—"
+          "text": "•"
         }
       ],
       "styles": {
@@ -4934,7 +4581,7 @@
       "locked": false,
       "content": [
         {
-          "text": "3 documents"
+          "text": "Hosted MCP for your agent"
         }
       ],
       "styles": {
@@ -4951,93 +4598,13 @@
     "n118": {
       "id": "n118",
       "type": "element",
-      "name": "Feature",
-      "parent": "n111",
+      "name": "Plan Pro",
+      "parent": "n100",
       "children": [
         "n119",
-        "n120"
-      ],
-      "tag": "li",
-      "visible": true,
-      "locked": false,
-      "styles": {
-        "base": {
-          "display": "flex",
-          "flexDirection": "row",
-          "alignItems": "baseline",
-          "gap": {
-            "row": {
-              "value": 0,
-              "unit": "px"
-            },
-            "column": {
-              "$token": "spacing.2"
-            }
-          }
-        }
-      }
-    },
-    "n119": {
-      "id": "n119",
-      "type": "text",
-      "name": "Check",
-      "parent": "n118",
-      "children": [],
-      "tag": "span",
-      "visible": true,
-      "locked": false,
-      "content": [
-        {
-          "text": "—"
-        }
-      ],
-      "styles": {
-        "base": {
-          "fontSize": {
-            "$token": "typography.fontSize.sm"
-          },
-          "color": {
-            "$token": "color.primary"
-          },
-          "fontWeight": 700
-        }
-      }
-    },
-    "n120": {
-      "id": "n120",
-      "type": "text",
-      "name": "Feature Text",
-      "parent": "n118",
-      "children": [],
-      "tag": "span",
-      "visible": true,
-      "locked": false,
-      "content": [
-        {
-          "text": "Hosted MCP for your agent"
-        }
-      ],
-      "styles": {
-        "base": {
-          "fontSize": {
-            "$token": "typography.fontSize.sm"
-          },
-          "color": {
-            "$token": "color.muted-foreground"
-          }
-        }
-      }
-    },
-    "n121": {
-      "id": "n121",
-      "type": "element",
-      "name": "Plan Pro",
-      "parent": "n103",
-      "children": [
-        "n122",
+        "n123",
         "n126",
-        "n129",
-        "n130"
+        "n127"
       ],
       "tag": "article",
       "visible": true,
@@ -5071,10 +4638,27 @@
           },
           "fills": [
             {
-              "type": "solid",
-              "color": {
-                "$token": "color.surface-2"
-              }
+              "type": "radial",
+              "stops": [
+                {
+                  "color": {
+                    "space": "oklch",
+                    "l": 0.245,
+                    "c": 0.035,
+                    "h": 220
+                  },
+                  "position": 0
+                },
+                {
+                  "color": {
+                    "space": "oklch",
+                    "l": 0.18,
+                    "c": 0.01,
+                    "h": 250
+                  },
+                  "position": 0.82
+                }
+              ]
             }
           ],
           "border": {
@@ -5101,18 +4685,33 @@
               "$token": "radius.lg"
             }
           },
-          "width": "fill"
+          "width": "fill",
+          "shadows": [
+            {
+              "x": 0,
+              "y": 28,
+              "blur": 60,
+              "spread": -36,
+              "color": {
+                "space": "oklch",
+                "l": 0.71,
+                "c": 0.125,
+                "h": 215,
+                "alpha": 0.34
+              }
+            }
+          ]
         }
       }
     },
-    "n122": {
-      "id": "n122",
+    "n119": {
+      "id": "n119",
       "type": "element",
       "name": "Plan Head",
-      "parent": "n121",
+      "parent": "n118",
       "children": [
-        "n123",
-        "n124"
+        "n120",
+        "n121"
       ],
       "tag": "div",
       "visible": true,
@@ -5126,11 +4725,11 @@
         }
       }
     },
-    "n123": {
-      "id": "n123",
+    "n120": {
+      "id": "n120",
       "type": "text",
       "name": "Plan Name",
-      "parent": "n122",
+      "parent": "n119",
       "children": [],
       "tag": "h3",
       "visible": true,
@@ -5149,13 +4748,13 @@
         }
       }
     },
-    "n124": {
-      "id": "n124",
+    "n121": {
+      "id": "n121",
       "type": "element",
       "name": "Badge",
-      "parent": "n122",
+      "parent": "n119",
       "children": [
-        "n125"
+        "n122"
       ],
       "tag": "div",
       "visible": true,
@@ -5206,11 +4805,11 @@
         }
       }
     },
-    "n125": {
-      "id": "n125",
+    "n122": {
+      "id": "n122",
       "type": "text",
       "name": "Badge Text",
-      "parent": "n124",
+      "parent": "n121",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -5236,14 +4835,14 @@
         }
       }
     },
-    "n126": {
-      "id": "n126",
+    "n123": {
+      "id": "n123",
       "type": "element",
       "name": "Price Row",
-      "parent": "n121",
+      "parent": "n118",
       "children": [
-        "n127",
-        "n128"
+        "n124",
+        "n125"
       ],
       "tag": "div",
       "visible": true,
@@ -5265,11 +4864,11 @@
         }
       }
     },
-    "n127": {
-      "id": "n127",
+    "n124": {
+      "id": "n124",
       "type": "text",
       "name": "Price",
-      "parent": "n126",
+      "parent": "n123",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -5292,11 +4891,11 @@
         }
       }
     },
-    "n128": {
-      "id": "n128",
+    "n125": {
+      "id": "n125",
       "type": "text",
       "name": "Price Unit",
-      "parent": "n126",
+      "parent": "n123",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -5317,18 +4916,18 @@
         }
       }
     },
-    "n129": {
-      "id": "n129",
+    "n126": {
+      "id": "n126",
       "type": "text",
       "name": "Plan Blurb",
-      "parent": "n121",
+      "parent": "n118",
       "children": [],
       "tag": "p",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "For teams that need more documents, history, and sharing."
+          "text": "For work that needs more room and history."
         }
       ],
       "styles": {
@@ -5343,16 +4942,16 @@
         }
       }
     },
-    "n130": {
-      "id": "n130",
+    "n127": {
+      "id": "n127",
       "type": "element",
       "name": "Features",
-      "parent": "n121",
+      "parent": "n118",
       "children": [
+        "n128",
         "n131",
         "n134",
-        "n137",
-        "n140"
+        "n137"
       ],
       "tag": "ul",
       "visible": true,
@@ -5373,11 +4972,91 @@
         }
       }
     },
+    "n128": {
+      "id": "n128",
+      "type": "element",
+      "name": "Feature",
+      "parent": "n127",
+      "children": [
+        "n129",
+        "n130"
+      ],
+      "tag": "li",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "baseline",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.2"
+            }
+          }
+        }
+      }
+    },
+    "n129": {
+      "id": "n129",
+      "type": "text",
+      "name": "Check",
+      "parent": "n128",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "•"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.primary"
+          },
+          "fontWeight": 700
+        }
+      }
+    },
+    "n130": {
+      "id": "n130",
+      "type": "text",
+      "name": "Feature Text",
+      "parent": "n128",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "Unlimited documents + tokens"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          }
+        }
+      }
+    },
     "n131": {
       "id": "n131",
       "type": "element",
       "name": "Feature",
-      "parent": "n130",
+      "parent": "n127",
       "children": [
         "n132",
         "n133"
@@ -5413,7 +5092,7 @@
       "locked": false,
       "content": [
         {
-          "text": "—"
+          "text": "•"
         }
       ],
       "styles": {
@@ -5439,7 +5118,7 @@
       "locked": false,
       "content": [
         {
-          "text": "Unlimited documents + tokens"
+          "text": "Version history"
         }
       ],
       "styles": {
@@ -5457,7 +5136,7 @@
       "id": "n134",
       "type": "element",
       "name": "Feature",
-      "parent": "n130",
+      "parent": "n127",
       "children": [
         "n135",
         "n136"
@@ -5493,7 +5172,7 @@
       "locked": false,
       "content": [
         {
-          "text": "—"
+          "text": "•"
         }
       ],
       "styles": {
@@ -5519,7 +5198,7 @@
       "locked": false,
       "content": [
         {
-          "text": "Version history"
+          "text": "Share links"
         }
       ],
       "styles": {
@@ -5537,7 +5216,7 @@
       "id": "n137",
       "type": "element",
       "name": "Feature",
-      "parent": "n130",
+      "parent": "n127",
       "children": [
         "n138",
         "n139"
@@ -5573,7 +5252,7 @@
       "locked": false,
       "content": [
         {
-          "text": "—"
+          "text": "•"
         }
       ],
       "styles": {
@@ -5599,7 +5278,7 @@
       "locked": false,
       "content": [
         {
-          "text": "Share links"
+          "text": "Everything in Free"
         }
       ],
       "styles": {
@@ -5616,93 +5295,13 @@
     "n140": {
       "id": "n140",
       "type": "element",
-      "name": "Feature",
-      "parent": "n130",
+      "name": "Plan Self-host",
+      "parent": "n100",
       "children": [
         "n141",
-        "n142"
-      ],
-      "tag": "li",
-      "visible": true,
-      "locked": false,
-      "styles": {
-        "base": {
-          "display": "flex",
-          "flexDirection": "row",
-          "alignItems": "baseline",
-          "gap": {
-            "row": {
-              "value": 0,
-              "unit": "px"
-            },
-            "column": {
-              "$token": "spacing.2"
-            }
-          }
-        }
-      }
-    },
-    "n141": {
-      "id": "n141",
-      "type": "text",
-      "name": "Check",
-      "parent": "n140",
-      "children": [],
-      "tag": "span",
-      "visible": true,
-      "locked": false,
-      "content": [
-        {
-          "text": "—"
-        }
-      ],
-      "styles": {
-        "base": {
-          "fontSize": {
-            "$token": "typography.fontSize.sm"
-          },
-          "color": {
-            "$token": "color.primary"
-          },
-          "fontWeight": 700
-        }
-      }
-    },
-    "n142": {
-      "id": "n142",
-      "type": "text",
-      "name": "Feature Text",
-      "parent": "n140",
-      "children": [],
-      "tag": "span",
-      "visible": true,
-      "locked": false,
-      "content": [
-        {
-          "text": "Everything in Free"
-        }
-      ],
-      "styles": {
-        "base": {
-          "fontSize": {
-            "$token": "typography.fontSize.sm"
-          },
-          "color": {
-            "$token": "color.muted-foreground"
-          }
-        }
-      }
-    },
-    "n143": {
-      "id": "n143",
-      "type": "element",
-      "name": "Plan Self-host",
-      "parent": "n103",
-      "children": [
-        "n144",
+        "n143",
         "n146",
-        "n149",
-        "n150"
+        "n147"
       ],
       "tag": "article",
       "visible": true,
@@ -5770,13 +5369,13 @@
         }
       }
     },
-    "n144": {
-      "id": "n144",
+    "n141": {
+      "id": "n141",
       "type": "element",
       "name": "Plan Head",
-      "parent": "n143",
+      "parent": "n140",
       "children": [
-        "n145"
+        "n142"
       ],
       "tag": "div",
       "visible": true,
@@ -5790,11 +5389,11 @@
         }
       }
     },
-    "n145": {
-      "id": "n145",
+    "n142": {
+      "id": "n142",
       "type": "text",
       "name": "Plan Name",
-      "parent": "n144",
+      "parent": "n141",
       "children": [],
       "tag": "h3",
       "visible": true,
@@ -5813,14 +5412,14 @@
         }
       }
     },
-    "n146": {
-      "id": "n146",
+    "n143": {
+      "id": "n143",
       "type": "element",
       "name": "Price Row",
-      "parent": "n143",
+      "parent": "n140",
       "children": [
-        "n147",
-        "n148"
+        "n144",
+        "n145"
       ],
       "tag": "div",
       "visible": true,
@@ -5842,11 +5441,11 @@
         }
       }
     },
-    "n147": {
-      "id": "n147",
+    "n144": {
+      "id": "n144",
       "type": "text",
       "name": "Price",
-      "parent": "n146",
+      "parent": "n143",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -5869,11 +5468,11 @@
         }
       }
     },
-    "n148": {
-      "id": "n148",
+    "n145": {
+      "id": "n145",
       "type": "text",
       "name": "Price Unit",
-      "parent": "n146",
+      "parent": "n143",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -5894,18 +5493,18 @@
         }
       }
     },
-    "n149": {
-      "id": "n149",
+    "n146": {
+      "id": "n146",
       "type": "text",
       "name": "Plan Blurb",
-      "parent": "n143",
+      "parent": "n140",
       "children": [],
       "tag": "p",
       "visible": true,
       "locked": false,
       "content": [
         {
-          "text": "Keep the files and server on your own machine."
+          "text": "Run the open source version on your own server."
         }
       ],
       "styles": {
@@ -5920,15 +5519,15 @@
         }
       }
     },
-    "n150": {
-      "id": "n150",
+    "n147": {
+      "id": "n147",
       "type": "element",
       "name": "Features",
-      "parent": "n143",
+      "parent": "n140",
       "children": [
+        "n148",
         "n151",
-        "n154",
-        "n157"
+        "n154"
       ],
       "tag": "ul",
       "visible": true,
@@ -5949,11 +5548,91 @@
         }
       }
     },
+    "n148": {
+      "id": "n148",
+      "type": "element",
+      "name": "Feature",
+      "parent": "n147",
+      "children": [
+        "n149",
+        "n150"
+      ],
+      "tag": "li",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "row",
+          "alignItems": "baseline",
+          "gap": {
+            "row": {
+              "value": 0,
+              "unit": "px"
+            },
+            "column": {
+              "$token": "spacing.2"
+            }
+          }
+        }
+      }
+    },
+    "n149": {
+      "id": "n149",
+      "type": "text",
+      "name": "Check",
+      "parent": "n148",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "•"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.primary"
+          },
+          "fontWeight": 700
+        }
+      }
+    },
+    "n150": {
+      "id": "n150",
+      "type": "text",
+      "name": "Feature Text",
+      "parent": "n148",
+      "children": [],
+      "tag": "span",
+      "visible": true,
+      "locked": false,
+      "content": [
+        {
+          "text": "npx pitolet"
+        }
+      ],
+      "styles": {
+        "base": {
+          "fontSize": {
+            "$token": "typography.fontSize.sm"
+          },
+          "color": {
+            "$token": "color.muted-foreground"
+          }
+        }
+      }
+    },
     "n151": {
       "id": "n151",
       "type": "element",
       "name": "Feature",
-      "parent": "n150",
+      "parent": "n147",
       "children": [
         "n152",
         "n153"
@@ -5989,7 +5668,7 @@
       "locked": false,
       "content": [
         {
-          "text": "—"
+          "text": "•"
         }
       ],
       "styles": {
@@ -6015,7 +5694,7 @@
       "locked": false,
       "content": [
         {
-          "text": "npx pitolet"
+          "text": "Runs on your own servers"
         }
       ],
       "styles": {
@@ -6033,7 +5712,7 @@
       "id": "n154",
       "type": "element",
       "name": "Feature",
-      "parent": "n150",
+      "parent": "n147",
       "children": [
         "n155",
         "n156"
@@ -6069,7 +5748,7 @@
       "locked": false,
       "content": [
         {
-          "text": "—"
+          "text": "•"
         }
       ],
       "styles": {
@@ -6095,7 +5774,7 @@
       "locked": false,
       "content": [
         {
-          "text": "Runs on your own servers"
+          "text": "AGPL-3.0 licensed"
         }
       ],
       "styles": {
@@ -6112,90 +5791,10 @@
     "n157": {
       "id": "n157",
       "type": "element",
-      "name": "Feature",
-      "parent": "n150",
-      "children": [
-        "n158",
-        "n159"
-      ],
-      "tag": "li",
-      "visible": true,
-      "locked": false,
-      "styles": {
-        "base": {
-          "display": "flex",
-          "flexDirection": "row",
-          "alignItems": "baseline",
-          "gap": {
-            "row": {
-              "value": 0,
-              "unit": "px"
-            },
-            "column": {
-              "$token": "spacing.2"
-            }
-          }
-        }
-      }
-    },
-    "n158": {
-      "id": "n158",
-      "type": "text",
-      "name": "Check",
-      "parent": "n157",
-      "children": [],
-      "tag": "span",
-      "visible": true,
-      "locked": false,
-      "content": [
-        {
-          "text": "—"
-        }
-      ],
-      "styles": {
-        "base": {
-          "fontSize": {
-            "$token": "typography.fontSize.sm"
-          },
-          "color": {
-            "$token": "color.primary"
-          },
-          "fontWeight": 700
-        }
-      }
-    },
-    "n159": {
-      "id": "n159",
-      "type": "text",
-      "name": "Feature Text",
-      "parent": "n157",
-      "children": [],
-      "tag": "span",
-      "visible": true,
-      "locked": false,
-      "content": [
-        {
-          "text": "AGPL-3.0 licensed"
-        }
-      ],
-      "styles": {
-        "base": {
-          "fontSize": {
-            "$token": "typography.fontSize.sm"
-          },
-          "color": {
-            "$token": "color.muted-foreground"
-          }
-        }
-      }
-    },
-    "n160": {
-      "id": "n160",
-      "type": "element",
       "name": "Footer Band",
       "parent": "n0",
       "children": [
-        "n161"
+        "n158"
       ],
       "tag": "section",
       "visible": true,
@@ -6208,29 +5807,16 @@
           "width": "fill",
           "padding": {
             "top": {
-              "$token": "spacing.8"
+              "$token": "spacing.12"
             },
             "right": {
               "$token": "spacing.5"
             },
             "bottom": {
-              "$token": "spacing.8"
+              "$token": "spacing.12"
             },
             "left": {
               "$token": "spacing.5"
-            }
-          },
-          "border": {
-            "width": {
-              "value": 1,
-              "unit": "px"
-            },
-            "style": "solid",
-            "color": {
-              "$token": "color.border"
-            },
-            "sides": {
-              "top": true
             }
           }
         },
@@ -6238,13 +5824,13 @@
           "md": {
             "padding": {
               "top": {
-                "$token": "spacing.8"
+                "$token": "spacing.12"
               },
               "right": {
                 "$token": "spacing.10"
               },
               "bottom": {
-                "$token": "spacing.8"
+                "$token": "spacing.12"
               },
               "left": {
                 "$token": "spacing.10"
@@ -6254,14 +5840,14 @@
         }
       }
     },
-    "n161": {
-      "id": "n161",
+    "n158": {
+      "id": "n158",
       "type": "element",
       "name": "Footer",
-      "parent": "n160",
+      "parent": "n157",
       "children": [
-        "n162",
-        "n163"
+        "n159",
+        "n160"
       ],
       "tag": "footer",
       "visible": true,
@@ -6289,11 +5875,11 @@
         }
       }
     },
-    "n162": {
-      "id": "n162",
+    "n159": {
+      "id": "n159",
       "type": "text",
       "name": "Copyright",
-      "parent": "n161",
+      "parent": "n158",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -6314,15 +5900,15 @@
         }
       }
     },
-    "n163": {
-      "id": "n163",
+    "n160": {
+      "id": "n160",
       "type": "element",
       "name": "Footer Links",
-      "parent": "n161",
+      "parent": "n158",
       "children": [
-        "n164",
-        "n165",
-        "n166"
+        "n161",
+        "n162",
+        "n163"
       ],
       "tag": "div",
       "visible": true,
@@ -6344,11 +5930,11 @@
         }
       }
     },
-    "n164": {
-      "id": "n164",
+    "n161": {
+      "id": "n161",
       "type": "text",
       "name": "Terms",
-      "parent": "n163",
+      "parent": "n160",
       "children": [],
       "tag": "a",
       "visible": true,
@@ -6379,11 +5965,11 @@
         "href": "/terms.html"
       }
     },
-    "n165": {
-      "id": "n165",
+    "n162": {
+      "id": "n162",
       "type": "text",
       "name": "Privacy",
-      "parent": "n163",
+      "parent": "n160",
       "children": [],
       "tag": "a",
       "visible": true,
@@ -6414,11 +6000,11 @@
         "href": "/privacy.html"
       }
     },
-    "n166": {
-      "id": "n166",
+    "n163": {
+      "id": "n163",
       "type": "text",
       "name": "GitHub",
-      "parent": "n163",
+      "parent": "n160",
       "children": [],
       "tag": "a",
       "visible": true,
