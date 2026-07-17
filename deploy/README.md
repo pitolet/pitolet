@@ -85,7 +85,7 @@ nano .env    # set POSTGRES_PASSWORD, DATABASE_URL (same password), BETTER_AUTH_
 ```
 
 Generate secrets with `openssl rand -hex 32`.
-Set `TAG` to an immutable published version such as `1.1.0`; do not use
+Set `TAG` to an immutable published version such as `1.2.0`; do not use
 `latest`. Both deploy and rollback rely on that exact value.
 
 For an SFTP `RESTIC_REPOSITORY`, create a dedicated key and pin the host key:
@@ -202,7 +202,7 @@ Add these repository **secrets**:
   as the secret.
 
 Trigger from the Actions tab (**workflow_dispatch**) with the immutable image
-tag to deploy, for example `1.1.0`.
+tag to deploy, for example `1.2.0`.
 
 ## 9. Monthly restore drill
 

@@ -80,6 +80,6 @@ EXPOSE 8080
 # Readiness includes a database round-trip; a static dashboard response must
 # not keep a container marked healthy while Postgres is unavailable.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-  CMD node -e "fetch('http://127.0.0.1:'+(process.env.PITOLET_CLOUD_PORT||8080)+'/readyz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+  CMD node -e "fetch('http://127.0.0.1:'+(process.env.PITOLET_CLOUD_PORT||8080)+'/readyz').then(async r=>{const type=r.headers.get('content-type')||'';const body=await r.json().catch(()=>null);process.exit(r.ok&&type.toLowerCase().startsWith('application/json')&&body?.ok===true?0:1)}).catch(()=>process.exit(1))"
 
 CMD ["node", "dist/server.js"]

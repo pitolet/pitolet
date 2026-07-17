@@ -1,6 +1,6 @@
 {
   "name": "pitolet-workspace",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "type": "module",
   "description": "Design web interfaces with real DOM and CSS, work alongside a coding agent, and export React or HTML.",

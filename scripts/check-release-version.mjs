@@ -13,14 +13,18 @@ const match =
 if (!match) throw new Error(`invalid release tag "${tag}"; expected v<semver>`);
 
 const version = tag.slice(1);
-const workspace = readJson(resolve(repoRoot, 'package.json'));
-const published = readJson(resolve(repoRoot, 'packages/server/package.json'));
-const cloud = readJson(resolve(repoRoot, 'apps/cloud/package.json'));
-const mismatches = [
-  ['package.json', workspace.version],
-  ['packages/server/package.json', published.version],
-  ['apps/cloud/package.json', cloud.version],
-].filter(([, candidate]) => candidate !== version);
+const releaseManifests = [
+  'package.json',
+  'apps/cloud/package.json',
+  'packages/codegen/package.json',
+  'packages/editor/package.json',
+  'packages/schema/package.json',
+  'packages/server/package.json',
+  'packages/ui/package.json',
+];
+const mismatches = releaseManifests
+  .map((path) => [path, readJson(resolve(repoRoot, path)).version])
+  .filter(([, candidate]) => candidate !== version);
 if (mismatches.length > 0) {
   throw new Error(
     `release tag ${tag} does not match:\n${mismatches

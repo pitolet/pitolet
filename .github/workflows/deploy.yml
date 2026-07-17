@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Immutable semver image tag to deploy, for example 1.1.0
+        description: Immutable semver image tag to deploy, for example 1.2.0
         required: true
 
 concurrency:
@@ -71,6 +71,28 @@ jobs:
             test -f "$LIVE/docker-compose.yml"
 
             PREVIOUS_TAG=$(sed -n 's/^TAG=//p' "$LIVE/.env" 2>/dev/null | tail -1)
+            # v1.1.0's runbook used TAG=latest. Pin that one legacy baseline
+            # only when the running container proves it is the 1.1.0 image;
+            # never guess which immutable image a floating tag represents.
+            if [ "$PREVIOUS_TAG" = latest ]; then
+              LEGACY_TAG=1.1.0
+              LEGACY_IMAGE="ghcr.io/pitolet/pitolet-cloud:$LEGACY_TAG"
+              docker pull "$LEGACY_IMAGE"
+              RUNNING_CONTAINER=$(docker compose \
+                --project-name pitolet \
+                --project-directory "$LIVE" \
+                -f "$LIVE/docker-compose.yml" \
+                ps -q app)
+              test -n "$RUNNING_CONTAINER"
+              RUNNING_IMAGE_ID=$(docker inspect --format '{{.Image}}' "$RUNNING_CONTAINER")
+              LEGACY_IMAGE_ID=$(docker image inspect --format '{{.Id}}' "$LEGACY_IMAGE")
+              if [ "$RUNNING_IMAGE_ID" != "$LEGACY_IMAGE_ID" ]; then
+                echo "live TAG is latest, but the running image is not $LEGACY_TAG; pin it manually"
+                exit 1
+              fi
+              sed -i "s/^TAG=.*/TAG=$LEGACY_TAG/" "$LIVE/.env"
+              PREVIOUS_TAG=$LEGACY_TAG
+            fi
             printf '%s' "$PREVIOUS_TAG" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'
 
             # Validate the incoming release in isolation. The live Compose,
@@ -161,7 +183,7 @@ jobs:
             candidate_ready=0
             for attempt in $(seq 1 45); do
               if docker exec "$CANDIDATE" node -e \
-                "fetch('http://127.0.0.1:8080/readyz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"; then
+                "fetch('http://127.0.0.1:8080/readyz').then(async r=>{const type=r.headers.get('content-type')||'';const body=await r.json().catch(()=>null);process.exit(r.ok&&type.toLowerCase().startsWith('application/json')&&body?.ok===true?0:1)}).catch(()=>process.exit(1))"; then
                 candidate_ready=1
                 break
               fi
@@ -192,7 +214,7 @@ jobs:
             ready=0
             for attempt in $(seq 1 45); do
               if docker compose exec -T app node -e \
-                "fetch('http://127.0.0.1:8080/readyz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"; then
+                "fetch('http://127.0.0.1:8080/readyz').then(async r=>{const type=r.headers.get('content-type')||'';const body=await r.json().catch(()=>null);process.exit(r.ok&&type.toLowerCase().startsWith('application/json')&&body?.ok===true?0:1)}).catch(()=>process.exit(1))"; then
                 ready=1
                 break
               fi
@@ -201,7 +223,8 @@ jobs:
             test "$ready" -eq 1
 
             docker compose up -d --force-recreate caddy backup
-            curl -fsS https://app.pitolet.com/readyz >/dev/null
+            docker compose exec -T app node -e \
+              "Promise.all(['/healthz','/readyz'].map(path=>fetch('https://app.pitolet.com'+path).then(async r=>{const type=r.headers.get('content-type')||'';const body=await r.json().catch(()=>null);if(!r.ok||!type.toLowerCase().startsWith('application/json')||body?.ok!==true)throw new Error(path+' did not return healthy JSON')}))).catch(error=>{console.error(error);process.exit(1)})"
             curl -fsS https://pitolet.com/ | grep -Fq 'Give your agent'
             curl -fsS https://pitolet.com/vs-figma/ | grep -Fq 'Use Pitolet'
 

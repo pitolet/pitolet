@@ -1,6 +1,6 @@
 {
   "name": "pitolet",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Run the Pitolet editor, API, MCP server, and code exporter locally.",
   "type": "module",
   "license": "AGPL-3.0-only",
