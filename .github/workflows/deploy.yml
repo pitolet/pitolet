@@ -46,11 +46,12 @@ jobs:
         env:
           DEPLOY_TAG: ${{ inputs.tag }}
           DEPLOY_ID: ${{ github.run_id }}-${{ github.run_attempt }}
+          DEPLOY_RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          envs: DEPLOY_TAG,DEPLOY_ID
+          envs: DEPLOY_TAG,DEPLOY_ID,DEPLOY_RESEND_API_KEY
           command_timeout: 20m
           script: |
             set -eu
@@ -69,6 +70,18 @@ jobs:
             test -d "$INCOMING/static"
             test -f "$LIVE/.env"
             test -f "$LIVE/docker-compose.yml"
+
+            case "${DEPLOY_RESEND_API_KEY:-}" in
+              re_*) ;;
+              *) echo "RESEND_API_KEY repository secret is missing or invalid"; exit 1 ;;
+            esac
+            RESEND_ESCAPED=$(printf '%s' "$DEPLOY_RESEND_API_KEY" | sed 's/[\/&]/\\&/g')
+            if grep -q '^RESEND_API_KEY=' "$LIVE/.env"; then
+              sed -i "s/^RESEND_API_KEY=.*/RESEND_API_KEY=$RESEND_ESCAPED/" "$LIVE/.env"
+            else
+              printf '\nRESEND_API_KEY=%s\n' "$DEPLOY_RESEND_API_KEY" >> "$LIVE/.env"
+            fi
+            unset DEPLOY_RESEND_API_KEY RESEND_ESCAPED
 
             PREVIOUS_TAG=$(sed -n 's/^TAG=//p' "$LIVE/.env" 2>/dev/null | tail -1)
             # v1.1.0's runbook used TAG=latest. Pin that one legacy baseline

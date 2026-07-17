@@ -200,6 +200,8 @@ Add these repository **secrets**:
   `ssh-keygen -t ed25519 -f pitolet_deploy -N ""`, append `pitolet_deploy.pub`
   to the deploy user's `authorized_keys`, and paste `pitolet_deploy` (private)
   as the secret.
+- `RESEND_API_KEY` — a Resend API key for the verified sending domain. The
+  workflow writes it to the protected production `.env` without printing it.
 
 Trigger from the Actions tab (**workflow_dispatch**) with the immutable image
 tag to deploy, for example `1.2.0`.
