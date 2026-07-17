@@ -23,11 +23,12 @@ ul, ol { list-style: none; }
 img, video, svg { display: block; max-width: 100%; }
 a { text-decoration: inherit; }
 button, input, select, textarea { background: transparent; appearance: none; }
+
 .pitolet-vs-figma {
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-family: Inter, system-ui, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   color: oklch(0.95 0.006 250);
   background-image: linear-gradient(180deg, oklch(0.15 0.022 225) 0%, oklch(0.125 0.007 250) 48%, oklch(0.145 0.017 230) 100%);
 }
@@ -154,6 +155,13 @@ button, input, select, textarea { background: transparent; appearance: none; }
 
 .open-app:hover {
   background-color: oklch(0.6 0.14 222);
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
 }
 
 .comparison-hero-band {
@@ -321,13 +329,13 @@ button, input, select, textarea { background: transparent; appearance: none; }
 .capability-header {
   font-size: 14px;
   font-weight: 700;
-  color: oklch(0.55 0.014 250);
+  color: oklch(0.62 0.014 250);
 }
 
 .figma {
   font-size: 14px;
   font-weight: 700;
-  color: oklch(0.55 0.014 250);
+  color: oklch(0.62 0.014 250);
 }
 
 .pitolet {
@@ -372,7 +380,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
 .figma-mobile-label {
   font-size: 12px;
   font-weight: 700;
-  color: oklch(0.55 0.014 250);
+  color: oklch(0.62 0.014 250);
 }
 
 @media (min-width: 768px) {
@@ -448,7 +456,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
 .figma-mobile-label-2 {
   font-size: 12px;
   font-weight: 700;
-  color: oklch(0.55 0.014 250);
+  color: oklch(0.62 0.014 250);
 }
 
 @media (min-width: 768px) {
@@ -524,7 +532,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
 .figma-mobile-label-3 {
   font-size: 12px;
   font-weight: 700;
-  color: oklch(0.55 0.014 250);
+  color: oklch(0.62 0.014 250);
 }
 
 @media (min-width: 768px) {
@@ -600,7 +608,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
 .figma-mobile-label-4 {
   font-size: 12px;
   font-weight: 700;
-  color: oklch(0.55 0.014 250);
+  color: oklch(0.62 0.014 250);
 }
 
 @media (min-width: 768px) {
@@ -676,7 +684,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
 .figma-mobile-label-5 {
   font-size: 12px;
   font-weight: 700;
-  color: oklch(0.55 0.014 250);
+  color: oklch(0.62 0.014 250);
 }
 
 @media (min-width: 768px) {
@@ -752,7 +760,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
 .figma-mobile-label-6 {
   font-size: 12px;
   font-weight: 700;
-  color: oklch(0.55 0.014 250);
+  color: oklch(0.62 0.014 250);
 }
 
 @media (min-width: 768px) {
@@ -828,7 +836,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
 .figma-mobile-label-7 {
   font-size: 12px;
   font-weight: 700;
-  color: oklch(0.55 0.014 250);
+  color: oklch(0.62 0.014 250);
 }
 
 @media (min-width: 768px) {
@@ -904,7 +912,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
 .figma-mobile-label-8 {
   font-size: 12px;
   font-weight: 700;
-  color: oklch(0.55 0.014 250);
+  color: oklch(0.62 0.014 250);
 }
 
 @media (min-width: 768px) {
@@ -948,7 +956,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
   align-self: center;
   font-size: 12px;
   text-align: center;
-  color: oklch(0.55 0.014 250);
+  color: oklch(0.62 0.014 250);
 }
 
 .figma-wins-band {
@@ -1041,6 +1049,12 @@ button, input, select, textarea { background: transparent; appearance: none; }
   width: 100%;
 }
 
+@media (min-width: 768px) {
+  .use-case-cards {
+    flex-direction: row;
+  }
+}
+
 .design-engineers {
   display: flex;
   flex-direction: column;
@@ -1053,6 +1067,16 @@ button, input, select, textarea { background: transparent; appearance: none; }
   background-color: oklch(0.165 0.008 250);
   border: 1px solid oklch(1 0 0 / 0.09);
   border-radius: 12px;
+}
+
+@media (min-width: 768px) {
+  .design-engineers {
+    width: unset;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 0%;
+    min-width: 0;
+  }
 }
 
 .use-case-title {
@@ -1080,6 +1104,16 @@ button, input, select, textarea { background: transparent; appearance: none; }
   border-radius: 12px;
 }
 
+@media (min-width: 768px) {
+  .ai-assisted-teams {
+    width: unset;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 0%;
+    min-width: 0;
+  }
+}
+
 .use-case-title-2 {
   font-size: 20px;
   font-weight: 650;
@@ -1103,6 +1137,16 @@ button, input, select, textarea { background: transparent; appearance: none; }
   background-color: oklch(0.165 0.008 250);
   border: 1px solid oklch(1 0 0 / 0.09);
   border-radius: 12px;
+}
+
+@media (min-width: 768px) {
+  .design-in-code-review {
+    width: unset;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 0%;
+    min-width: 0;
+  }
 }
 
 .use-case-title-3 {
@@ -1197,9 +1241,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
 
 @media (min-width: 768px) {
   .footer-band {
-    padding-top: 48px;
     padding-right: 40px;
-    padding-bottom: 48px;
     padding-left: 40px;
   }
 }
@@ -1217,7 +1259,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
 
 .copyright {
   font-size: 14px;
-  color: oklch(0.55 0.014 250);
+  color: oklch(0.62 0.014 250);
 }
 
 .footer-links {
@@ -1267,7 +1309,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
   <section class="nav-band">
     <nav class="nav">
       <a class="brand" href="/">
-        <img class="brandmark" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22oklch(0.71%200.125%20215)%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M3%2018%20L9.5%206%20L13.5%2013%20L16.5%208.5%20L21%2018%22%2F%3E%3C%2Fsvg%3E" alt="Pitolet">
+        <img class="brandmark" src="/media/pitolet-mark.svg" alt="Pitolet">
         <span class="wordmark">Pitolet</span>
       </a>
       <div class="nav-links">
@@ -1278,149 +1320,151 @@ button, input, select, textarea { background: transparent; appearance: none; }
       </div>
     </nav>
   </section>
-  <section class="comparison-hero-band">
-    <div class="comparison-hero">
-      <h1 class="comparison-headline">Use Pitolet when the interface already exists.</h1>
-      <p class="comparison-intro">Figma is a broad design tool. Pitolet is made for people who want to change a web interface their coding agent produced.</p>
-      <div class="comparison-actions">
-        <a class="try-pitolet" href="https://app.pitolet.com">Try Pitolet free</a>
-        <a class="self-host" href="https://github.com/pitolet/pitolet#quickstart">Self-host with npx pitolet</a>
-      </div>
-    </div>
-  </section>
-  <section class="comparison-matrix-band">
-    <div class="comparison-matrix">
-      <h2 class="matrix-heading">What each tool works with</h2>
-      <div class="comparison-table">
-        <div class="comparison-header">
-          <span class="capability-header">Capability</span>
-          <span class="figma">Figma</span>
-          <span class="pitolet">Pitolet</span>
+  <main class="main">
+    <section class="comparison-hero-band">
+      <div class="comparison-hero">
+        <h1 class="comparison-headline">Use Pitolet when the interface already exists.</h1>
+        <p class="comparison-intro">Figma is a broad design tool. Pitolet is made for people who want to change a web interface their coding agent produced.</p>
+        <div class="comparison-actions">
+          <a class="try-pitolet" href="https://app.pitolet.com">Try Pitolet free</a>
+          <a class="self-host" href="https://github.com/pitolet/pitolet#quickstart">Self-host with npx pitolet</a>
         </div>
-        <article class="layout-row">
-          <h3 class="capability">Layout</h3>
-          <div class="figma-cell">
-            <span class="figma-mobile-label">Figma</span>
-            <p class="figma-value">Uses Figma’s own layout model.</p>
-          </div>
-          <div class="pitolet-cell">
-            <span class="pitolet-mobile-label">Pitolet</span>
-            <p class="pitolet-value">Uses flexbox and grid in the browser.</p>
-          </div>
-        </article>
-        <article class="responsive-design-row">
-          <h3 class="capability-2">Responsive design</h3>
-          <div class="figma-cell-2">
-            <span class="figma-mobile-label-2">Figma</span>
-            <p class="figma-value-2">Responsive work stays in Figma’s design model.</p>
-          </div>
-          <div class="pitolet-cell-2">
-            <span class="pitolet-mobile-label-2">Pitolet</span>
-            <p class="pitolet-value-2">Breakpoints live in one document and export as media queries.</p>
-          </div>
-        </article>
-        <article class="interaction-states-row">
-          <h3 class="capability-3">Interaction states</h3>
-          <div class="figma-cell-3">
-            <span class="figma-mobile-label-3">Figma</span>
-            <p class="figma-value-3">Uses prototype interactions and component variants.</p>
-          </div>
-          <div class="pitolet-cell-3">
-            <span class="pitolet-mobile-label-3">Pitolet</span>
-            <p class="pitolet-value-3">Interaction states export as CSS.</p>
-          </div>
-        </article>
-        <article class="code-path-row">
-          <h3 class="capability-4">Code path</h3>
-          <div class="figma-cell-4">
-            <span class="figma-mobile-label-4">Figma</span>
-            <p class="figma-value-4">Developers or agents translate the design file into code.</p>
-          </div>
-          <div class="pitolet-cell-4">
-            <span class="pitolet-mobile-label-4">Pitolet</span>
-            <p class="pitolet-value-4">The canvas and exported code use the same style data.</p>
-          </div>
-        </article>
-        <article class="file-format-row">
-          <h3 class="capability-5">File format</h3>
-          <div class="figma-cell-5">
-            <span class="figma-mobile-label-5">Figma</span>
-            <p class="figma-value-5">Figma hosts the design file.</p>
-          </div>
-          <div class="pitolet-cell-5">
-            <span class="pitolet-mobile-label-5">Pitolet</span>
-            <p class="pitolet-value-5">Pitolet stores readable JSON in your repository.</p>
-          </div>
-        </article>
-        <article class="coding-agents-row">
-          <h3 class="capability-6">Coding agents</h3>
-          <div class="figma-cell-6">
-            <span class="figma-mobile-label-6">Figma</span>
-            <p class="figma-value-6">Its MCP server can read and write Figma files. Write access is still beta.</p>
-          </div>
-          <div class="pitolet-cell-6">
-            <span class="pitolet-mobile-label-6">Pitolet</span>
-            <p class="pitolet-value-6">The editor includes read and write MCP. You see each change as it happens.</p>
-          </div>
-        </article>
-        <article class="design-tokens-row">
-          <h3 class="capability-7">Design tokens</h3>
-          <div class="figma-cell-7">
-            <span class="figma-mobile-label-7">Figma</span>
-            <p class="figma-value-7">Variables and styles can feed code through Dev Mode or integrations.</p>
-          </div>
-          <div class="pitolet-cell-7">
-            <span class="pitolet-mobile-label-7">Pitolet</span>
-            <p class="pitolet-value-7">Tokens export with the document and stay editable on the canvas.</p>
-          </div>
-        </article>
-        <article class="hosting-and-price-row">
-          <h3 class="capability-8">Hosting and price</h3>
-          <div class="figma-cell-8">
-            <span class="figma-mobile-label-8">Figma</span>
-            <p class="figma-value-8">Free starter; paid full design seats currently range from $16 to $90 per month.</p>
-          </div>
-          <div class="pitolet-cell-8">
-            <span class="pitolet-mobile-label-8">Pitolet</span>
-            <p class="pitolet-value-8">The hosted version has a free plan, with Pro at $12 per seat. The AGPL core can run on your own server.</p>
-          </div>
-        </article>
       </div>
-      <p class="comparison-sources">Figma capabilities and USD pricing checked July 2026. Sources: <a href="https://www.figma.com/pricing/">Figma pricing</a> and <a href="https://developers.figma.com/docs/figma-mcp-server/">Figma MCP documentation</a>.</p>
-    </div>
-  </section>
-  <section class="figma-wins-band">
-    <div class="figma-wins">
-      <h2 class="figma-wins-heading">When Figma is still the better tool</h2>
-      <p class="figma-wins-body">Figma is the stronger choice for visual design work beyond web interfaces. It also suits teams that depend on advanced prototyping or its plugin ecosystem.</p>
-    </div>
-  </section>
-  <section class="use-cases-band">
-    <div class="use-cases">
-      <h2 class="use-cases-heading">Where Pitolet fits</h2>
-      <div class="use-case-cards">
-        <article class="design-engineers">
-          <h3 class="use-case-title">Design engineers</h3>
-          <p class="use-case-body">Adjust the interface with the same layout rules used in production. Export the result as a component.</p>
-        </article>
-        <article class="ai-assisted-teams">
-          <h3 class="use-case-title-2">AI-assisted teams</h3>
-          <p class="use-case-body-2">Let your agent make the first pass. Review its work on the canvas and fix what it missed.</p>
-        </article>
-        <article class="design-in-code-review">
-          <h3 class="use-case-title-3">Design in code review</h3>
-          <p class="use-case-body-3">Keep the Pitolet document beside the code. Drift checks show when they no longer match.</p>
-        </article>
+    </section>
+    <section class="comparison-matrix-band">
+      <div class="comparison-matrix">
+        <h2 class="matrix-heading">What each tool works with</h2>
+        <div class="comparison-table">
+          <div class="comparison-header">
+            <span class="capability-header">Capability</span>
+            <span class="figma">Figma</span>
+            <span class="pitolet">Pitolet</span>
+          </div>
+          <article class="layout-row">
+            <h3 class="capability">Layout</h3>
+            <div class="figma-cell">
+              <span class="figma-mobile-label">Figma</span>
+              <p class="figma-value">Uses Figma’s own layout model.</p>
+            </div>
+            <div class="pitolet-cell">
+              <span class="pitolet-mobile-label">Pitolet</span>
+              <p class="pitolet-value">Uses flexbox and grid in the browser.</p>
+            </div>
+          </article>
+          <article class="responsive-design-row">
+            <h3 class="capability-2">Responsive design</h3>
+            <div class="figma-cell-2">
+              <span class="figma-mobile-label-2">Figma</span>
+              <p class="figma-value-2">Responsive work stays in Figma’s design model.</p>
+            </div>
+            <div class="pitolet-cell-2">
+              <span class="pitolet-mobile-label-2">Pitolet</span>
+              <p class="pitolet-value-2">Breakpoints live in one document and export as media queries.</p>
+            </div>
+          </article>
+          <article class="interaction-states-row">
+            <h3 class="capability-3">Interaction states</h3>
+            <div class="figma-cell-3">
+              <span class="figma-mobile-label-3">Figma</span>
+              <p class="figma-value-3">Uses prototype interactions and component variants.</p>
+            </div>
+            <div class="pitolet-cell-3">
+              <span class="pitolet-mobile-label-3">Pitolet</span>
+              <p class="pitolet-value-3">Interaction states export as CSS.</p>
+            </div>
+          </article>
+          <article class="code-path-row">
+            <h3 class="capability-4">Code path</h3>
+            <div class="figma-cell-4">
+              <span class="figma-mobile-label-4">Figma</span>
+              <p class="figma-value-4">Developers or agents translate the design file into code.</p>
+            </div>
+            <div class="pitolet-cell-4">
+              <span class="pitolet-mobile-label-4">Pitolet</span>
+              <p class="pitolet-value-4">The canvas and exported code use the same style data.</p>
+            </div>
+          </article>
+          <article class="file-format-row">
+            <h3 class="capability-5">File format</h3>
+            <div class="figma-cell-5">
+              <span class="figma-mobile-label-5">Figma</span>
+              <p class="figma-value-5">Figma hosts the design file.</p>
+            </div>
+            <div class="pitolet-cell-5">
+              <span class="pitolet-mobile-label-5">Pitolet</span>
+              <p class="pitolet-value-5">Pitolet stores readable JSON in your repository.</p>
+            </div>
+          </article>
+          <article class="coding-agents-row">
+            <h3 class="capability-6">Coding agents</h3>
+            <div class="figma-cell-6">
+              <span class="figma-mobile-label-6">Figma</span>
+              <p class="figma-value-6">Its MCP server can read and write Figma files. Write access is still beta.</p>
+            </div>
+            <div class="pitolet-cell-6">
+              <span class="pitolet-mobile-label-6">Pitolet</span>
+              <p class="pitolet-value-6">The editor includes read and write MCP. You see each change as it happens.</p>
+            </div>
+          </article>
+          <article class="design-tokens-row">
+            <h3 class="capability-7">Design tokens</h3>
+            <div class="figma-cell-7">
+              <span class="figma-mobile-label-7">Figma</span>
+              <p class="figma-value-7">Variables and styles can feed code through Dev Mode or integrations.</p>
+            </div>
+            <div class="pitolet-cell-7">
+              <span class="pitolet-mobile-label-7">Pitolet</span>
+              <p class="pitolet-value-7">Tokens export with the document and stay editable on the canvas.</p>
+            </div>
+          </article>
+          <article class="hosting-and-price-row">
+            <h3 class="capability-8">Hosting and price</h3>
+            <div class="figma-cell-8">
+              <span class="figma-mobile-label-8">Figma</span>
+              <p class="figma-value-8">Free starter; paid full design seats currently range from $16 to $90 per month.</p>
+            </div>
+            <div class="pitolet-cell-8">
+              <span class="pitolet-mobile-label-8">Pitolet</span>
+              <p class="pitolet-value-8">The hosted version has a free plan, with Pro at $12 per seat. The AGPL core can run on your own server.</p>
+            </div>
+          </article>
+        </div>
+        <p class="comparison-sources">Figma capabilities and USD pricing checked July 2026. Sources: <a href="https://www.figma.com/pricing/">Figma pricing</a> and <a href="https://developers.figma.com/docs/figma-mcp-server/">Figma MCP documentation</a>.</p>
       </div>
-    </div>
-  </section>
-  <section class="comparison-cta-band">
-    <div class="comparison-cta">
-      <h2 class="cta-heading">Edit your agent’s first pass in Pitolet.</h2>
-      <p class="cta-body">Try the hosted app for free. You can also run Pitolet on your own server.</p>
-      <a class="cta-action" href="https://app.pitolet.com">Open Pitolet</a>
-    </div>
-  </section>
+    </section>
+    <section class="figma-wins-band">
+      <div class="figma-wins">
+        <h2 class="figma-wins-heading">When Figma is still the better tool</h2>
+        <p class="figma-wins-body">Figma is the stronger choice for visual design work beyond web interfaces. It also suits teams that depend on advanced prototyping or its plugin ecosystem.</p>
+      </div>
+    </section>
+    <section class="use-cases-band">
+      <div class="use-cases">
+        <h2 class="use-cases-heading">Where Pitolet fits</h2>
+        <div class="use-case-cards">
+          <article class="design-engineers">
+            <h3 class="use-case-title">Design engineers</h3>
+            <p class="use-case-body">Adjust the interface with the same layout rules used in production. Export the result as a component.</p>
+          </article>
+          <article class="ai-assisted-teams">
+            <h3 class="use-case-title-2">AI-assisted teams</h3>
+            <p class="use-case-body-2">Let your agent make the first pass. Review its work on the canvas and fix what it missed.</p>
+          </article>
+          <article class="design-in-code-review">
+            <h3 class="use-case-title-3">Design in code review</h3>
+            <p class="use-case-body-3">Keep the Pitolet document beside the code. Drift checks show when they no longer match.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+    <section class="comparison-cta-band">
+      <div class="comparison-cta">
+        <h2 class="cta-heading">Edit your agent’s first pass in Pitolet.</h2>
+        <p class="cta-body">Try the hosted app for free. You can also run Pitolet on your own server.</p>
+        <a class="cta-action" href="https://app.pitolet.com">Open Pitolet</a>
+      </div>
+    </section>
+  </main>
   <section class="footer-band">
     <footer class="footer">
       <p class="copyright">© 2026 Pitolet · AGPL-3.0 core</p>

@@ -11,3 +11,4 @@ export {
 export { TokenMaps, sanitizeTokenName } from './tokenMaps.js';
 export { generateComponent, singleTextNode } from './component.js';
 export { buildPreviewHtml } from './previewHtml.js';
+export { importedFontFaceCss, importedFontFamilies } from './fontFaces.js';

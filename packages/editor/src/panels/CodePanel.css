@@ -1,10 +1,8 @@
 .ptl-code-panel {
   display: flex;
   flex-direction: column;
-  height: 300px;
   flex-shrink: 0;
   background: var(--ptl-bg-1);
-  border-top: 1px solid var(--ptl-border);
   min-width: 0;
 }
 

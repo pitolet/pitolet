@@ -88,6 +88,33 @@
   color: oklch(0.72 0.14 300);
 }
 
+.ptl-frame-label-context {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(4px / var(--cam-zoom, 1));
+  margin-left: calc(6px / var(--cam-zoom, 1));
+  padding: calc(2px / var(--cam-zoom, 1)) calc(5px / var(--cam-zoom, 1));
+  border-radius: calc(4px / var(--cam-zoom, 1));
+  background: var(--ptl-accent-muted);
+  color: var(--ptl-accent);
+  font-size: calc(10px / var(--cam-zoom, 1));
+}
+
+.ptl-frame-label-context strong {
+  font-weight: 650;
+}
+
+.ptl-frame-label-context > span {
+  color: var(--ptl-text-2);
+  font-size: calc(9px / var(--cam-zoom, 1));
+}
+
+.ptl-frame-wrapper--breakpoint-preview .ptl-frame-edge {
+  box-shadow:
+    0 0 0 calc(1px / var(--cam-zoom, 1)) var(--ptl-accent),
+    0 0 calc(18px / var(--cam-zoom, 1)) oklch(0.74 0.14 205 / 0.08);
+}
+
 /* Subtle edge so white frames read against the dark canvas. */
 .ptl-frame-edge {
   position: absolute;

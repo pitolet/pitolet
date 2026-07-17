@@ -25,8 +25,13 @@ export function Palette({ ctx }: { ctx: CommandContext }) {
         setOpen((v) => !v);
       }
     };
+    const onOpen = () => setOpen(true);
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener('pitolet:command-palette', onOpen);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('pitolet:command-palette', onOpen);
+    };
   }, [open]);
 
   if (!open) return null;
@@ -41,7 +46,11 @@ export function Palette({ ctx }: { ctx: CommandContext }) {
           <Command.List className="ptl-palette-list">
             <Command.Empty className="ptl-palette-empty">No matching commands.</Command.Empty>
             {groups.map((group) => (
-              <Command.Group key={group} heading={GROUP_LABELS[group]} className="ptl-palette-group">
+              <Command.Group
+                key={group}
+                heading={GROUP_LABELS[group]}
+                className="ptl-palette-group"
+              >
                 {COMMANDS.filter((c) => c.group === group).map((command) => {
                   const enabled = !command.when || command.when();
                   return (

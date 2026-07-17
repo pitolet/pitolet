@@ -12,10 +12,17 @@
   contain: strict;
 }
 
-.ptl-canvas-viewport--panning {
+.ptl-canvas-viewport--tool-frame,
+.ptl-canvas-viewport--tool-element,
+.ptl-canvas-viewport--tool-text,
+.ptl-canvas-viewport--tool-image {
+  cursor: crosshair;
+}
+
+.ptl-canvas-viewport--pan-ready {
   cursor: grab;
 }
-.ptl-canvas-viewport--panning:active {
+.ptl-canvas-viewport--pan-dragging {
   cursor: grabbing;
 }
 

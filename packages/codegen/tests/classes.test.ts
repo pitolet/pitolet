@@ -21,6 +21,19 @@ describe('class matching', () => {
     ).toBe('flex flex-col items-center justify-between gap-4');
   });
 
+  it('preserves reverse flex direction and wrapping', () => {
+    expect(
+      classes({
+        display: 'flex',
+        flexDirection: 'row-reverse',
+        flexWrap: 'wrap-reverse',
+      }),
+    ).toBe('flex flex-row-reverse flex-wrap-reverse');
+    expect(
+      classes({ width: 'fill' }, { parentDisplay: 'flex', parentDirection: 'row-reverse' }),
+    ).toBe('flex-1 min-w-0');
+  });
+
   it('splits asymmetric gaps', () => {
     expect(classes({ gap: { row: px(8), column: px(24) } })).toBe('gap-y-2 gap-x-6');
   });
@@ -55,9 +68,9 @@ describe('class matching', () => {
   });
 
   it('emits px/py when vertical and horizontal sides pair up', () => {
-    expect(
-      classes({ padding: { top: px(12), bottom: px(12), left: px(24), right: px(24) } }),
-    ).toBe('py-3 px-6');
+    expect(classes({ padding: { top: px(12), bottom: px(12), left: px(24), right: px(24) } })).toBe(
+      'py-3 px-6',
+    );
   });
 
   it('matches raw colors near a token perceptually', () => {
@@ -69,12 +82,12 @@ describe('class matching', () => {
   });
 
   it('handles fill sizing via flex context', () => {
-    expect(
-      classes({ width: 'fill' }, { parentDisplay: 'flex', parentDirection: 'row' }),
-    ).toBe('flex-1 min-w-0');
-    expect(
-      classes({ width: 'fill' }, { parentDisplay: 'flex', parentDirection: 'column' }),
-    ).toBe('w-full');
+    expect(classes({ width: 'fill' }, { parentDisplay: 'flex', parentDirection: 'row' })).toBe(
+      'flex-1 min-w-0',
+    );
+    expect(classes({ width: 'fill' }, { parentDisplay: 'flex', parentDirection: 'column' })).toBe(
+      'w-full',
+    );
     expect(classes({ width: 'fill' }, { parentDisplay: 'block' })).toBe('w-full');
     expect(classes({ width: '50%' as never })).toContain('w-');
   });
@@ -104,9 +117,9 @@ describe('class matching', () => {
     expect(
       classes({ border: { width: px(1), style: 'solid', color: { $token: 'color.border' } } }),
     ).toBe('border border-border');
-    expect(
-      classes({ border: { width: px(2), style: 'dashed', color: oklch(0, 0, 0) } }),
-    ).toBe('border-2 border-dashed border-[oklch(0_0_0)]');
+    expect(classes({ border: { width: px(2), style: 'dashed', color: oklch(0, 0, 0) } })).toBe(
+      'border-2 border-dashed border-[oklch(0_0_0)]',
+    );
   });
 
   it('grid templates', () => {
@@ -139,5 +152,64 @@ describe('class matching', () => {
   it('shadows resolve document tokens', () => {
     const tokens = defaultTokens();
     expect(classes({ shadows: tokens.shadow.md!.$value })).toBe('shadow-md');
+  });
+
+  it('emits explicit reset utilities for responsive override layers', () => {
+    expect(
+      classes(
+        {
+          alignSelf: 'auto',
+          width: 'auto',
+          position: 'static',
+          gridTemplateColumns: [],
+          shadows: [],
+          blendMode: 'normal',
+        },
+        { isOverrideLayer: true },
+      ),
+    ).toBe('grid-cols-none self-auto w-auto static shadow-none mix-blend-normal');
+  });
+
+  it('resets flex, inset, border and radius defaults in override layers', () => {
+    expect(
+      classes(
+        {
+          display: 'flex',
+          flexDirection: 'row',
+          flexWrap: 'nowrap',
+          inset: { top: px(0) },
+        },
+        { isOverrideLayer: true },
+      ),
+    ).toBe('flex flex-row flex-nowrap top-0 right-auto bottom-auto left-auto');
+    expect(
+      classes(
+        {
+          border: {
+            width: px(1),
+            style: 'solid',
+            color: { $token: 'color.border' },
+            sides: { left: true },
+          },
+        },
+        { isOverrideLayer: true },
+      ),
+    ).toBe('border-t-0 border-r-0 border-b-0 border-l border-solid border-border');
+    expect(
+      classes(
+        {
+          radius: { tl: px(0), tr: px(8), br: px(0), bl: px(8) },
+        },
+        { isOverrideLayer: true },
+      ),
+    ).toBe('rounded-tl-none rounded-tr-lg rounded-br-none rounded-bl-lg');
+    expect(
+      classes(
+        {
+          radius: { tl: px(0), tr: px(0), br: px(0), bl: px(0) },
+        },
+        { isOverrideLayer: true },
+      ),
+    ).toBe('rounded-none');
   });
 });

@@ -23,11 +23,12 @@ ul, ol { list-style: none; }
 img, video, svg { display: block; max-width: 100%; }
 a { text-decoration: inherit; }
 button, input, select, textarea { background: transparent; appearance: none; }
+
 .landing {
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-family: Inter, system-ui, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   color: oklch(0.95 0.006 250);
   background-image: linear-gradient(180deg, oklch(0.15 0.022 225) 0%, oklch(0.125 0.007 250) 48%, oklch(0.145 0.017 230) 100%);
 }
@@ -156,6 +157,13 @@ button, input, select, textarea { background: transparent; appearance: none; }
   background-color: oklch(0.6 0.14 222);
 }
 
+.main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
 .hero-band {
   display: flex;
   flex-direction: column;
@@ -193,9 +201,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
 
 @media (min-width: 1024px) {
   .hero-layout {
-    display: flex;
     flex-direction: row;
-    align-items: center;
   }
 }
 
@@ -210,8 +216,11 @@ button, input, select, textarea { background: transparent; appearance: none; }
 
 @media (min-width: 1024px) {
   .hero-copy {
-    display: flex;
     align-items: flex-start;
+    width: unset;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 0%;
   }
 }
 
@@ -233,7 +242,6 @@ button, input, select, textarea { background: transparent; appearance: none; }
 
 @media (min-width: 1024px) {
   .headline {
-    font-size: 60px;
     text-align: left;
   }
 }
@@ -265,15 +273,12 @@ button, input, select, textarea { background: transparent; appearance: none; }
 
 @media (min-width: 640px) {
   .ctas {
-    display: flex;
     flex-direction: row;
   }
 }
 
 @media (min-width: 1024px) {
   .ctas {
-    display: flex;
-    flex-direction: row;
     align-self: flex-start;
   }
 }
@@ -310,13 +315,13 @@ button, input, select, textarea { background: transparent; appearance: none; }
 }
 
 .chip-prompt {
-  font-family: 'JetBrains Mono', system-ui, sans-serif;
+  font-family: ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   font-size: 14px;
   color: oklch(0.71 0.125 215);
 }
 
 .chip-command {
-  font-family: 'JetBrains Mono', system-ui, sans-serif;
+  font-family: ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   font-size: 14px;
   color: oklch(0.95 0.006 250);
 }
@@ -336,6 +341,22 @@ button, input, select, textarea { background: transparent; appearance: none; }
   border: 1px solid oklch(0.71 0.125 215 / 0.32);
   border-radius: 12px;
   box-shadow: 0px 28px 70px -28px oklch(0.02 0.01 250 / 0.78), 0px 0px 48px -20px oklch(0.71 0.125 215 / 0.32);
+}
+
+@media (min-width: 768px) {
+  .product-demo {
+    max-width: 680px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .product-demo {
+    width: unset;
+    max-width: 580px;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 0%;
+  }
 }
 
 .agent-editing-demo {
@@ -385,7 +406,6 @@ button, input, select, textarea { background: transparent; appearance: none; }
 
 @media (min-width: 768px) {
   .proof-points {
-    display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
   }
 }
@@ -423,7 +443,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
 
 .proof-detail {
   font-size: 12px;
-  color: oklch(0.55 0.014 250);
+  color: oklch(0.62 0.014 250);
 }
 
 .proof-mcp {
@@ -459,7 +479,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
 
 .proof-detail-2 {
   font-size: 12px;
-  color: oklch(0.55 0.014 250);
+  color: oklch(0.62 0.014 250);
 }
 
 .proof-react-or-html {
@@ -495,7 +515,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
 
 .proof-detail-3 {
   font-size: 12px;
-  color: oklch(0.55 0.014 250);
+  color: oklch(0.62 0.014 250);
 }
 
 .proof-cloud-or-local {
@@ -531,7 +551,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
 
 .proof-detail-4 {
   font-size: 12px;
-  color: oklch(0.55 0.014 250);
+  color: oklch(0.62 0.014 250);
 }
 
 .props-band {
@@ -571,7 +591,6 @@ button, input, select, textarea { background: transparent; appearance: none; }
 
 @media (min-width: 768px) {
   .props-introduction {
-    display: flex;
     flex-direction: row;
     align-items: flex-end;
     justify-content: space-between;
@@ -603,7 +622,6 @@ button, input, select, textarea { background: transparent; appearance: none; }
 
 @media (min-width: 768px) {
   .props-layout {
-    display: flex;
     flex-direction: row;
   }
 }
@@ -626,11 +644,15 @@ button, input, select, textarea { background: transparent; appearance: none; }
 
 @media (min-width: 768px) {
   .edit-the-real-page {
-    display: flex;
     padding-top: 40px;
     padding-right: 40px;
     padding-bottom: 40px;
     padding-left: 40px;
+    width: unset;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 0%;
+    min-width: 0;
     min-height: 430px;
   }
 }
@@ -640,7 +662,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
   padding-right: 0px;
   padding-bottom: 0px;
   padding-left: 0px;
-  font-family: 'JetBrains Mono', system-ui, sans-serif;
+  font-family: ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   font-size: 14px;
   font-weight: 600;
   color: oklch(0.71 0.125 215);
@@ -681,6 +703,16 @@ button, input, select, textarea { background: transparent; appearance: none; }
   width: 100%;
 }
 
+@media (min-width: 768px) {
+  .secondary-props {
+    width: unset;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 0%;
+    min-width: 0;
+  }
+}
+
 .your-agent-stays-in-sync {
   display: flex;
   flex-direction: column;
@@ -701,7 +733,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
   padding-right: 0px;
   padding-bottom: 12px;
   padding-left: 0px;
-  font-family: 'JetBrains Mono', system-ui, sans-serif;
+  font-family: ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   font-size: 14px;
   font-weight: 600;
   color: oklch(0.71 0.125 215);
@@ -748,7 +780,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
   padding-right: 0px;
   padding-bottom: 12px;
   padding-left: 0px;
-  font-family: 'JetBrains Mono', system-ui, sans-serif;
+  font-family: ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   font-size: 14px;
   font-weight: 600;
   color: oklch(0.71 0.125 215);
@@ -813,13 +845,12 @@ button, input, select, textarea { background: transparent; appearance: none; }
 
 @media (min-width: 768px) {
   .import-existing-site {
-    display: flex;
     flex-direction: row;
-    align-items: center;
     padding-top: 40px;
     padding-right: 40px;
     padding-bottom: 40px;
     padding-left: 40px;
+    align-items: center;
   }
 }
 
@@ -829,6 +860,15 @@ button, input, select, textarea { background: transparent; appearance: none; }
   gap: 16px 0px;
   width: 100%;
   min-width: 0px;
+}
+
+@media (min-width: 768px) {
+  .import-copy {
+    width: unset;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 0%;
+  }
 }
 
 .import-heading {
@@ -863,13 +903,13 @@ button, input, select, textarea { background: transparent; appearance: none; }
 }
 
 .import-prompt {
-  font-family: 'JetBrains Mono', system-ui, sans-serif;
+  font-family: ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   font-size: 14px;
   color: oklch(0.71 0.125 215);
 }
 
 .import-code {
-  font-family: 'JetBrains Mono', system-ui, sans-serif;
+  font-family: ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   font-size: 14px;
   color: oklch(0.95 0.006 250);
 }
@@ -880,6 +920,15 @@ button, input, select, textarea { background: transparent; appearance: none; }
   gap: 16px 0px;
   width: 100%;
   min-width: 0px;
+}
+
+@media (min-width: 768px) {
+  .import-details {
+    width: unset;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 0%;
+  }
 }
 
 .one-responsive-document {
@@ -1066,7 +1115,6 @@ button, input, select, textarea { background: transparent; appearance: none; }
 
 @media (min-width: 768px) {
   .plans {
-    display: flex;
     flex-direction: row;
   }
 }
@@ -1083,6 +1131,16 @@ button, input, select, textarea { background: transparent; appearance: none; }
   background-color: oklch(0.165 0.008 250);
   border: 1px solid oklch(1 0 0 / 0.09);
   border-radius: 12px;
+}
+
+@media (min-width: 768px) {
+  .plan-free {
+    width: unset;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 0%;
+    min-width: 0;
+  }
 }
 
 .plan-head {
@@ -1112,7 +1170,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
 
 .price-unit {
   font-size: 14px;
-  color: oklch(0.55 0.014 250);
+  color: oklch(0.62 0.014 250);
 }
 
 .plan-blurb {
@@ -1196,6 +1254,16 @@ button, input, select, textarea { background: transparent; appearance: none; }
   box-shadow: 0px 28px 60px -36px oklch(0.71 0.125 215 / 0.34);
 }
 
+@media (min-width: 768px) {
+  .plan-pro {
+    width: unset;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 0%;
+    min-width: 0;
+  }
+}
+
 .plan-head-2 {
   display: flex;
   flex-direction: row;
@@ -1242,7 +1310,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
 
 .price-unit-2 {
   font-size: 14px;
-  color: oklch(0.55 0.014 250);
+  color: oklch(0.62 0.014 250);
 }
 
 .plan-blurb-2 {
@@ -1343,6 +1411,16 @@ button, input, select, textarea { background: transparent; appearance: none; }
   border-radius: 12px;
 }
 
+@media (min-width: 768px) {
+  .plan-self-host {
+    width: unset;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 0%;
+    min-width: 0;
+  }
+}
+
 .plan-head-3 {
   display: flex;
   flex-direction: row;
@@ -1370,7 +1448,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
 
 .price-unit-3 {
   font-size: 14px;
-  color: oklch(0.55 0.014 250);
+  color: oklch(0.62 0.014 250);
 }
 
 .plan-blurb-3 {
@@ -1452,9 +1530,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
 
 @media (min-width: 768px) {
   .footer-band {
-    padding-top: 48px;
     padding-right: 40px;
-    padding-bottom: 48px;
     padding-left: 40px;
   }
 }
@@ -1472,7 +1548,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
 
 .copyright {
   font-size: 14px;
-  color: oklch(0.55 0.014 250);
+  color: oklch(0.62 0.014 250);
 }
 
 .footer-links {
@@ -1522,7 +1598,7 @@ button, input, select, textarea { background: transparent; appearance: none; }
   <section class="nav-band">
     <nav class="nav">
       <a class="brand" href="/">
-        <img class="brandmark" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22oklch(0.71%200.125%20215)%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M3%2018%20L9.5%206%20L13.5%2013%20L16.5%208.5%20L21%2018%22%2F%3E%3C%2Fsvg%3E" alt="Pitolet">
+        <img class="brandmark" src="/media/pitolet-mark.svg" alt="Pitolet">
         <span class="wordmark">Pitolet</span>
       </a>
       <div class="nav-links">
@@ -1533,219 +1609,221 @@ button, input, select, textarea { background: transparent; appearance: none; }
       </div>
     </nav>
   </section>
-  <section class="hero-band">
-    <div class="hero">
-      <div class="hero-layout">
-        <div class="hero-copy">
-          <h1 class="headline">Give your agent’s designs a human touch.</h1>
-          <p class="subhead">Your coding agent gets the interface close. Pitolet lets you fix the details on the page while your agent sees every change.</p>
-          <div class="ctas">
-            <a class="open-pitolet" href="https://app.pitolet.com">Open Pitolet</a>
-            <div class="npx-chip">
-              <span class="chip-prompt">$</span>
-              <code class="chip-command">npx pitolet</code>
+  <main class="main">
+    <section class="hero-band">
+      <div class="hero">
+        <div class="hero-layout">
+          <div class="hero-copy">
+            <h1 class="headline">Give your agent’s designs a human touch.</h1>
+            <p class="subhead">Your coding agent gets the interface close. Pitolet lets you fix the details on the page while your agent sees every change.</p>
+            <div class="ctas">
+              <a class="open-pitolet" href="https://app.pitolet.com">Open Pitolet</a>
+              <div class="npx-chip">
+                <span class="chip-prompt">$</span>
+                <code class="chip-command">npx pitolet</code>
+              </div>
             </div>
           </div>
-        </div>
-        <figure class="product-demo">
-          <img class="agent-editing-demo" src="/media/pitolet-insert.png" alt="Claude Code adding a section to a Pitolet document while the edit appears on the canvas">
-          <figcaption class="demo-caption">Claude Code adds a section directly to the open page.</figcaption>
-        </figure>
-      </div>
-    </div>
-  </section>
-  <section class="proof-band">
-    <div class="proof-points">
-      <div class="proof-dom-css">
-        <div class="proof-marker"></div>
-        <div class="proof-copy">
-          <span class="proof-title">DOM + CSS</span>
-          <span class="proof-detail">Browser layout</span>
+          <figure class="product-demo">
+            <img class="agent-editing-demo" src="/media/pitolet-insert.png" alt="Claude Code adding a section to a Pitolet document while the edit appears on the canvas">
+            <figcaption class="demo-caption">Claude Code adds a section directly to the open page.</figcaption>
+          </figure>
         </div>
       </div>
-      <div class="proof-mcp">
-        <div class="proof-marker-2"></div>
-        <div class="proof-copy-2">
-          <span class="proof-title-2">MCP</span>
-          <span class="proof-detail-2">Read and write</span>
-        </div>
-      </div>
-      <div class="proof-react-or-html">
-        <div class="proof-marker-3"></div>
-        <div class="proof-copy-3">
-          <span class="proof-title-3">React or HTML</span>
-          <span class="proof-detail-3">From one document</span>
-        </div>
-      </div>
-      <div class="proof-cloud-or-local">
-        <div class="proof-marker-4"></div>
-        <div class="proof-copy-4">
-          <span class="proof-title-4">Cloud or local</span>
-          <span class="proof-detail-4">Your choice</span>
-        </div>
-      </div>
-    </div>
-  </section>
-  <section class="props-band">
-    <div class="props">
-      <div class="props-introduction">
-        <h2 class="props-heading">Fix the parts the prompt missed.</h2>
-        <p class="props-summary">Make the change yourself. Your agent keeps working from the same document.</p>
-      </div>
-      <div class="props-layout">
-        <article class="edit-the-real-page">
-          <span class="card-number">01</span>
-          <div class="card-copy">
-            <h3 class="card-title">Edit the real page</h3>
-            <p class="card-body">Change the layout and see the result in place. Pitolet uses the browser’s own layout engine.</p>
+    </section>
+    <section class="proof-band">
+      <div class="proof-points">
+        <div class="proof-dom-css">
+          <div class="proof-marker"></div>
+          <div class="proof-copy">
+            <span class="proof-title">DOM + CSS</span>
+            <span class="proof-detail">Browser layout</span>
           </div>
-        </article>
-        <div class="secondary-props">
-          <article class="your-agent-stays-in-sync">
-            <span class="card-number-2">02</span>
-            <div class="card-copy-2">
-              <h3 class="card-title-2">Your agent stays in sync</h3>
-              <p class="card-body-2">Connect through MCP. Your agent reads the open document and its edits appear on the canvas.</p>
+        </div>
+        <div class="proof-mcp">
+          <div class="proof-marker-2"></div>
+          <div class="proof-copy-2">
+            <span class="proof-title-2">MCP</span>
+            <span class="proof-detail-2">Read and write</span>
+          </div>
+        </div>
+        <div class="proof-react-or-html">
+          <div class="proof-marker-3"></div>
+          <div class="proof-copy-3">
+            <span class="proof-title-3">React or HTML</span>
+            <span class="proof-detail-3">From one document</span>
+          </div>
+        </div>
+        <div class="proof-cloud-or-local">
+          <div class="proof-marker-4"></div>
+          <div class="proof-copy-4">
+            <span class="proof-title-4">Cloud or local</span>
+            <span class="proof-detail-4">Your choice</span>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="props-band">
+      <div class="props">
+        <div class="props-introduction">
+          <h2 class="props-heading">Fix the parts the prompt missed.</h2>
+          <p class="props-summary">Make the change yourself. Your agent keeps working from the same document.</p>
+        </div>
+        <div class="props-layout">
+          <article class="edit-the-real-page">
+            <span class="card-number">01</span>
+            <div class="card-copy">
+              <h3 class="card-title">Edit the real page</h3>
+              <p class="card-body">Change the layout and see the result in place. Pitolet uses the browser’s own layout engine.</p>
             </div>
           </article>
-          <article class="keep-the-code">
-            <span class="card-number-3">03</span>
-            <div class="card-copy-3">
-              <h3 class="card-title-3">Keep the code</h3>
-              <p class="card-body-3">Export React or HTML from the document you edited. There is no separate mockup to rebuild.</p>
+          <div class="secondary-props">
+            <article class="your-agent-stays-in-sync">
+              <span class="card-number-2">02</span>
+              <div class="card-copy-2">
+                <h3 class="card-title-2">Your agent stays in sync</h3>
+                <p class="card-body-2">Connect through MCP. Your agent reads the open document and its edits appear on the canvas.</p>
+              </div>
+            </article>
+            <article class="keep-the-code">
+              <span class="card-number-3">03</span>
+              <div class="card-copy-3">
+                <h3 class="card-title-3">Keep the code</h3>
+                <p class="card-body-3">Export React or HTML from the document you edited. There is no separate mockup to rebuild.</p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="import-band">
+      <div class="import-existing-site">
+        <div class="import-copy">
+          <h2 class="import-heading">Bring in the site you already have.</h2>
+          <p class="import-body">Point Pitolet at a local page. It imports an editable version and keeps unsupported parts as images.</p>
+          <div class="import-command">
+            <span class="import-prompt">$</span>
+            <code class="import-code">pitolet import http://localhost:3000 --to …</code>
+          </div>
+        </div>
+        <div class="import-details">
+          <div class="one-responsive-document">
+            <span class="import-check">✓</span>
+            <div class="import-point-copy">
+              <h3 class="import-point-title">One responsive document</h3>
+              <p class="import-point-body">Pitolet captures the page at three widths and stores the differences as breakpoints.</p>
             </div>
+          </div>
+          <div class="local-assets">
+            <span class="import-check-2">✓</span>
+            <div class="import-point-copy-2">
+              <h3 class="import-point-title-2">Local assets</h3>
+              <p class="import-point-body-2">Images are copied into Pitolet instead of staying linked to the source site.</p>
+            </div>
+          </div>
+          <div class="see-what-changed">
+            <span class="import-check-3">✓</span>
+            <div class="import-point-copy-3">
+              <h3 class="import-point-title-3">See what changed</h3>
+              <p class="import-point-body-3">The import report shows how closely each width matches the source.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="dogfood-band">
+      <div class="dogfood">
+        <p class="dogfood-text">This page was made in Pitolet.</p>
+        <a class="dogfood-link" href="https://github.com/pitolet/pitolet/tree/main/site">View its source</a>
+      </div>
+    </section>
+    <section class="pricing-band">
+      <div class="pricing">
+        <h2 class="pricing-heading">Use Pitolet on our server or yours.</h2>
+        <div class="plans">
+          <article class="plan-free">
+            <div class="plan-head">
+              <h3 class="plan-name">Free</h3>
+            </div>
+            <div class="price-row">
+              <span class="price">$0</span>
+              <span class="price-unit">forever</span>
+            </div>
+            <p class="plan-blurb">For trying Pitolet on a real project.</p>
+            <ul class="features">
+              <li class="feature">
+                <span class="check">•</span>
+                <span class="feature-text">1 workspace</span>
+              </li>
+              <li class="feature-2">
+                <span class="check-2">•</span>
+                <span class="feature-text-2">3 documents</span>
+              </li>
+              <li class="feature-3">
+                <span class="check-3">•</span>
+                <span class="feature-text-3">Hosted MCP for your agent</span>
+              </li>
+            </ul>
+          </article>
+          <article class="plan-pro">
+            <div class="plan-head-2">
+              <h3 class="plan-name-2">Pro</h3>
+              <div class="badge">
+                <span class="badge-text">Popular</span>
+              </div>
+            </div>
+            <div class="price-row-2">
+              <span class="price-2">$12</span>
+              <span class="price-unit-2">per user / mo</span>
+            </div>
+            <p class="plan-blurb-2">For work that needs more room and history.</p>
+            <ul class="features-2">
+              <li class="feature-4">
+                <span class="check-4">•</span>
+                <span class="feature-text-4">Unlimited documents + tokens</span>
+              </li>
+              <li class="feature-5">
+                <span class="check-5">•</span>
+                <span class="feature-text-5">Version history</span>
+              </li>
+              <li class="feature-6">
+                <span class="check-6">•</span>
+                <span class="feature-text-6">Share links</span>
+              </li>
+              <li class="feature-7">
+                <span class="check-7">•</span>
+                <span class="feature-text-7">Everything in Free</span>
+              </li>
+            </ul>
+          </article>
+          <article class="plan-self-host">
+            <div class="plan-head-3">
+              <h3 class="plan-name-3">Self-host</h3>
+            </div>
+            <div class="price-row-3">
+              <span class="price-3">Free</span>
+              <span class="price-unit-3">forever · AGPL</span>
+            </div>
+            <p class="plan-blurb-3">Run the open source version on your own server.</p>
+            <ul class="features-3">
+              <li class="feature-8">
+                <span class="check-8">•</span>
+                <span class="feature-text-8">npx pitolet</span>
+              </li>
+              <li class="feature-9">
+                <span class="check-9">•</span>
+                <span class="feature-text-9">Runs on your own servers</span>
+              </li>
+              <li class="feature-10">
+                <span class="check-10">•</span>
+                <span class="feature-text-10">AGPL-3.0 licensed</span>
+              </li>
+            </ul>
           </article>
         </div>
       </div>
-    </div>
-  </section>
-  <section class="import-band">
-    <div class="import-existing-site">
-      <div class="import-copy">
-        <h2 class="import-heading">Bring in the site you already have.</h2>
-        <p class="import-body">Point Pitolet at a local page. It imports an editable version and keeps unsupported parts as images.</p>
-        <div class="import-command">
-          <span class="import-prompt">$</span>
-          <code class="import-code">pitolet import http://localhost:3000 --to …</code>
-        </div>
-      </div>
-      <div class="import-details">
-        <div class="one-responsive-document">
-          <span class="import-check">✓</span>
-          <div class="import-point-copy">
-            <h3 class="import-point-title">One responsive document</h3>
-            <p class="import-point-body">Pitolet captures the page at three widths and stores the differences as breakpoints.</p>
-          </div>
-        </div>
-        <div class="local-assets">
-          <span class="import-check-2">✓</span>
-          <div class="import-point-copy-2">
-            <h3 class="import-point-title-2">Local assets</h3>
-            <p class="import-point-body-2">Images are copied into Pitolet instead of staying linked to the source site.</p>
-          </div>
-        </div>
-        <div class="see-what-changed">
-          <span class="import-check-3">✓</span>
-          <div class="import-point-copy-3">
-            <h3 class="import-point-title-3">See what changed</h3>
-            <p class="import-point-body-3">The import report shows how closely each width matches the source.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-  <section class="dogfood-band">
-    <div class="dogfood">
-      <p class="dogfood-text">This page was made in Pitolet.</p>
-      <a class="dogfood-link" href="https://github.com/pitolet/pitolet/tree/main/site">View its source</a>
-    </div>
-  </section>
-  <section class="pricing-band">
-    <div class="pricing">
-      <h2 class="pricing-heading">Use Pitolet on our server or yours.</h2>
-      <div class="plans">
-        <article class="plan-free">
-          <div class="plan-head">
-            <h3 class="plan-name">Free</h3>
-          </div>
-          <div class="price-row">
-            <span class="price">$0</span>
-            <span class="price-unit">forever</span>
-          </div>
-          <p class="plan-blurb">For trying Pitolet on a real project.</p>
-          <ul class="features">
-            <li class="feature">
-              <span class="check">•</span>
-              <span class="feature-text">1 workspace</span>
-            </li>
-            <li class="feature-2">
-              <span class="check-2">•</span>
-              <span class="feature-text-2">3 documents</span>
-            </li>
-            <li class="feature-3">
-              <span class="check-3">•</span>
-              <span class="feature-text-3">Hosted MCP for your agent</span>
-            </li>
-          </ul>
-        </article>
-        <article class="plan-pro">
-          <div class="plan-head-2">
-            <h3 class="plan-name-2">Pro</h3>
-            <div class="badge">
-              <span class="badge-text">Popular</span>
-            </div>
-          </div>
-          <div class="price-row-2">
-            <span class="price-2">$12</span>
-            <span class="price-unit-2">per user / mo</span>
-          </div>
-          <p class="plan-blurb-2">For work that needs more room and history.</p>
-          <ul class="features-2">
-            <li class="feature-4">
-              <span class="check-4">•</span>
-              <span class="feature-text-4">Unlimited documents + tokens</span>
-            </li>
-            <li class="feature-5">
-              <span class="check-5">•</span>
-              <span class="feature-text-5">Version history</span>
-            </li>
-            <li class="feature-6">
-              <span class="check-6">•</span>
-              <span class="feature-text-6">Share links</span>
-            </li>
-            <li class="feature-7">
-              <span class="check-7">•</span>
-              <span class="feature-text-7">Everything in Free</span>
-            </li>
-          </ul>
-        </article>
-        <article class="plan-self-host">
-          <div class="plan-head-3">
-            <h3 class="plan-name-3">Self-host</h3>
-          </div>
-          <div class="price-row-3">
-            <span class="price-3">Free</span>
-            <span class="price-unit-3">forever · AGPL</span>
-          </div>
-          <p class="plan-blurb-3">Run the open source version on your own server.</p>
-          <ul class="features-3">
-            <li class="feature-8">
-              <span class="check-8">•</span>
-              <span class="feature-text-8">npx pitolet</span>
-            </li>
-            <li class="feature-9">
-              <span class="check-9">•</span>
-              <span class="feature-text-9">Runs on your own servers</span>
-            </li>
-            <li class="feature-10">
-              <span class="check-10">•</span>
-              <span class="feature-text-10">AGPL-3.0 licensed</span>
-            </li>
-          </ul>
-        </article>
-      </div>
-    </div>
-  </section>
+    </section>
+  </main>
   <section class="footer-band">
     <footer class="footer">
       <p class="copyright">© 2026 Pitolet · AGPL-3.0 core</p>

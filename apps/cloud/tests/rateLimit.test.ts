@@ -35,12 +35,23 @@ describe('TokenBucketLimiter (fake clock)', () => {
   });
 
   it('tracks keys independently', () => {
-    let now = 0;
+    const now = 0;
     const limiter = new TokenBucketLimiter({ capacity: 2, clock: () => now });
     expect(limiter.allow('a')).toBe(true);
     expect(limiter.allow('a')).toBe(true);
     expect(limiter.allow('a')).toBe(false);
     expect(limiter.allow('b')).toBe(true); // a's exhaustion never affects b
+  });
+
+  it('keeps the key map at its configured hard limit under fresh-key floods', () => {
+    const limiter = new TokenBucketLimiter({
+      capacity: 1,
+      maxKeys: 3,
+      clock: () => 0,
+    });
+    for (let i = 0; i < 100; i++) limiter.allow(`attacker-${i}`);
+    const buckets = (limiter as unknown as { buckets: Map<string, unknown> }).buckets;
+    expect(buckets.size).toBe(3);
   });
 });
 
@@ -52,7 +63,7 @@ describe('workspace auth hooks: plan gate + write budget (fake clock)', () => {
     scopes: ['read', 'write'],
   });
 
-  it("denies doc:create at the free limit with a 429 naming the upgrade path", () => {
+  it('denies doc:create at the free limit with a 429 naming the upgrade path', () => {
     let docs = 2;
     const hooks = makeWorkspaceAuthHooks('ws-1', {
       getPlan: () => 'free',

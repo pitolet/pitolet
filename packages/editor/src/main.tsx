@@ -2,6 +2,7 @@ import '@pitolet/ui/tokens.css';
 import '@pitolet/ui/base.css';
 import { createRoot } from 'react-dom/client';
 import { App } from './App.js';
+import { ErrorBoundary } from './ErrorBoundary.js';
 import { useEditor } from './store/index.js';
 
 if (import.meta.env.DEV) {
@@ -9,4 +10,8 @@ if (import.meta.env.DEV) {
   (window as unknown as Record<string, unknown>).__pitolet = useEditor;
 }
 
-createRoot(document.getElementById('root')!).render(<App />);
+createRoot(document.getElementById('root')!).render(
+  <ErrorBoundary name="Pitolet">
+    <App />
+  </ErrorBoundary>,
+);

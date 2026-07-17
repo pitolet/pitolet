@@ -32,11 +32,7 @@ const READ_ACTIONS: ReadonlySet<AuthAction> = new Set([
   'mcp:connect',
 ]);
 
-const WRITE_ACTIONS: ReadonlySet<AuthAction> = new Set([
-  'doc:write',
-  'doc:create',
-  'asset:write',
-]);
+const WRITE_ACTIONS: ReadonlySet<AuthAction> = new Set(['doc:write', 'doc:create', 'asset:write']);
 
 /**
  * The COMPLETE share-link surface: read-only, ever. 'doc:list' is safe

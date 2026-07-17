@@ -5,11 +5,33 @@
 pitolet.com {
 	root * /srv/static
 	file_server
-	encode gzip
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		Content-Security-Policy "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://app.pitolet.com"
+		-Server
+	}
+	@staticAssets path_regexp static \.(?:css|js|png|jpg|jpeg|webp|gif|woff2)$
+	header @staticAssets Cache-Control "public, max-age=86400"
+	@html path / /index.html /terms.html /privacy.html /vs-figma/ /vs-figma/index.html
+	header @html Cache-Control "no-cache"
 }
 
 # The cloud app. Caddy proxies WebSocket upgrades (/w/:slug/ws) transparently.
 app.pitolet.com {
 	reverse_proxy app:8080
-	encode gzip
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		Content-Security-Policy "default-src 'self'; img-src 'self' data: blob: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; connect-src 'self' https://fonts.googleapis.com wss://app.pitolet.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+		-Server
+	}
 }

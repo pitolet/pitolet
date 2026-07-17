@@ -6,12 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { WebSocket } from 'ws';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import {
-  createApp,
-  sharedPasswordAuth,
-  type AuthHooks,
-  type PitoletApp,
-} from '../src/index.js';
+import { createApp, sharedPasswordAuth, type AuthHooks, type PitoletApp } from '../src/index.js';
 
 const PASSWORD = 'correct horse battery staple';
 
@@ -42,7 +37,10 @@ function wsConnect(port: number, headers?: Record<string, string>): Promise<WebS
 
 function nextMessage(ws: WebSocket, timeoutMs = 3000): Promise<Record<string, unknown>> {
   return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('timed out waiting for ws message')), timeoutMs);
+    const timer = setTimeout(
+      () => reject(new Error('timed out waiting for ws message')),
+      timeoutMs,
+    );
     ws.once('message', (data) => {
       clearTimeout(timer);
       resolve(JSON.parse(String(data)) as Record<string, unknown>);
@@ -87,6 +85,27 @@ describe('no-auth mode (regression): everything works without credentials', () =
     await client.close();
   });
 
+  it('creates documents through the REST API and validates names', async () => {
+    const created = await fetch(`${base}/api/documents`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ name: 'Fresh from the editor' }),
+    });
+    expect(created.status).toBe(201);
+    const body = (await created.json()) as { docId: string; name: string };
+    expect(body.name).toBe('Fresh from the editor');
+    expect(app.store.get(body.docId)?.doc.name).toBe('Fresh from the editor');
+
+    for (const name of ['', '   ', 'x'.repeat(121)]) {
+      const invalid = await fetch(`${base}/api/documents`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ name }),
+      });
+      expect(invalid.status, JSON.stringify(name)).toBe(400);
+    }
+  });
+
   it('accepts bare WS connections and opens documents', async () => {
     const docId = app.store.list()[0]!.id;
     const ws = await wsConnect(port);
@@ -94,6 +113,24 @@ describe('no-auth mode (regression): everything works without credentials', () =
     const msg = await nextMessage(ws);
     expect(msg.t).toBe('doc');
     ws.close();
+  });
+
+  it('rejects browser cross-origin writes even when local auth is disabled', async () => {
+    const mutation = await fetch(`${base}/api/documents`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        origin: 'https://attacker.example',
+      },
+      body: JSON.stringify({ name: 'Cross-site' }),
+    });
+    expect(mutation.status).toBe(403);
+
+    await expect(
+      wsConnect(port, {
+        origin: 'https://attacker.example',
+      }),
+    ).rejects.toThrow(/403/);
   });
 });
 
@@ -135,7 +172,9 @@ describe('shared password mode', () => {
 
   it('rejects /api/*, /assets-store/* and /mcp without credentials (401)', async () => {
     for (const path of ['/api/documents', '/api/export', '/assets-store/anything', '/api/assets']) {
-      const res = await fetch(`${base}${path}`, { method: path === '/api/documents' ? 'GET' : 'POST' });
+      const res = await fetch(`${base}${path}`, {
+        method: path === '/api/documents' ? 'GET' : 'POST',
+      });
       expect(res.status, path).toBe(401);
       expect(((await res.json()) as { error: string }).error).toBe('unauthorized');
     }
@@ -150,6 +189,16 @@ describe('shared password mode', () => {
     const root = await fetch(`${base}/`);
     expect(root.status).toBe(200);
     expect(await root.text()).toContain('pitolet');
+
+    const compressed = await fetch(`${base}/`, {
+      headers: { 'accept-encoding': 'br' },
+    });
+    expect(compressed.headers.get('content-encoding')).toBe('br');
+    expect(compressed.headers.get('cache-control')).toBe('no-cache');
+
+    const head = await fetch(`${base}/`, { method: 'HEAD' });
+    expect(head.status).toBe(200);
+    expect(await head.text()).toBe('');
   });
 
   it('rejects a wrong password on login (401)', async () => {
@@ -173,6 +222,13 @@ describe('shared password mode', () => {
     const cookie = await sessionCookie();
     const res = await fetch(`${base}/api/documents`, { headers: { cookie } });
     expect(res.status).toBe(200);
+
+    const created = await fetch(`${base}/api/documents`, {
+      method: 'POST',
+      headers: { cookie, 'content-type': 'application/json' },
+      body: JSON.stringify({ name: 'Session document' }),
+    });
+    expect(created.status).toBe(201);
   });
 
   it('rejects a forged/expired session cookie', async () => {
@@ -191,6 +247,36 @@ describe('shared password mode', () => {
       headers: { authorization: 'Bearer nope' },
     });
     expect(bad.status).toBe(401);
+  });
+
+  it('rejects cross-origin mutations and WebSocket upgrades', async () => {
+    const loginResponse = await fetch(`${base}/api/login`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        origin: 'https://attacker.example',
+      },
+      body: JSON.stringify({ password: PASSWORD }),
+    });
+    expect(loginResponse.status).toBe(403);
+
+    const mutation = await fetch(`${base}/api/documents`, {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${PASSWORD}`,
+        'content-type': 'application/json',
+        origin: 'https://attacker.example',
+      },
+      body: JSON.stringify({ name: 'Cross-site' }),
+    });
+    expect(mutation.status).toBe(403);
+
+    await expect(
+      wsConnect(port, {
+        authorization: `Bearer ${PASSWORD}`,
+        origin: 'https://attacker.example',
+      }),
+    ).rejects.toThrow(/403/);
   });
 
   it('refuses WS upgrades without credentials', async () => {
@@ -255,6 +341,38 @@ describe('login rate limiting', () => {
 
 // ---------------------------------------------------------------------------
 
+describe('Bearer password rate limiting', () => {
+  let app: PitoletApp;
+  let dataDir: string;
+  let base: string;
+
+  beforeAll(async () => {
+    ({ app, dataDir, base } = await startApp(sharedPasswordAuth(PASSWORD)));
+  });
+  afterAll(async () => stopApp(app, dataDir));
+
+  it('blocks repeated Bearer guesses and ignores untrusted forwarded addresses', async () => {
+    for (let index = 0; index < 10; index += 1) {
+      const response = await fetch(`${base}/api/documents`, {
+        headers: {
+          authorization: `Bearer wrong-${index}`,
+          'x-forwarded-for': `203.0.113.${index + 1}`,
+        },
+      });
+      expect(response.status).toBe(401);
+    }
+    const correctAfterBudget = await fetch(`${base}/api/documents`, {
+      headers: {
+        authorization: `Bearer ${PASSWORD}`,
+        'x-forwarded-for': '198.51.100.10',
+      },
+    });
+    expect(correctAfterBudget.status).toBe(401);
+  });
+});
+
+// ---------------------------------------------------------------------------
+
 describe('scoped contexts (custom hooks)', () => {
   let app: PitoletApp;
   let dataDir: string;
@@ -267,6 +385,8 @@ describe('scoped contexts (custom hooks)', () => {
     authenticate: async (req) => {
       const kind = req.headers['x-test-ctx'];
       if (kind === 'read-agent') return { kind: 'agent', scopes: ['read'] };
+      if (kind === 'policy-denied')
+        return { kind: 'agent', userId: 'denied-agent', scopes: ['read', 'write'] };
       if (kind === 'share') return { kind: 'share', scopes: ['read'], docId: shareDocId };
       if (kind === 'full') return { kind: 'user', displayName: 'tester' };
       return null;
@@ -274,6 +394,9 @@ describe('scoped contexts (custom hooks)', () => {
     authorize: (ctx, action, docId) => {
       if (ctx.docId !== undefined && docId !== undefined && docId !== ctx.docId) {
         return { ok: false, status: 403, reason: 'document out of scope' };
+      }
+      if (ctx.userId === 'denied-agent' && action === 'doc:write') {
+        return { ok: false, status: 403, reason: 'custom policy denied this write' };
       }
       const writeActions = ['doc:write', 'doc:create', 'asset:write', 'export'];
       if (ctx.scopes && !ctx.scopes.includes('write') && writeActions.includes(action)) {
@@ -348,6 +471,52 @@ describe('scoped contexts (custom hooks)', () => {
     const res = await fetch(`${base}/api/documents`, { headers: { 'x-test-ctx': 'share' } });
     const body = (await res.json()) as { documents: Array<{ id: string }> };
     expect(body.documents.map((d) => d.id)).toEqual([shareDocId]);
+  });
+
+  it('enforces custom authorization inside individual MCP tools', async () => {
+    const { client, transport } = mcpClient(base, { 'x-test-ctx': 'policy-denied' });
+    await client.connect(transport);
+    expect((await client.listTools()).tools.map((tool) => tool.name)).toContain('update_node');
+
+    const frameId = app.store.get(mainDocId)!.doc.rootOrder[0]!;
+    const result = await client.callTool({
+      name: 'update_node',
+      arguments: { docId: mainDocId, nodeId: frameId, set: { name: 'Not allowed' } },
+    });
+    expect(result.isError).toBe(true);
+    expect((result.content as Array<{ type: string; text?: string }>)[0]?.text).toContain(
+      'custom policy denied this write',
+    );
+    expect(app.store.get(mainDocId)!.doc.nodes[frameId]!.name).not.toBe('Not allowed');
+    await client.close();
+  });
+
+  it('does not let a document share read unrelated workspace assets', async () => {
+    const response = await fetch(`${base}/assets-store/0123456789abcdef.png`, {
+      headers: { 'x-test-ctx': 'share' },
+    });
+    expect(response.status).toBe(403);
+    expect(((await response.json()) as { error: string }).error).toContain(
+      'outside the shared document',
+    );
+  });
+
+  it('REST document creation follows doc:create authorization', async () => {
+    for (const context of ['read-agent', 'share']) {
+      const denied = await fetch(`${base}/api/documents`, {
+        method: 'POST',
+        headers: { 'x-test-ctx': context, 'content-type': 'application/json' },
+        body: JSON.stringify({ name: 'Denied' }),
+      });
+      expect(denied.status, context).toBe(403);
+    }
+
+    const allowed = await fetch(`${base}/api/documents`, {
+      method: 'POST',
+      headers: { 'x-test-ctx': 'full', 'content-type': 'application/json' },
+      body: JSON.stringify({ name: 'Allowed' }),
+    });
+    expect(allowed.status).toBe(201);
   });
 
   it('WS defense in depth: read-only ctx can open but patches are rejected', async () => {

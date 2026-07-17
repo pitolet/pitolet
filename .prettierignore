@@ -1,0 +1,13 @@
+**/dist/**
+**/node_modules/**
+
+# Generated fixtures and site artifacts are checked against their generators.
+packages/codegen/tests/golden/**
+deploy/static/index.html
+deploy/static/vs-figma/**
+site/*.pitolet.json
+
+# Local documents and runtime data are user content, not source formatting.
+pitolet/**
+pitolet-data/**
+pitolet-export/**

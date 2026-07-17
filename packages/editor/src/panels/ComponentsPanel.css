@@ -1,36 +1,252 @@
 .ptl-components {
   display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--ptl-space-2);
+  padding: var(--ptl-space-2) var(--ptl-space-3);
+}
+
+.ptl-components-toolbar {
+  display: flex;
+  min-height: 28px;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--ptl-text-3);
+  font-size: var(--ptl-text-xs);
+}
+
+.ptl-component-target {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--ptl-space-2);
+  min-height: 30px;
+  padding: 0 var(--ptl-space-2);
+  border-radius: var(--ptl-radius-md);
+  background: var(--ptl-bg-2);
+  box-shadow: inset 0 0 0 1px var(--ptl-border);
+}
+
+.ptl-component-target--ready {
+  box-shadow: inset 0 0 0 1px var(--ptl-accent-muted);
+}
+
+.ptl-component-target-label {
+  color: var(--ptl-text-3);
+  font-size: var(--ptl-text-xs);
+}
+
+.ptl-component-target-name {
+  overflow: hidden;
+  color: var(--ptl-text-2);
+  font-size: var(--ptl-text-xs);
+  font-weight: 500;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ptl-component-target--ready .ptl-component-target-name {
+  color: var(--ptl-text-1);
+}
+
+.ptl-component-search {
+  display: flex;
+  width: 100%;
+}
+
+.ptl-component-list {
+  display: flex;
+  min-height: 0;
+  flex: 1;
   flex-direction: column;
   gap: var(--ptl-space-1);
-  padding: var(--ptl-space-2) var(--ptl-space-3);
   overflow-y: auto;
 }
 
 .ptl-component-card {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--ptl-space-2);
-  padding: var(--ptl-space-2);
-  border: 1px solid var(--ptl-border);
+  min-height: 46px;
+  padding: var(--ptl-space-1) var(--ptl-space-1) var(--ptl-space-1) var(--ptl-space-2);
   border-radius: var(--ptl-radius-md);
-  background: var(--ptl-bg-2);
-  color: oklch(0.72 0.14 300);
-  font-size: var(--ptl-text-sm);
-  cursor: default;
-  text-align: left;
+  color: var(--ptl-text-2);
+}
+
+.ptl-component-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
 }
 
 .ptl-component-card:hover {
-  border-color: oklch(0.72 0.14 300 / 0.5);
+  background: var(--ptl-bg-2);
+}
+
+.ptl-component-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ptl-component-name,
+.ptl-component-meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .ptl-component-name {
   color: var(--ptl-text-1);
+  font-size: var(--ptl-text-sm);
   font-weight: 500;
-  flex: 1;
 }
 
-.ptl-component-variants {
+.ptl-component-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   color: var(--ptl-text-3);
   font-size: var(--ptl-text-xs);
+}
+
+.ptl-component-meta > span {
+  padding: 1px 5px;
+  border-radius: var(--ptl-radius-full);
+  background: var(--ptl-bg-3);
+}
+
+.ptl-component-locate {
+  display: inline-grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--ptl-radius-md);
+  background: transparent;
+  color: var(--ptl-accent);
+}
+
+.ptl-component-locate:hover {
+  background: var(--ptl-bg-3);
+  color: var(--ptl-accent-strong);
+}
+
+.ptl-component-insert {
+  color: var(--ptl-accent);
+}
+
+.ptl-component-more {
+  display: inline-grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--ptl-radius-md);
+  background: transparent;
+  color: var(--ptl-text-3);
+}
+
+.ptl-component-more:hover:not(:disabled) {
+  background: var(--ptl-bg-3);
+  color: var(--ptl-text-1);
+}
+
+.ptl-component-more:disabled {
+  opacity: 0.4;
+}
+
+.ptl-component-menu-popover {
+  width: 224px;
+  padding: var(--ptl-space-1);
+}
+
+.ptl-component-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ptl-component-menu > button {
+  display: flex;
+  align-items: center;
+  gap: var(--ptl-space-2);
+  min-height: 30px;
+  padding: 0 var(--ptl-space-2);
+  border: 0;
+  border-radius: var(--ptl-radius-md);
+  background: transparent;
+  color: var(--ptl-text-2);
+  font-size: var(--ptl-text-sm);
+  text-align: left;
+}
+
+.ptl-component-menu > button:hover {
+  background: var(--ptl-bg-3);
+  color: var(--ptl-text-1);
+}
+
+.ptl-component-menu > button:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.ptl-component-menu > button:disabled:hover {
+  background: transparent;
+}
+
+.ptl-component-menu > .ptl-component-menu-danger {
+  color: var(--ptl-danger);
+}
+
+.ptl-component-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ptl-space-3);
+  padding: var(--ptl-space-2);
+}
+
+.ptl-component-dialog strong {
+  color: var(--ptl-text-1);
+  font-size: var(--ptl-text-sm);
+}
+
+.ptl-component-dialog p {
+  margin: 0;
+  color: var(--ptl-text-2);
+  font-size: var(--ptl-text-xs);
+  line-height: 1.5;
+}
+
+.ptl-component-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--ptl-space-2);
+}
+
+.ptl-components-empty {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: var(--ptl-space-2);
+  text-align: center;
+}
+
+.ptl-components-empty > svg {
+  color: var(--ptl-accent);
+}
+
+.ptl-components-empty strong {
+  color: var(--ptl-text-1);
+  font-size: var(--ptl-text-sm);
+}
+
+.ptl-components-empty span {
+  max-width: 190px;
 }

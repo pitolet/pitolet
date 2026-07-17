@@ -1,19 +1,30 @@
-import {
-  isAncestor,
-  resolveStyles,
-  type PitoletDocument,
-  type NodeId,
-} from '@pitolet/schema';
+import { isAncestor, type PitoletDocument, type NodeId } from '@pitolet/schema';
+import { componentMasterIdForNode } from '../../store/componentMutations.js';
 import { useEditor } from '../../store/index.js';
+import { isEffectivelyLocked } from '../../store/locks.js';
+import { canNodeContainChildren } from '../../store/nodeSafety.js';
 import type { CameraController } from '../CameraController.js';
-import { setDragging, setDropIndicator, type DropIndicator } from './interactionState.js';
+import {
+  clearInteractionCancel,
+  setDragging,
+  setDropIndicator,
+  setInteractionCancel,
+  type DropIndicator,
+} from './interactionState.js';
 
 const DRAG_SLOP_PX = 4;
-
 interface DropTarget {
   containerId: NodeId;
   index: number;
   indicator: DropIndicator;
+}
+
+export function captureElementInlineOpacity(element: HTMLElement): string {
+  return element.style.opacity;
+}
+
+export function restoreElementInlineOpacity(element: HTMLElement, opacity: string): void {
+  element.style.opacity = opacity;
 }
 
 /**
@@ -28,14 +39,25 @@ export function startInFlowMove(
   camera: CameraController,
   viewport: HTMLElement,
 ): void {
+  camera.cancelAnimation();
   const store = useEditor.getState();
   const doc = store.doc;
   const node = doc?.nodes[nodeId];
-  if (!doc || !node || node.parent === null) return;
+  if (
+    !doc ||
+    !node ||
+    store.readOnly ||
+    !store.connected ||
+    store.switchingDocument ||
+    node.parent === null ||
+    isEffectivelyLocked(doc, nodeId)
+  ) {
+    return;
+  }
 
   const start = { x: e.clientX, y: e.clientY };
   const sourceEl = document.querySelector<HTMLElement>(`[data-node-id="${nodeId}"]`);
-  const viewportRect = viewport.getBoundingClientRect();
+  const initialInlineOpacity = sourceEl ? captureElementInlineOpacity(sourceEl) : '';
   let started = false;
   let target: DropTarget | null = null;
   let raf = 0;
@@ -45,7 +67,8 @@ export function startInFlowMove(
     lastEvent = ev;
     if (!started && Math.hypot(ev.clientX - start.x, ev.clientY - start.y) > DRAG_SLOP_PX) {
       started = true;
-      setDragging(true);
+      store.setHover(null);
+      setDragging(true, 'reorder');
       if (sourceEl) sourceEl.style.opacity = '0.35';
     }
     if (!started || raf !== 0) return;
@@ -53,6 +76,7 @@ export function startInFlowMove(
       raf = 0;
       const currentDoc = useEditor.getState().doc;
       if (!currentDoc) return;
+      const viewportRect = viewport.getBoundingClientRect();
       target = findDropTarget(currentDoc, nodeId, lastEvent, viewportRect);
       setDropIndicator(target?.indicator ?? null, {
         x: lastEvent.clientX - viewportRect.left + 12,
@@ -62,15 +86,24 @@ export function startInFlowMove(
     });
   };
 
-  const onUp = () => {
+  const finish = (cancelled: boolean, finalEvent?: PointerEvent) => {
     window.removeEventListener('pointermove', onMove);
     window.removeEventListener('pointerup', onUp);
+    window.removeEventListener('pointercancel', cancel);
+    window.removeEventListener('blur', cancel);
+    clearInteractionCancel(cancel);
     if (raf !== 0) cancelAnimationFrame(raf);
-    if (sourceEl) sourceEl.style.opacity = '';
+    if (started && !cancelled && finalEvent) {
+      const currentDoc = useEditor.getState().doc;
+      target = currentDoc
+        ? findDropTarget(currentDoc, nodeId, finalEvent, viewport.getBoundingClientRect())
+        : null;
+    }
+    if (sourceEl) restoreElementInlineOpacity(sourceEl, initialInlineOpacity);
     setDropIndicator(null, null);
     if (started) {
       setDragging(false);
-      if (target) {
+      if (!cancelled && target) {
         const { containerId, index } = target;
         useEditor.getState().dispatchEdit('Move layer', (draft) => {
           const dragged = draft.nodes[nodeId];
@@ -89,10 +122,14 @@ export function startInFlowMove(
     }
   };
 
+  const onUp = (ev: PointerEvent) => finish(false, ev);
+  const cancel = () => finish(true);
+
+  setInteractionCancel(cancel);
   window.addEventListener('pointermove', onMove);
   window.addEventListener('pointerup', onUp);
-
-  void camera;
+  window.addEventListener('pointercancel', cancel);
+  window.addEventListener('blur', cancel);
 }
 
 /**
@@ -107,6 +144,7 @@ function findDropTarget(
   viewportRect: DOMRect,
 ): DropTarget | null {
   const stack = document.elementsFromPoint(ev.clientX, ev.clientY);
+  const draggedMaster = componentMasterIdForNode(doc, draggedId);
   let containerId: NodeId | null = null;
   let containerEl: Element | null = null;
 
@@ -116,14 +154,21 @@ function findDropTarget(
     const node = doc.nodes[id];
     if (!node) continue;
     if (id === draggedId || isAncestor(doc.nodes, draggedId, id)) continue;
-    const isContainer = node.type === 'frame' || node.type === 'element';
-    if (isContainer) {
+    if (isEffectivelyLocked(doc, id)) continue;
+    const isContainer = canNodeContainChildren(node);
+    if (isContainer && componentMasterIdForNode(doc, id) === draggedMaster) {
       containerId = id;
       containerEl = el;
       break;
     }
     // A leaf (text/image): target its parent container instead.
-    if (node.parent && node.parent !== draggedId) {
+    if (
+      node.parent &&
+      node.parent !== draggedId &&
+      !isEffectivelyLocked(doc, node.parent) &&
+      componentMasterIdForNode(doc, node.parent) === draggedMaster &&
+      canContainChildren(doc, node.parent)
+    ) {
       const parentEl = document.querySelector(`[data-node-id="${node.parent}"]`);
       if (parentEl) {
         containerId = node.parent;
@@ -136,12 +181,9 @@ function findDropTarget(
   if (!containerId || !containerEl) return null;
   const container = doc.nodes[containerId]!;
 
-  const resolved = resolveStyles(container.styles, {
-    frameWidth: 1280, // direction/display don't vary by breakpoint in practice here
-    breakpoints: doc.breakpoints,
-    tokens: doc.tokens,
-  });
-  const horizontal = resolved.display === 'flex' && (resolved.flexDirection ?? 'row') === 'row';
+  const computed = getComputedStyle(containerEl);
+  const horizontal = computed.display === 'flex' && computed.flexDirection.startsWith('row');
+  const grid = computed.display === 'grid';
 
   // Insertion index from child midpoints along the flex axis.
   const childRects = container.children
@@ -153,14 +195,29 @@ function findDropTarget(
     .filter((c): c is { id: NodeId; rect: DOMRect } => c.rect !== null);
 
   let index = childRects.length;
-  for (let i = 0; i < childRects.length; i++) {
-    const mid = horizontal
-      ? childRects[i]!.rect.left + childRects[i]!.rect.width / 2
-      : childRects[i]!.rect.top + childRects[i]!.rect.height / 2;
-    const pointer = horizontal ? ev.clientX : ev.clientY;
-    if (pointer < mid) {
-      index = i;
-      break;
+  if (grid) {
+    // DOM order for a normal grid is row-major. Compare rows first and then
+    // columns so dropping beside a card no longer behaves like one tall list.
+    for (let i = 0; i < childRects.length; i++) {
+      const rect = childRects[i]!.rect;
+      const midX = rect.left + rect.width / 2;
+      const midY = rect.top + rect.height / 2;
+      const inSameRow = ev.clientY >= rect.top && ev.clientY <= rect.bottom;
+      if (ev.clientY < midY || (inSameRow && ev.clientX < midX)) {
+        index = i;
+        break;
+      }
+    }
+  } else {
+    for (let i = 0; i < childRects.length; i++) {
+      const mid = horizontal
+        ? childRects[i]!.rect.left + childRects[i]!.rect.width / 2
+        : childRects[i]!.rect.top + childRects[i]!.rect.height / 2;
+      const pointer = horizontal ? ev.clientX : ev.clientY;
+      if (pointer < mid) {
+        index = i;
+        break;
+      }
     }
   }
   // Map filtered index back to the real children array.
@@ -172,6 +229,10 @@ function findDropTarget(
   const containerRect = containerEl.getBoundingClientRect();
   const indicator = buildIndicator(childRects, index, horizontal, containerRect, viewportRect);
   return { containerId, index: realIndex, indicator };
+}
+
+function canContainChildren(doc: PitoletDocument, id: NodeId): boolean {
+  return canNodeContainChildren(doc.nodes[id]);
 }
 
 function buildIndicator(
@@ -194,8 +255,18 @@ function buildIndicator(
   if (childRects.length === 0) {
     // Empty container: hint an inset line at the content start.
     line = horizontal
-      ? { x: containerRect.left + 4, y: containerRect.top + 4, width: LINE, height: containerRect.height - 8 }
-      : { x: containerRect.left + 4, y: containerRect.top + 4, width: containerRect.width - 8, height: LINE };
+      ? {
+          x: containerRect.left + 4,
+          y: containerRect.top + 4,
+          width: LINE,
+          height: containerRect.height - 8,
+        }
+      : {
+          x: containerRect.left + 4,
+          y: containerRect.top + 4,
+          width: containerRect.width - 8,
+          height: LINE,
+        };
   } else if (index < childRects.length) {
     const r = childRects[index]!.rect;
     line = horizontal

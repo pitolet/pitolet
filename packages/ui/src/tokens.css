@@ -21,7 +21,7 @@
   /* ---- Text ---- */
   --ptl-text-1: oklch(0.93 0.006 250);
   --ptl-text-2: oklch(0.7 0.012 250);
-  --ptl-text-3: oklch(0.52 0.014 250);
+  --ptl-text-3: oklch(0.62 0.014 250);
   --ptl-text-disabled: oklch(0.42 0.012 250);
 
   /* ---- Accent (glacial cyan-blue) ---- */
@@ -56,8 +56,7 @@
 
   /* ---- Typography ---- */
   --ptl-font-ui:
-    'Inter', 'Inter Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui,
-    sans-serif;
+    'Inter', 'Inter Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   --ptl-font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
   --ptl-text-xs: 10.5px;
   --ptl-text-sm: 11.5px;

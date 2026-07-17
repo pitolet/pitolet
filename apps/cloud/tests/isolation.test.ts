@@ -248,9 +248,7 @@ describe('boot surface', () => {
       workspaces: Array<{ slug: string; role: string }>;
     };
     expect(body.user.email).toBe('alice@acme.test');
-    expect(body.workspaces).toEqual([
-      expect.objectContaining({ slug: 'acme', role: 'owner' }),
-    ]);
+    expect(body.workspaces).toEqual([expect.objectContaining({ slug: 'acme', role: 'owner' })]);
   });
 });
 
@@ -330,9 +328,7 @@ describe("cross-tenant sessions: bob against alice's acme", () => {
   });
 
   it('cannot open a WS to acme', async () => {
-    await expect(wsConnect('acme', { cookie: bob })).rejects.toThrow(
-      'ws upgrade rejected: 404',
-    );
+    await expect(wsConnect('acme', { cookie: bob })).rejects.toThrow('ws upgrade rejected: 404');
   });
 
   it('cannot read acme membership or tokens by workspace id', async () => {
@@ -559,9 +555,7 @@ describe('workspace lifecycle (idle eviction)', () => {
     expect(cloud.manager.loadedCount()).toBeGreaterThan(0);
 
     // No WS clients are open; idle 100ms + sweep 50ms → evicted shortly.
-    await expect
-      .poll(() => cloud.manager.loadedCount(), { timeout: 5_000, interval: 25 })
-      .toBe(0);
+    await expect.poll(() => cloud.manager.loadedCount(), { timeout: 5_000, interval: 25 }).toBe(0);
 
     // Next request reloads from PG: document intact, rev preserved (the
     // rev-1 rename from the WS test survived flush-on-evict).
@@ -617,10 +611,9 @@ describe('bulk website import authorization', () => {
     expect(imported.status).toBe(201);
     expect(await imported.json()).toMatchObject({ docId: document.id, duplicate: false });
 
-    const row = await pgi.pool.query(
-      'SELECT workspace_id, name FROM documents WHERE id = $1',
-      [document.id],
-    );
+    const row = await pgi.pool.query('SELECT workspace_id, name FROM documents WHERE id = $1', [
+      document.id,
+    ]);
     expect(row.rows[0]).toMatchObject({ workspace_id: acme.id, name: 'Imported cloud page' });
   });
 });

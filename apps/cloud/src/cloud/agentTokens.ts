@@ -1,5 +1,6 @@
 import { createHash, randomBytes } from 'node:crypto';
 import type { Pool } from 'pg';
+import { planOf, PlanLimitError, tokenLimitDenial } from './plans.js';
 
 /**
  * Workspace-scoped agent tokens (`ptl_<40 hex>`). Only the sha256 of the raw
@@ -58,12 +59,35 @@ export async function createAgentToken(
   }
   const token = `ptl_${randomBytes(20).toString('hex')}`;
   const tokenPrefix = token.slice(0, 12); // ptl_xxxxxxxx
-  const res = await pool.query(
-    `INSERT INTO agent_tokens (workspace_id, name, token_hash, token_prefix, scopes, created_by)
-     VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
-    [input.workspaceId, input.name, hashToken(token), tokenPrefix, scopes, input.createdBy],
-  );
-  return { token, id: res.rows[0].id as string, tokenPrefix, scopes };
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const workspace = await client.query('SELECT plan FROM workspaces WHERE id = $1 FOR UPDATE', [
+      input.workspaceId,
+    ]);
+    const active = await client.query(
+      `SELECT count(*)::int AS n FROM agent_tokens
+       WHERE workspace_id = $1 AND revoked_at IS NULL`,
+      [input.workspaceId],
+    );
+    const denial = tokenLimitDenial(
+      planOf(workspace.rows[0]?.plan),
+      Number(active.rows[0]?.n ?? 0),
+    );
+    if (denial) throw new PlanLimitError(denial);
+    const res = await client.query(
+      `INSERT INTO agent_tokens (workspace_id, name, token_hash, token_prefix, scopes, created_by)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+      [input.workspaceId, input.name, hashToken(token), tokenPrefix, scopes, input.createdBy],
+    );
+    await client.query('COMMIT');
+    return { token, id: res.rows[0].id as string, tokenPrefix, scopes };
+  } catch (err) {
+    await client.query('ROLLBACK').catch(() => {});
+    throw err;
+  } finally {
+    client.release();
+  }
 }
 
 /**

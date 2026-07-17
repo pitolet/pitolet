@@ -39,18 +39,25 @@
 .ptl-preview-stage {
   flex: 1;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   overflow: auto;
   padding: var(--ptl-space-4);
   min-height: 0;
 }
 
-.ptl-preview-iframe {
+.ptl-preview-frame-shell {
+  flex: 0 0 auto;
   height: 100%;
-  max-width: 100%;
+  min-width: 0;
+  margin-inline: auto;
+  transition: width var(--ptl-duration-med) var(--ptl-ease);
+}
+
+.ptl-preview-iframe {
+  width: 100%;
+  height: 100%;
   border: none;
   border-radius: var(--ptl-radius-lg);
   background: white;
   box-shadow: var(--ptl-shadow-dialog);
-  transition: width var(--ptl-duration-med) var(--ptl-ease);
 }

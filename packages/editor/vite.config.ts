@@ -40,6 +40,24 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    // Production bundles are public in both self-hosted and cloud builds.
+    // Keep source maps in local dev tooling, not in the shipped artifact.
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return undefined;
+          if (
+            /[/\\](?:react|react-dom|scheduler|use-sync-external-store|@base-ui-components|immer|zustand|tinykeys|nanoid)[/\\]/.test(
+              id,
+            )
+          ) {
+            return 'framework';
+          }
+          if (id.includes('/lucide-react/')) return 'icons';
+          return undefined;
+        },
+      },
+    },
   },
 });

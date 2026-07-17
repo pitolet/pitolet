@@ -1,4 +1,4 @@
-import { isTokenRef, type PitoletDocument } from '@pitolet/schema';
+import { isTokenRef, type PitoletDocument, type StyleDecl, type StyleSheet } from '@pitolet/schema';
 
 /**
  * Google Fonts loading. Families load on demand via the CSS2 API with the
@@ -85,15 +85,38 @@ export function fontCssUrl(family: string): string {
 /** Every font family a document references (tokens + raw node styles). */
 export function documentFonts(doc: PitoletDocument): string[] {
   const families = new Set<string>();
+  const localFamilies = new Set(
+    Object.values(doc.assets)
+      .map((asset) => asset.fontFace?.family)
+      .filter((family): family is string => Boolean(family)),
+  );
+  const addDecl = (decl: Partial<StyleDecl> | undefined) => {
+    const raw = decl?.fontFamily;
+    if (typeof raw === 'string') families.add(raw);
+    else if (raw && !isTokenRef(raw)) families.add(String(raw));
+  };
+  const addSheet = (sheet: StyleSheet) => {
+    addDecl(sheet.base);
+    Object.values(sheet.breakpoints ?? {}).forEach(addDecl);
+    Object.values(sheet.states ?? {}).forEach(addDecl);
+  };
   for (const token of Object.values(doc.tokens.typography.fontFamily)) {
     families.add(token.$value);
   }
   for (const node of Object.values(doc.nodes)) {
-    const raw = node.styles.base.fontFamily;
-    if (typeof raw === 'string') families.add(raw);
-    else if (raw && !isTokenRef(raw)) families.add(String(raw));
+    addSheet(node.styles);
+    if (node.type === 'instance') {
+      for (const override of Object.values(node.overrides)) addDecl(override.styles);
+    }
   }
-  return [...families].filter((f) => !SYSTEM_FAMILIES.has(f) && !f.includes(','));
+  for (const component of Object.values(doc.components)) {
+    for (const patches of Object.values(component.variants)) {
+      for (const patch of Object.values(patches)) addDecl(patch.styles);
+    }
+  }
+  return [...families].filter(
+    (f) => !SYSTEM_FAMILIES.has(f) && !f.includes(',') && !localFamilies.has(f),
+  );
 }
 
 /** Keep all document-referenced fonts loaded (call on doc changes). */

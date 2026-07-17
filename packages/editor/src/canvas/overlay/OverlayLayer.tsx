@@ -1,4 +1,5 @@
 import type { NodeId } from '@pitolet/schema';
+import { LockKeyhole } from 'lucide-react';
 import { useEffect, useRef, useSyncExternalStore } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { glowingNodeIds } from '../agentGlow.js';
@@ -7,6 +8,7 @@ import { startFrameResize, type ResizeHandle } from '../interaction/frameDrag.js
 import { interactionState } from '../interaction/interactionState.js';
 import { overlaySync } from '../overlaySync.js';
 import { useEditor } from '../../store/index.js';
+import { isEffectivelyLocked } from '../../store/locks.js';
 import './OverlayLayer.css';
 
 const HANDLES: ResizeHandle[] = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'];
@@ -21,10 +23,21 @@ export function OverlayLayer({ camera }: { camera: CameraController }) {
   const selection = useEditor((s) => s.selection);
   const hoveredId = useEditor((s) => s.hoveredId);
   const hasDoc = useEditor((s) => s.doc !== null);
+  const editingAvailable = useEditor((s) => !s.readOnly && s.connected && !s.switchingDocument);
+  const resizeFrameId = useEditor((s) => {
+    if (!s.doc || s.selection.length !== 1 || s.editingContext.breakpointId) return null;
+    const id = s.selection[0]!;
+    const node = s.doc.nodes[id];
+    return node?.type === 'frame' && node.parent === null ? id : null;
+  });
+  const lockedSelection = useEditor(
+    useShallow((s) =>
+      s.doc ? s.selection.filter((id) => isEffectivelyLocked(s.doc!, id)).sort() : [],
+    ),
+  );
 
   if (!hasDoc) return null;
   const showHover = hoveredId !== null && !selection.includes(hoveredId);
-  const singleFrame = selection.length === 1 ? selection[0]! : null;
 
   return (
     <>
@@ -35,7 +48,8 @@ export function OverlayLayer({ camera }: { camera: CameraController }) {
           id={id}
           kind="selected"
           camera={camera}
-          withHandles={id === singleFrame}
+          withHandles={id === resizeFrameId && editingAvailable && !lockedSelection.includes(id)}
+          locked={lockedSelection.includes(id)}
         />
       ))}
       <MarqueeBox />
@@ -110,9 +124,15 @@ function CommentPin({
       ref={ref}
       type="button"
       className="ptl-comment-pin"
-      title={`${count} comment${count === 1 ? '' : 's'} — click to view`}
+      title={`Open ${count} comment${count === 1 ? '' : 's'}`}
       onPointerDown={(e) => e.stopPropagation()}
-      onClick={() => useEditor.getState().select([id])}
+      onClick={() => {
+        const store = useEditor.getState();
+        store.select([id]);
+        store.setRightPanelMode('comments');
+        store.setShowComments(true);
+        store.setInspectorFocus('comments');
+      }}
     >
       {count}
     </button>
@@ -179,13 +199,23 @@ function TransientChrome() {
           <div
             key={`gx${i}`}
             className="ptl-snap-guide"
-            style={{ left: g.position, top: Math.min(g.start, g.end), width: 1, height: Math.abs(g.end - g.start) }}
+            style={{
+              left: g.position,
+              top: Math.min(g.start, g.end),
+              width: 1,
+              height: Math.abs(g.end - g.start),
+            }}
           />
         ) : (
           <div
             key={`gy${i}`}
             className="ptl-snap-guide"
-            style={{ top: g.position, left: Math.min(g.start, g.end), height: 1, width: Math.abs(g.end - g.start) }}
+            style={{
+              top: g.position,
+              left: Math.min(g.start, g.end),
+              height: 1,
+              width: Math.abs(g.end - g.start),
+            }}
           />
         ),
       )}
@@ -210,7 +240,10 @@ function TransientChrome() {
         />
       )}
       {ghost && (
-        <div className="ptl-drag-ghost" style={{ transform: `translate(${ghost.x}px, ${ghost.y}px)` }}>
+        <div
+          className="ptl-drag-ghost"
+          style={{ transform: `translate(${ghost.x}px, ${ghost.y}px)` }}
+        >
           {ghost.label}
         </div>
       )}
@@ -223,11 +256,13 @@ function NodeBox({
   kind,
   camera,
   withHandles = false,
+  locked = false,
 }: {
   id: NodeId;
   kind: 'hover' | 'selected';
   camera: CameraController;
   withHandles?: boolean;
+  locked?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const sizeRef = useRef<HTMLDivElement>(null);
@@ -250,6 +285,7 @@ function NodeBox({
       el.style.width = `${nodeRect.width}px`;
       el.style.height = `${nodeRect.height}px`;
       el.classList.toggle('ptl-nodebox--dragging', interactionState.dragging);
+      el.classList.toggle('ptl-nodebox--resizing', interactionState.gesture === 'resize');
       if (sizeRef.current) {
         const w = Math.round(nodeRect.width / camera.zoom);
         const h = Math.round(nodeRect.height / camera.zoom);
@@ -274,6 +310,8 @@ function NodeBox({
             <div
               key={handle}
               className={`ptl-handle ptl-handle--${handle}`}
+              data-resize-handle={handle}
+              title="Drag to resize. Shift keeps proportions. Alt resizes from the center."
               onPointerDown={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
@@ -283,6 +321,11 @@ function NodeBox({
           ))}
           <div ref={sizeRef} className="ptl-size-badge" />
         </>
+      )}
+      {locked && kind === 'selected' && (
+        <div className="ptl-lock-badge" title="Locked layer">
+          <LockKeyhole size={10} />
+        </div>
       )}
     </div>
   );

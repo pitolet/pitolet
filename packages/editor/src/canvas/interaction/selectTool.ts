@@ -1,10 +1,24 @@
 import type { NodeId } from '@pitolet/schema';
 import { useEditor } from '../../store/index.js';
+import { closestUnlockedAncestor, isEffectivelyLocked } from '../../store/locks.js';
 import type { CameraController } from '../CameraController.js';
 import { startFrameMove } from './frameDrag.js';
 import { startInFlowMove } from './inFlowMove.js';
-import { setMarquee } from './interactionState.js';
-import { resolveClickTarget, resolveDoubleClickTarget } from './selection.js';
+import {
+  clearInteractionCancel,
+  interactionState,
+  setDragging,
+  setInteractionCancel,
+  setMarquee,
+} from './interactionState.js';
+import { marqueeContains } from './marquee.js';
+import {
+  resolveClickTarget,
+  resolveDirectClickTarget,
+  resolveDoubleClickTarget,
+} from './selection.js';
+
+const MARQUEE_SLOP_PX = 4;
 
 /**
  * Select-tool pointer behavior:
@@ -29,6 +43,7 @@ export function onSelectPointerDown(
   camera: CameraController,
   viewport: HTMLElement,
 ): void {
+  camera.cancelAnimation();
   const store = useEditor.getState();
   const doc = store.doc;
   if (!doc) return;
@@ -44,7 +59,14 @@ export function onSelectPointerDown(
 
   if (rawHit) {
     // Frame labels always target the frame itself.
-    const targetId = labelFrame ?? resolveClickTarget(doc, rawHit, store.selection);
+    const directSelect = e.metaKey || e.ctrlKey;
+    const resolvedTarget =
+      labelFrame ??
+      (directSelect
+        ? resolveDirectClickTarget(doc, rawHit)
+        : resolveClickTarget(doc, rawHit, store.selection));
+    const targetId = closestUnlockedAncestor(doc, resolvedTarget);
+    if (!targetId) return;
     let selection: NodeId[];
     if (e.shiftKey) {
       selection = store.selection.includes(targetId)
@@ -55,7 +77,7 @@ export function onSelectPointerDown(
     }
     store.select(selection);
 
-    if (!e.shiftKey && selection.includes(targetId)) {
+    if (!store.readOnly && !e.shiftKey && selection.includes(targetId)) {
       const targetNode = doc.nodes[targetId];
       if (targetNode?.parent === null) {
         const frameIds = selection.filter((id) => doc.nodes[id]?.parent === null);
@@ -67,8 +89,9 @@ export function onSelectPointerDown(
     return;
   }
 
+  const previousSelection = store.selection;
   if (!e.shiftKey) store.select([]);
-  startMarquee(e, camera, viewport);
+  startMarquee(e, viewport, previousSelection);
 }
 
 export function onSelectDoubleClick(e: MouseEvent): void {
@@ -78,22 +101,31 @@ export function onSelectDoubleClick(e: MouseEvent): void {
   const rawHit = hitNodeId(e);
   if (!rawHit) return;
   const target = resolveDoubleClickTarget(doc, rawHit, store.selection);
+  if (isEffectivelyLocked(doc, target)) return;
   const node = doc.nodes[target];
   if (!node) return;
   store.select([target]);
   // Entering text edit mode is a mutation affordance — gate it in read-only.
-  if (node.type === 'text' && !store.readOnly) {
+  if (node.type === 'text' && !store.readOnly && store.connected && !store.switchingDocument) {
     store.setEditingText(target);
   }
 }
 
-function startMarquee(e: PointerEvent, camera: CameraController, viewport: HTMLElement): void {
+function startMarquee(e: PointerEvent, viewport: HTMLElement, previousSelection: NodeId[]): void {
   const viewportRect = viewport.getBoundingClientRect();
   const start = { x: e.clientX - viewportRect.left, y: e.clientY - viewportRect.top };
-  const baseSelection = e.shiftKey ? useEditor.getState().selection : [];
+  const baseSelection = e.shiftKey ? previousSelection : [];
+  let started = false;
 
   const onMove = (ev: PointerEvent) => {
     const current = { x: ev.clientX - viewportRect.left, y: ev.clientY - viewportRect.top };
+    if (!started && Math.hypot(current.x - start.x, current.y - start.y) <= MARQUEE_SLOP_PX) {
+      return;
+    }
+    if (!started) {
+      started = true;
+      setDragging(true, 'marquee');
+    }
     const rect = {
       x: Math.min(start.x, current.x),
       y: Math.min(start.y, current.y),
@@ -102,43 +134,60 @@ function startMarquee(e: PointerEvent, camera: CameraController, viewport: HTMLE
     };
     setMarquee(rect);
 
-    const worldTL = camera.toWorld({ x: rect.x, y: rect.y });
-    const worldBR = camera.toWorld({ x: rect.x + rect.width, y: rect.y + rect.height });
     const doc = useEditor.getState().doc;
     if (!doc) return;
+    const selectionRect = {
+      left: rect.x,
+      top: rect.y,
+      right: rect.x + rect.width,
+      bottom: rect.y + rect.height,
+    };
+    const crossing = current.x < start.x;
     const hits: NodeId[] = [];
     for (const id of doc.rootOrder) {
       const node = doc.nodes[id];
-      if (node?.type !== 'frame' || !node.visible) continue;
-      const height =
-        node.canvas.height === 'auto'
-          ? (document.querySelector(`[data-node-id="${id}"]`)?.getBoundingClientRect().height ??
-              0) / camera.zoom
-          : node.canvas.height;
-      const intersects =
-        node.canvas.x < worldBR.x &&
-        node.canvas.x + node.canvas.width > worldTL.x &&
-        node.canvas.y < worldBR.y &&
-        node.canvas.y + height > worldTL.y;
-      if (intersects) hits.push(id);
+      if (node?.type !== 'frame' || !node.visible || isEffectivelyLocked(doc, id)) continue;
+      const element = document.querySelector(`[data-node-id="${id}"]`);
+      if (!element) continue;
+      const bounds = element.getBoundingClientRect();
+      const candidate = {
+        left: bounds.left - viewportRect.left,
+        top: bounds.top - viewportRect.top,
+        right: bounds.right - viewportRect.left,
+        bottom: bounds.bottom - viewportRect.top,
+      };
+      if (marqueeContains(selectionRect, candidate, crossing)) hits.push(id);
     }
     useEditor.getState().select([...new Set([...baseSelection, ...hits])]);
   };
 
-  const onUp = () => {
+  const finish = (cancelled: boolean) => {
     window.removeEventListener('pointermove', onMove);
     window.removeEventListener('pointerup', onUp);
+    window.removeEventListener('pointercancel', cancel);
+    window.removeEventListener('blur', cancel);
+    clearInteractionCancel(cancel);
     setMarquee(null);
+    if (started) setDragging(false);
+    if (cancelled) useEditor.getState().select(previousSelection);
   };
 
+  const onUp = () => finish(false);
+  const cancel = () => finish(true);
+
+  setInteractionCancel(cancel);
   window.addEventListener('pointermove', onMove);
   window.addEventListener('pointerup', onUp);
+  window.addEventListener('pointercancel', cancel);
+  window.addEventListener('blur', cancel);
 }
 
 export function onSelectPointerMove(e: PointerEvent): void {
   const store = useEditor.getState();
   const doc = store.doc;
   if (!doc) return;
+  if (interactionState.dragging) return;
   const rawHit = hitFrameLabel(e) ?? hitNodeId(e);
-  store.setHover(rawHit ? resolveClickTarget(doc, rawHit, store.selection) : null);
+  const resolved = rawHit ? resolveClickTarget(doc, rawHit, store.selection) : null;
+  store.setHover(resolved ? closestUnlockedAncestor(doc, resolved) : null);
 }

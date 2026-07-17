@@ -41,6 +41,15 @@ export interface CapturedAsset {
   width: number;
   height: number;
   data: Buffer;
+  fontFace?: CapturedFontFace;
+}
+
+export interface CapturedFontFace {
+  family: string;
+  sourceUrl: string;
+  style?: string;
+  weight?: string;
+  display?: string;
 }
 
 export interface WebCapture {
@@ -50,6 +59,8 @@ export interface WebCapture {
   rootSelector: string;
   title: string;
   snapshots: CaptureSnapshot[];
+  /** Actual source media-query thresholds used for responsive style layers. */
+  breakpointWidths?: number[];
   cssVariables: Record<string, string>;
   fonts: string[];
   assets: CapturedAsset[];
@@ -96,5 +107,7 @@ export interface CaptureOptions {
   storageState?: string;
   waitFor?: string;
   viewports: number[];
+  /** Explicit opt-in for plaintext public source pages and resources. */
+  allowInsecureHttp?: boolean;
   onBrowserInstall?: () => void;
 }

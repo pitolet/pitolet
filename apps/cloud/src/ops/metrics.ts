@@ -1,3 +1,4 @@
+import { createHash, timingSafeEqual } from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { Pool } from 'pg';
 import type { WorkspaceManager } from '../cloud/workspaceManager.js';
@@ -58,28 +59,35 @@ export function handleMetricsRequest(
 ): boolean {
   const path = (req.url ?? '').split('?')[0];
   if (path !== '/internal/metrics') return false;
+  const headers = {
+    'content-type': 'application/json',
+    'cache-control': 'no-store',
+    'x-content-type-options': 'nosniff',
+  };
 
   // Endpoint is invisible unless an operator opted in with a token.
   if (!token) {
-    res.writeHead(404, { 'content-type': 'application/json' });
+    res.writeHead(404, headers);
     res.end(JSON.stringify({ error: 'not found' }));
     return true;
   }
 
   if (req.method !== 'GET') {
-    res.writeHead(405, { 'content-type': 'application/json' });
+    res.writeHead(405, headers);
     res.end(JSON.stringify({ error: 'method not allowed' }));
     return true;
   }
 
   const auth = req.headers.authorization ?? '';
-  if (auth !== `Bearer ${token}`) {
-    res.writeHead(401, { 'content-type': 'application/json' });
+  const expected = createHash('sha256').update(`Bearer ${token}`).digest();
+  const provided = createHash('sha256').update(auth).digest();
+  if (!timingSafeEqual(provided, expected)) {
+    res.writeHead(401, headers);
     res.end(JSON.stringify({ error: 'unauthorized' }));
     return true;
   }
 
-  res.writeHead(200, { 'content-type': 'application/json' });
+  res.writeHead(200, headers);
   res.end(JSON.stringify(collectMetrics(manager, pool)));
   return true;
 }

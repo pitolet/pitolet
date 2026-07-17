@@ -1,6 +1,6 @@
 // Copies the built editor SPA into the server's dist so the published `pitolet`
 // package can serve it. cli.ts probes for `<dist>/editor` first, so it lands there.
-import { cpSync, existsSync } from 'node:fs';
+import { copyFileSync, cpSync, existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -24,4 +24,5 @@ cpSync(editorDist, target, {
   recursive: true,
   filter: (src) => !src.endsWith('.map'),
 });
+copyFileSync(resolve(serverRoot, '../../LICENSE'), join(serverRoot, 'dist', 'LICENSE'));
 console.log(`[bundle-editor] copied editor → ${target} (sourcemaps stripped)`);

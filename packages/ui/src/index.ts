@@ -6,6 +6,12 @@ export { Kbd } from './primitives/Kbd.js';
 export { Separator } from './primitives/Separator.js';
 export { Tooltip, TooltipProvider, type TooltipProps } from './primitives/Tooltip.js';
 export { Select, type SelectOption, type SelectProps } from './primitives/Select.js';
+export {
+  SearchableSelect,
+  type SearchableSelectGroup,
+  type SearchableSelectOption,
+  type SearchableSelectProps,
+} from './primitives/SearchableSelect.js';
 export { Tabs, TabPanel, type TabDef, type TabsProps } from './primitives/Tabs.js';
 export { Popover, type PopoverProps } from './primitives/Popover.js';
 export { NumberScrubInput, type NumberScrubInputProps } from './primitives/NumberScrubInput.js';

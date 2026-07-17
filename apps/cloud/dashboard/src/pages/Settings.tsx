@@ -1,7 +1,7 @@
 import { Button, Select, Tabs } from '@pitolet/ui';
 import { ChevronLeft, FileText } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import type { Me, WorkspaceSummary } from '../api.js';
+import type { Me } from '../api.js';
 import { navigate } from '../router.js';
 import { Members } from './settings/Members.js';
 import { Tokens } from './settings/Tokens.js';
@@ -19,9 +19,7 @@ export function Settings({ me, workspaceId }: { me: Me; workspaceId: string }) {
     return (
       <>
         <BackLink />
-        <div className="ptl-dash-empty">
-          Workspace not found, or you don't have access to it.
-        </div>
+        <div className="ptl-dash-empty">Workspace not found, or you don't have access to it.</div>
       </>
     );
   }

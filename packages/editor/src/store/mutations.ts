@@ -16,6 +16,29 @@ type Doc = Draft<PitoletDocument>;
  */
 
 export function deleteNodes(draft: Doc, ids: NodeId[]): void {
+  // A component definition owns its master root. Removing that frame through
+  // the generic layer action would leave dangling definitions and instances.
+  if (
+    ids.some((id) => {
+      const node = draft.nodes[id];
+      return node?.type === 'frame' && Boolean(node.isComponentMaster);
+    })
+  ) {
+    return;
+  }
+  const requestedDeletion = new Set(
+    ids.flatMap((id) => subtreeIds(draft.nodes as PitoletDocument['nodes'], id)),
+  );
+  // The explicit content root is part of the component contract. Removing it
+  // would make every instance impossible to render, so require deleting the
+  // component through its dedicated workflow instead.
+  if (
+    Object.values(draft.components).some((component) =>
+      requestedDeletion.has(component.contentRootId),
+    )
+  ) {
+    return;
+  }
   const allDeleted: NodeId[] = [];
   for (const id of ids) {
     const node = draft.nodes[id];
@@ -32,6 +55,17 @@ export function deleteNodes(draft: Doc, ids: NodeId[]): void {
     }
   }
   pruneCommentsForNodes(draft.comments, allDeleted);
+  const deleted = new Set(allDeleted);
+  for (const component of Object.values(draft.components)) {
+    for (const [key, patches] of Object.entries(component.variants)) {
+      for (const id of deleted) delete patches[id];
+      if (Object.keys(patches).length === 0) delete component.variants[key];
+    }
+  }
+  for (const node of Object.values(draft.nodes)) {
+    if (node.type !== 'instance') continue;
+    for (const id of deleted) delete node.overrides[id];
+  }
 }
 
 export function moveFrames(draft: Doc, ids: NodeId[], dx: number, dy: number): void {
@@ -49,6 +83,18 @@ export function moveFrames(draft: Doc, ids: NodeId[], dx: number, dy: number): v
  * +24px canvas offset; in-flow nodes insert right after their source.
  */
 export function duplicateNodes(draft: Doc, ids: NodeId[]): NodeId[] {
+  ids = selectionRoots(draft.nodes as PitoletDocument['nodes'], ids);
+  // Cloning a master would duplicate its isComponentMaster marker without a
+  // matching component definition. Component duplication needs a dedicated
+  // workflow that can remap the full definition and all variant references.
+  if (
+    ids.some((id) => {
+      const node = draft.nodes[id];
+      return node?.type === 'frame' && Boolean(node.isComponentMaster);
+    })
+  ) {
+    return [];
+  }
   const newIds: NodeId[] = [];
   for (const id of ids) {
     const source = draft.nodes[id];
@@ -76,6 +122,22 @@ export function duplicateNodes(draft: Doc, ids: NodeId[]): NodeId[] {
     newIds.push(clone.rootId);
   }
   return newIds;
+}
+
+/** Remove duplicates and descendants whose ancestor is already selected. */
+export function selectionRoots(nodes: PitoletDocument['nodes'], ids: NodeId[]): NodeId[] {
+  const unique = [...new Set(ids)].filter((id) => Boolean(nodes[id]));
+  const selected = new Set(unique);
+  return unique.filter((id) => {
+    const visited = new Set<NodeId>();
+    let parent = nodes[id]?.parent ?? null;
+    while (parent && !visited.has(parent)) {
+      if (selected.has(parent)) return false;
+      visited.add(parent);
+      parent = nodes[parent]?.parent ?? null;
+    }
+    return true;
+  });
 }
 
 /**

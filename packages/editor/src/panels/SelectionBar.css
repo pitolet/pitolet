@@ -1,0 +1,147 @@
+.ptl-selection-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--ptl-space-2);
+  height: 28px;
+  padding: 0 var(--ptl-space-2) 0 var(--ptl-space-3);
+  flex-shrink: 0;
+  border-top: 1px solid var(--ptl-border);
+  background: var(--ptl-bg-1);
+  color: var(--ptl-text-3);
+  font-size: var(--ptl-text-xs);
+  user-select: none;
+}
+
+.ptl-selection-path {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.ptl-selection-path-part {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+.ptl-selection-path-part:last-child {
+  flex-shrink: 0;
+}
+
+.ptl-selection-crumb {
+  min-width: 0;
+  max-width: 140px;
+  height: 20px;
+  padding: 0 5px;
+  overflow: hidden;
+  border: none;
+  border-radius: var(--ptl-radius-md);
+  background: transparent;
+  color: var(--ptl-text-3);
+  font: inherit;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ptl-selection-crumb:hover {
+  background: var(--ptl-bg-3);
+  color: var(--ptl-text-1);
+}
+
+.ptl-selection-crumb--current {
+  color: var(--ptl-text-1);
+  font-weight: 550;
+}
+
+.ptl-selection-empty,
+.ptl-selection-count {
+  color: var(--ptl-text-2);
+}
+
+.ptl-selection-count {
+  flex: 1;
+}
+
+.ptl-selection-actions {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  flex-shrink: 0;
+}
+
+.ptl-selection-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: var(--ptl-radius-md);
+  background: transparent;
+  color: var(--ptl-text-3);
+}
+
+.ptl-selection-action:hover:not(:disabled),
+.ptl-selection-action:focus-visible {
+  background: var(--ptl-bg-3);
+  color: var(--ptl-text-1);
+}
+
+.ptl-selection-action--active {
+  background: color-mix(in srgb, var(--ptl-accent) 12%, transparent);
+  color: var(--ptl-accent);
+}
+
+.ptl-selection-action--danger:hover:not(:disabled),
+.ptl-selection-action--danger:focus-visible {
+  background: color-mix(in srgb, var(--ptl-danger) 12%, transparent);
+  color: var(--ptl-danger);
+}
+
+.ptl-selection-action:disabled {
+  opacity: 0.32;
+}
+
+.ptl-selection-action-separator {
+  width: 1px;
+  height: 12px;
+  margin: 0 3px;
+  background: var(--ptl-border);
+}
+
+.ptl-selection-hint {
+  margin-left: auto;
+}
+
+.ptl-selection-focus {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  flex-shrink: 0;
+  border: none;
+  border-radius: var(--ptl-radius-md);
+  background: transparent;
+  color: var(--ptl-text-3);
+}
+
+.ptl-selection-focus:hover {
+  background: var(--ptl-bg-3);
+  color: var(--ptl-text-1);
+}
+
+@media (max-width: 720px) {
+  .ptl-selection-hint,
+  .ptl-selection-path-part:not(:last-child),
+  .ptl-selection-action-separator {
+    display: none;
+  }
+}

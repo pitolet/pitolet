@@ -5,18 +5,26 @@ on:
     tags:
       - 'v*'
 
-# Publishing uses npm Trusted Publishing (OIDC) — no NPM_TOKEN secret.
+# Publishing uses npm Trusted Publishing (OIDC), not an NPM_TOKEN secret.
 # Configured on npmjs.com: package pitolet → Settings → Trusted Publisher →
 # GitHub Actions, org pitolet, repo pitolet, workflow release.yml.
 permissions:
   contents: read
-  id-token: write # OIDC exchange for trusted publishing + provenance
+  id-token: write
+  packages: write
+
+concurrency:
+  group: npm-release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
+      - name: Set browser QA artifact directory
+        run: echo "PITOLET_QA_ARTIFACT_DIR=$RUNNER_TEMP/pitolet-browser-qa" >> "$GITHUB_ENV"
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -24,40 +32,61 @@ jobs:
           cache: pnpm
           registry-url: https://registry.npmjs.org
 
-      # Trusted publishing needs a recent npm (OIDC support); runners ship older.
-      - run: npm install -g npm@latest
+      - name: Verify tag and package versions
+        id: release
+        run: node scripts/check-release-version.mjs "$GITHUB_REF_NAME"
 
+      # Trusted publishing needs npm 11.5.1 or newer. Pin the tool instead of
+      # installing a mutable "latest" release in the publishing job.
+      - name: Install trusted-publishing npm client
+        run: npm install --global npm@11.6.2
+
+      - name: Locate PostgreSQL binaries (cloud tests spin ephemeral instances)
+        run: |
+          if ! command -v pg_config >/dev/null 2>&1; then
+            sudo apt-get update && sudo apt-get install -y postgresql
+          fi
+          echo "PGBIN=$(pg_config --bindir)" >> "$GITHUB_ENV"
       - run: pnpm install --frozen-lockfile
-      - name: Install Chromium for website-import end-to-end tests
+      - name: Install Chromium for website-import and landing-page tests
         run: node packages/server/node_modules/playwright-core/cli.js install --with-deps chromium
 
-      # Never publish untested.
-      - run: pnpm -r typecheck
-      - run: pnpm vitest run
-      - run: pnpm build
-
-      - name: Show tarball contents
-        working-directory: packages/server
-        run: npm pack --dry-run
-
-      # Install the REAL tarball into a scratch project and boot the bin —
-      # catches manifest bugs npm pack can't (workspace: deps, missing bin,
-      # broken entry). v0.1.0 shipped broken because this step didn't exist.
-      - name: Tarball install smoke test
+      - name: Run release quality gates
+        run: pnpm verify
+      - name: Keep browser QA screenshots and axe reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-browser-qa-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/pitolet-browser-qa
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Check AGPL boundary
         run: |
-          cd packages/server && npm pack --pack-destination /tmp && cd /tmp
-          mkdir smoke && cd smoke && npm init -y > /dev/null
-          npm install /tmp/pitolet-*.tgz
-          PITOLET_PORT=4933 ./node_modules/.bin/pitolet --data ./data &
-          SERVER=$!
-          for i in $(seq 1 20); do
-            curl -sf localhost:4933/api/health && break
-            sleep 0.5
-          done
-          curl -sf localhost:4933/api/health | grep -q '"ok":true'
-          curl -sf localhost:4933/ | grep -q '<title>Pitolet</title>'
-          kill $SERVER
+          if grep -rE "@pitolet/cloud|apps/cloud" packages/ --include='*.ts' --include='*.tsx' --include='*.json'; then
+            echo "::error::AGPL boundary violation: packages/ references commercial cloud code"
+            exit 1
+          fi
 
-      - name: Publish to npm (OIDC trusted publishing)
+      - name: Publish to npm with provenance
         working-directory: packages/server
-        run: npm publish
+        env:
+          PRERELEASE: ${{ steps.release.outputs.prerelease }}
+        run: |
+          if [ "$PRERELEASE" = "true" ]; then
+            npm_tag=next
+          else
+            npm_tag=latest
+          fi
+          npm publish --access public --provenance --tag "$npm_tag"
+
+  docker:
+    name: Publish matching Docker images
+    needs: publish
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/docker.yml
+    with:
+      tag: ${{ github.ref_name }}
+    secrets: inherit

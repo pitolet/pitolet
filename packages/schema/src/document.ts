@@ -2,7 +2,7 @@ import type { AssetId, ComponentId, PitoletNode, NodeId } from './nodes.js';
 import type { ComponentDef } from './components.js';
 import type { TokenSet } from './tokens.js';
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 export interface Breakpoint {
   id: string;
@@ -16,6 +16,17 @@ export interface Asset {
   width: number;
   height: number;
   mime: string;
+  /**
+   * Present for imported web-font files. Keeping the face descriptors beside
+   * the content-addressed asset lets the editor and generated projects emit
+   * a local @font-face rule without hotlinking the source site.
+   */
+  fontFace?: {
+    family: string;
+    style?: string;
+    weight?: string;
+    display?: string;
+  };
 }
 
 /**

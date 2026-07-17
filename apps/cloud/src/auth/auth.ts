@@ -21,20 +21,34 @@ export interface CloudAuthConfig {
   baseURL: string;
   /** Signing secret (env BETTER_AUTH_SECRET). */
   secret: string;
+  /**
+   * Password accounts must prove control of their email before receiving a
+   * session. Defaults to true for public HTTPS origins and false for local
+   * HTTP development/tests.
+   */
+  requireEmailVerification?: boolean;
 }
 
 export type CloudAuth = ReturnType<typeof createAuth>;
 
+type AuthEmail = {
+  email: string;
+  subject: string;
+  text: string;
+  purpose: 'magic link' | 'email verification';
+};
+
 /**
- * Magic-link delivery. Production (RESEND_API_KEY set): POST to Resend —
- * I6 fills in the template/domain; the transport is already correct.
- * Otherwise: log the URL (local dev / tests).
+ * Auth links are bearer credentials. They must never be printed to stdout,
+ * even in development where logs are routinely copied into bug reports.
  */
-async function sendMagicLinkEmail(data: { email: string; url: string }): Promise<void> {
+async function deliverAuthEmail(data: AuthEmail): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
-    console.log(`[pitolet-cloud] magic link for ${data.email}: ${data.url}`);
-    return;
+    console.warn(
+      `[pitolet-cloud] ${data.purpose} requested for ${data.email}, but RESEND_API_KEY is not configured`,
+    );
+    throw new Error('email delivery is not configured');
   }
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -42,12 +56,62 @@ async function sendMagicLinkEmail(data: { email: string; url: string }): Promise
     body: JSON.stringify({
       from: process.env.RESEND_FROM ?? 'Pitolet <login@pitolet.com>',
       to: [data.email],
-      subject: 'Sign in to Pitolet',
-      text: `Click to sign in: ${data.url}\n\nThis link expires in 5 minutes. If you didn't request it, ignore this email.`,
+      subject: data.subject,
+      text: data.text,
     }),
   });
   if (!res.ok) {
     throw new Error(`Resend rejected magic-link email: ${res.status} ${await res.text()}`);
+  }
+}
+
+async function sendMagicLinkEmail(data: { email: string; url: string }): Promise<void> {
+  await deliverAuthEmail({
+    email: data.email,
+    purpose: 'magic link',
+    subject: 'Sign in to Pitolet',
+    text: `Open this link to sign in to Pitolet:\n\n${data.url}\n\nIt expires in 5 minutes. If you did not request it, you can ignore this email.`,
+  });
+}
+
+async function sendVerificationEmail(data: {
+  user: { email: string };
+  url: string;
+}): Promise<void> {
+  await deliverAuthEmail({
+    email: data.user.email,
+    purpose: 'email verification',
+    subject: 'Verify your Pitolet email',
+    text: `Open this link to verify your email address:\n\n${data.url}\n\nIf you did not create a Pitolet account, you can ignore this email.`,
+  });
+}
+
+export function requiresEmailVerification(config: CloudAuthConfig): boolean {
+  if (process.env.NODE_ENV === 'production') return true;
+  return config.requireEmailVerification ?? config.baseURL.startsWith('https://');
+}
+
+export function validateCloudAuthConfig(config: CloudAuthConfig): void {
+  let publicUrl: URL;
+  try {
+    publicUrl = new URL(config.baseURL);
+  } catch {
+    throw new Error('BETTER_AUTH_URL must be an absolute HTTP(S) URL');
+  }
+  if (
+    !['http:', 'https:'].includes(publicUrl.protocol) ||
+    publicUrl.username ||
+    publicUrl.password ||
+    publicUrl.search ||
+    publicUrl.hash
+  ) {
+    throw new Error('BETTER_AUTH_URL must be a credential-free HTTP(S) origin');
+  }
+  if (publicUrl.pathname !== '/' && publicUrl.pathname !== '') {
+    throw new Error('BETTER_AUTH_URL must not contain a path');
+  }
+  if (process.env.NODE_ENV === 'production' && publicUrl.protocol !== 'https:') {
+    throw new Error('BETTER_AUTH_URL must use HTTPS in production');
   }
 }
 
@@ -70,6 +134,8 @@ function socialProviders(): BetterAuthOptions['socialProviders'] {
 }
 
 function buildOptions(config: CloudAuthConfig) {
+  validateCloudAuthConfig(config);
+  const requireEmailVerification = requiresEmailVerification(config);
   return {
     // Kysely wraps the shared pg Pool — one pool for auth + app queries.
     database: config.pool,
@@ -78,7 +144,18 @@ function buildOptions(config: CloudAuthConfig) {
     // better-auth default /api/auth).
     basePath: '/auth',
     secret: config.secret,
-    emailAndPassword: { enabled: true },
+    emailAndPassword: {
+      enabled: true,
+      requireEmailVerification,
+      autoSignIn: !requireEmailVerification,
+    },
+    emailVerification: {
+      sendVerificationEmail,
+      sendOnSignUp: requireEmailVerification,
+      sendOnSignIn: requireEmailVerification,
+      autoSignInAfterVerification: true,
+      expiresIn: 60 * 60,
+    },
     // Login/auth endpoint rate limiting is better-auth's built-in limiter
     // (per-IP windows + stricter per-path rules for sign-in). Its default is
     // enabled-only-when-NODE_ENV=production; pin it to the deployment shape

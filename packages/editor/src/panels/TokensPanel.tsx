@@ -2,16 +2,16 @@ import {
   colorToCss,
   colorToHex,
   mergeParsedTokens,
-  parseColor,
   parseCssTokens,
   px,
   type Color,
   type Length,
   type TokenSet,
 } from '@pitolet/schema';
-import { Button, IconButton, NumberScrubInput, Popover, Tooltip } from '@pitolet/ui';
+import { Button, IconButton, NumberScrubInput, Tooltip } from '@pitolet/ui';
 import { Download, Plus, Trash2 } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
+import { ColorField } from '../inspector/fields.js';
 import { useEditor } from '../store/index.js';
 import { useCoalesceKey } from '../inspector/useStyle.js';
 import './TokensPanel.css';
@@ -23,35 +23,50 @@ import './TokensPanel.css';
 export function TokensPanel() {
   const tokens = useEditor((s) => s.doc?.tokens);
   const connectionError = useEditor((s) => s.connectionError);
+  const readOnly = useEditor((s) => s.readOnly);
+  const connected = useEditor((s) => s.connected);
+  const switchingDocument = useEditor((s) => s.switchingDocument);
+  const editingDisabled = readOnly || !connected || switchingDocument;
   if (!tokens) {
     return <div className="ptl-panel-empty">{connectionError ?? 'Connecting…'}</div>;
   }
 
   return (
     <div className="ptl-tokens">
-      <ImportTokens />
-      <ColorTokens colors={tokens.color} />
-      <LengthTokens
-        title="Spacing"
-        category="spacing"
-        entries={tokens.spacing}
-        newName={(n) => String(n)}
-        newValue={px(4)}
-      />
-      <LengthTokens
-        title="Radius"
-        category="radius"
-        entries={tokens.radius}
-        newName={(n) => `radius-${n}`}
-        newValue={px(4)}
-      />
-      <LengthTokens
-        title="Font size"
-        category="typography.fontSize"
-        entries={tokens.typography.fontSize}
-        newName={(n) => `size-${n}`}
-        newValue={px(16)}
-      />
+      {editingDisabled && (
+        <div className="ptl-tokens-disabled-note" role="status">
+          {readOnly
+            ? 'Tokens are read-only'
+            : switchingDocument
+              ? 'Opening document'
+              : 'Token editing resumes after reconnecting'}
+        </div>
+      )}
+      <fieldset className="ptl-tokens-controls" disabled={editingDisabled}>
+        <ImportTokens />
+        <ColorTokens colors={tokens.color} />
+        <LengthTokens
+          title="Spacing"
+          category="spacing"
+          entries={tokens.spacing}
+          newName={(n) => String(n)}
+          newValue={px(4)}
+        />
+        <LengthTokens
+          title="Radius"
+          category="radius"
+          entries={tokens.radius}
+          newName={(n) => `radius-${n}`}
+          newValue={px(4)}
+        />
+        <LengthTokens
+          title="Font size"
+          category="typography.fontSize"
+          entries={tokens.typography.fontSize}
+          newName={(n) => `size-${n}`}
+          newValue={px(16)}
+        />
+      </fieldset>
     </div>
   );
 }
@@ -70,14 +85,18 @@ function ImportTokens() {
   const runImport = (text: string) => {
     const parsed = parseCssTokens(text);
     if (parsed.count === 0) {
-      setResult('No recognizable tokens found (--color-*, --spacing-*, --radius-*, --shadow-*, --font-*, --text-*).');
+      setResult(
+        'No recognizable tokens found (--color-*, --spacing-*, --radius-*, --shadow-*, --font-*, --text-*).',
+      );
       return;
     }
     useEditor.getState().dispatchEdit(`Import ${parsed.count} design tokens`, (draft) => {
       mergeParsedTokens(draft.tokens, parsed.tokens);
     });
     setResult(
-      `Imported ${parsed.count} token${parsed.count === 1 ? '' : 's'}${parsed.skipped.length > 0 ? ` · ${parsed.skipped.length} skipped` : ''}.`,
+      `Imported ${parsed.count} token${parsed.count === 1 ? '' : 's'}.${
+        parsed.skipped.length > 0 ? ` ${parsed.skipped.length} skipped.` : ''
+      }`,
     );
     setCss('');
   };
@@ -87,7 +106,15 @@ function ImportTokens() {
       <div className="ptl-token-header">
         <span>Import</span>
         <Tooltip content="Import tokens from your project's CSS">
-          <IconButton label="Import tokens" size="sm" active={open} onClick={() => { setOpen(!open); setResult(null); }}>
+          <IconButton
+            label="Import tokens"
+            size="sm"
+            active={open}
+            onClick={() => {
+              setOpen(!open);
+              setResult(null);
+            }}
+          >
             <Download size={12} />
           </IconButton>
         </Tooltip>
@@ -96,7 +123,9 @@ function ImportTokens() {
         <div className="ptl-token-import">
           <textarea
             className="ptl-token-import-input"
-            placeholder={'Paste CSS with design tokens, e.g.\n@theme {\n  --color-brand: #6d28d9;\n  --spacing-gutter: 1.5rem;\n}'}
+            placeholder={
+              'Paste CSS with design tokens, e.g.\n@theme {\n  --color-brand: #6d28d9;\n  --spacing-gutter: 1.5rem;\n}'
+            }
             rows={5}
             value={css}
             onChange={(e) => setCss(e.target.value)}
@@ -106,7 +135,12 @@ function ImportTokens() {
             <Button size="sm" variant="ghost" onClick={() => fileRef.current?.click()}>
               Choose file…
             </Button>
-            <Button size="sm" variant="primary" disabled={!css.trim()} onClick={() => runImport(css)}>
+            <Button
+              size="sm"
+              variant="primary"
+              disabled={!css.trim()}
+              onClick={() => runImport(css)}
+            >
               Import
             </Button>
           </div>
@@ -118,7 +152,10 @@ function ImportTokens() {
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (!file) return;
-              void file.text().then((text) => runImport(text));
+              void file
+                .text()
+                .then((text) => runImport(text))
+                .catch(() => setResult('Couldn’t read that CSS file. Try another file.'));
               e.target.value = '';
             }}
           />
@@ -130,16 +167,15 @@ function ImportTokens() {
 }
 
 function ColorTokens({ colors }: { colors: TokenSet['color'] }) {
-  const keys = useCoalesceKey();
   const [adding, setAdding] = useState(false);
 
-  const write = (name: string, value: Color, coalesce: boolean) => {
+  const write = (name: string, value: Color, coalesceKey: string) => {
     useEditor.getState().dispatchEdit(
       'Edit color token',
       (draft) => {
         draft.tokens.color[name] = { ...draft.tokens.color[name], $value: value };
       },
-      coalesce ? { coalesceKey: keys.current() } : undefined,
+      { coalesceKey },
     );
   };
 
@@ -155,24 +191,22 @@ function ColorTokens({ colors }: { colors: TokenSet['color'] }) {
       </div>
       {Object.entries(colors).map(([name, token]) => (
         <div key={name} className="ptl-token-row">
-          <Popover
+          <ColorField
+            value={token.$value}
+            mixed={false}
+            onWrite={(color, coalesceKey) => write(name, color, coalesceKey)}
             trigger={
-              <button type="button" className="ptl-token-swatch-btn">
-                <span className="ptl-token-swatch" style={{ background: colorToCss(token.$value) }} />
+              <button
+                type="button"
+                className="ptl-token-swatch-btn"
+                aria-label={`Edit ${name} color token`}
+              >
+                <span className="ptl-token-swatch">
+                  <span style={{ background: colorToCss(token.$value) }} />
+                </span>
               </button>
             }
-          >
-            <input
-              type="color"
-              className="ptl-token-color-input"
-              value={colorToHex(token.$value).slice(0, 7)}
-              onPointerDown={() => keys.begin()}
-              onChange={(e) => {
-                const parsed = parseColor(e.target.value);
-                if (parsed) write(name, parsed, true);
-              }}
-            />
-          </Popover>
+          />
           <span className="ptl-token-name" title={`color.${name}`}>
             {name}
           </span>
@@ -183,6 +217,7 @@ function ColorTokens({ colors }: { colors: TokenSet['color'] }) {
       {adding && (
         <NewTokenRow
           placeholder="token-name"
+          existingNames={Object.keys(colors)}
           onSubmit={(name) => {
             setAdding(false);
             if (!name) return;
@@ -256,6 +291,7 @@ function LengthTokens({
       {adding && (
         <NewTokenRow
           placeholder={newName(Object.keys(entries).length + 1)}
+          existingNames={Object.keys(entries)}
           onSubmit={(name) => {
             setAdding(false);
             if (!name) return;
@@ -271,23 +307,52 @@ function LengthTokens({
 
 function NewTokenRow({
   placeholder,
+  existingNames,
   onSubmit,
 }: {
   placeholder: string;
+  existingNames: string[];
   onSubmit: (name: string) => void;
 }) {
+  const [error, setError] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const errorId = useId();
+  const submit = (name: string) => {
+    if (!name) {
+      onSubmit('');
+      return;
+    }
+    if (existingNames.includes(name)) {
+      setError(`“${name}” already exists`);
+      requestAnimationFrame(() => inputRef.current?.focus());
+      return;
+    }
+    onSubmit(name);
+  };
   return (
-    <div className="ptl-token-row">
+    <div className="ptl-token-new-wrap">
       <input
+        ref={inputRef}
         className="ptl-token-new"
         placeholder={placeholder}
         autoFocus
-        onBlur={(e) => onSubmit(e.target.value.trim())}
+        aria-invalid={Boolean(error)}
+        aria-describedby={error ? errorId : undefined}
+        onChange={() => setError(null)}
+        onBlur={(e) => submit(e.target.value.trim())}
         onKeyDown={(e) => {
           if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
-          if (e.key === 'Escape') onSubmit('');
+          if (e.key === 'Escape') {
+            e.stopPropagation();
+            onSubmit('');
+          }
         }}
       />
+      {error && (
+        <span id={errorId} className="ptl-token-new-error" role="alert">
+          {error}
+        </span>
+      )}
     </div>
   );
 }

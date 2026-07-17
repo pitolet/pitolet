@@ -7,5 +7,7 @@ coverage/
 .vite/
 pitolet-data/
 pitolet-export/
+deploy/.env
+deploy/backup-ssh/
 *.local
 .claude/settings.local.json

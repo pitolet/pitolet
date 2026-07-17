@@ -1,6 +1,5 @@
 import { attach, createDocument, createElement, createFrame, createText, px } from './factory.js';
 import type { PitoletDocument } from './document.js';
-import { sides } from './styles.js';
 
 const t = (token: string) => ({ $token: token });
 const sp = (name: string) => ({ $token: `spacing.${name}` });
@@ -213,7 +212,12 @@ export function createSampleDocument(): PitoletDocument {
           gap: { row: sp('2'), column: sp('2') },
           padding: { top: sp('6'), right: sp('6'), bottom: sp('6'), left: sp('6') },
           fills: [{ type: 'solid', color: t('color.muted') }],
-          radius: { tl: t('radius.lg'), tr: t('radius.lg'), br: t('radius.lg'), bl: t('radius.lg') },
+          radius: {
+            tl: t('radius.lg'),
+            tr: t('radius.lg'),
+            br: t('radius.lg'),
+            bl: t('radius.lg'),
+          },
           width: 'fill',
         },
       }),

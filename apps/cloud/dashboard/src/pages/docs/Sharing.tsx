@@ -17,8 +17,7 @@ export function Sharing({ ws, docId }: { ws: WorkspaceSummary; docId: string }) 
   if (!canManage) {
     return (
       <div className="ptl-dash-notice">
-        Your role is read-only. Only an editor or owner can create or revoke
-        sharing links.
+        Your role is read-only. Only an editor or owner can create or revoke sharing links.
       </div>
     );
   }
@@ -78,8 +77,7 @@ function SharingManager({ ws, docId }: { ws: WorkspaceSummary; docId: string }) 
         <div className="ptl-dash-empty">Loading links…</div>
       ) : links.length === 0 ? (
         <div className="ptl-dash-empty">
-          No active share links. Anyone with a link gets read-only access to this
-          document.
+          No active share links. Anyone with a link gets read-only access to this document.
         </div>
       ) : (
         <div className="ptl-dash-list">

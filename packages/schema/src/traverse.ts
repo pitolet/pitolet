@@ -4,12 +4,18 @@ import type { PitoletNode, NodeId } from './nodes.js';
 
 type NodeMap = Record<NodeId, PitoletNode>;
 
-/** Depth-first ids of a subtree, root included. Tolerates dangling child ids. */
+/**
+ * Depth-first ids of a subtree, root included. Tolerates dangling child ids
+ * and malformed cycles/duplicate child references without looping forever.
+ */
 export function subtreeIds(nodes: NodeMap, rootId: NodeId): NodeId[] {
   const out: NodeId[] = [];
   const stack: NodeId[] = [rootId];
+  const visited = new Set<NodeId>();
   while (stack.length > 0) {
     const id = stack.pop()!;
+    if (visited.has(id)) continue;
+    visited.add(id);
     const node = nodes[id];
     if (!node) continue;
     out.push(id);
@@ -21,8 +27,10 @@ export function subtreeIds(nodes: NodeMap, rootId: NodeId): NodeId[] {
 /** Ancestor chain from immediate parent up to the root frame. */
 export function ancestors(nodes: NodeMap, id: NodeId): NodeId[] {
   const out: NodeId[] = [];
+  const visited = new Set<NodeId>();
   let current = nodes[id]?.parent ?? null;
-  while (current !== null) {
+  while (current !== null && !visited.has(current)) {
+    visited.add(current);
     out.push(current);
     current = nodes[current]?.parent ?? null;
   }
@@ -36,7 +44,10 @@ export function isAncestor(nodes: NodeMap, maybeAncestor: NodeId, id: NodeId): b
 /** The root frame containing a node (itself if top-level). */
 export function rootFrameOf(nodes: NodeMap, id: NodeId): NodeId {
   let current = id;
+  const visited = new Set<NodeId>();
   for (;;) {
+    if (visited.has(current)) return current;
+    visited.add(current);
     const parent = nodes[current]?.parent;
     if (parent === null || parent === undefined) return current;
     current = parent;

@@ -8,7 +8,11 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createAuth, ensureAuthSchema, type CloudAuth } from '../src/auth/auth.js';
-import type { PaddleConfig } from '../src/billing/paddle.js';
+import {
+  loadPaddleConfig,
+  workspaceCheckoutSignature,
+  type PaddleConfig,
+} from '../src/billing/paddle.js';
 import { runMigrations } from '../src/db/migrate.js';
 import { createCloudServer, type CloudServer } from '../src/server.js';
 import { startEphemeralPg, type EphemeralPg } from './harness/ephemeralPg.js';
@@ -32,6 +36,7 @@ const BILLING: PaddleConfig = {
   apiKey: 'pdl_sdbx_test_apikey',
   webhookSecret: 'pdl_ntfset_test_webhook_secret',
   priceIdPro: 'pri_test_pro_monthly',
+  productIdPro: 'pro_test_pitolet_pro',
   env: 'sandbox',
   apiBase: 'https://sandbox-api.paddle.com',
 };
@@ -126,6 +131,9 @@ function subscriptionEvent(input: {
   status?: string;
   occurredAt?: string;
   eventId?: string;
+  priceId?: string;
+  productId?: string;
+  workspaceSig?: string | null;
 }): { event_id: string; body: string } {
   const event_id = input.eventId ?? `evt_test_${++eventSeq}`;
   const body = JSON.stringify({
@@ -137,12 +145,28 @@ function subscriptionEvent(input: {
       id: 'sub_test_1',
       customer_id: 'ctm_test_1',
       status: input.status ?? 'active',
-      custom_data: { workspaceId: input.workspaceId },
+      custom_data: {
+        workspaceId: input.workspaceId,
+        workspaceSig:
+          input.workspaceSig === null
+            ? undefined
+            : (input.workspaceSig ??
+              (typeof input.workspaceId === 'string'
+                ? workspaceCheckoutSignature(BILLING.webhookSecret, input.workspaceId)
+                : 'invalid')),
+      },
       current_billing_period: {
         starts_at: '2026-07-01T00:00:00Z',
         ends_at: '2026-08-01T00:00:00Z',
       },
-      items: [{ price: { id: BILLING.priceIdPro } }],
+      items: [
+        {
+          price: {
+            id: input.priceId ?? BILLING.priceIdPro,
+            product_id: input.productId ?? BILLING.productIdPro,
+          },
+        },
+      ],
     },
   });
   return { event_id, body };
@@ -203,7 +227,9 @@ beforeAll(async () => {
     dashboardDist: null,
     billing: null,
   });
-  await new Promise<void>((resolve) => noBilling.server.listen(noBillingPort, '127.0.0.1', resolve));
+  await new Promise<void>((resolve) =>
+    noBilling.server.listen(noBillingPort, '127.0.0.1', resolve),
+  );
 
   alice = await signUp('alice@acme.test', 'Alice');
   bob = await signUp('bob@acme.test', 'Bob');
@@ -291,6 +317,39 @@ describe('webhook signature verification', () => {
     const body = JSON.stringify({ event_type: 'subscription.activated' }); // no event_id
     const res = await postWebhook(body);
     expect(res.status).toBe(400);
+  });
+
+  it('answers 400 when a subscription event has no subscription id or status', async () => {
+    const event = JSON.parse(subscriptionEvent({ workspaceId: acme.id }).body) as {
+      data: Record<string, unknown>;
+    };
+    delete event.data.id;
+    const noId = JSON.stringify(event);
+    expect((await postWebhook(noId)).status).toBe(400);
+
+    const second = JSON.parse(subscriptionEvent({ workspaceId: acme.id }).body) as {
+      data: Record<string, unknown>;
+    };
+    delete second.data.status;
+    const noStatus = JSON.stringify(second);
+    expect((await postWebhook(noStatus)).status).toBe(400);
+  });
+});
+
+describe('billing configuration', () => {
+  it('fails closed on partial or implicit production configuration', () => {
+    expect(() => loadPaddleConfig({ NODE_ENV: 'production', PADDLE_API_KEY: 'partial' })).toThrow(
+      /partial Paddle configuration/,
+    );
+    expect(() => loadPaddleConfig({ NODE_ENV: 'production' })).toThrow(
+      /PADDLE_BILLING_DISABLED=true/,
+    );
+    expect(
+      loadPaddleConfig({
+        NODE_ENV: 'production',
+        PADDLE_BILLING_DISABLED: 'true',
+      }),
+    ).toBeNull();
   });
 });
 
@@ -386,6 +445,11 @@ describe('free plan gates', () => {
       status: null,
       currentPeriodEnd: null,
       priceId: BILLING.priceIdPro,
+      productId: BILLING.productIdPro,
+      checkout: {
+        workspaceId: acme.id,
+        workspaceSig: workspaceCheckoutSignature(BILLING.webhookSecret, acme.id),
+      },
       billingEnabled: true,
     });
 
@@ -426,9 +490,52 @@ describe('router nits', () => {
     });
     expect(badToken.status).toBe(401);
   });
+
+  it('returns bounded client errors for malformed and oversized JSON', async () => {
+    const malformed = await fetch(`${base}/api/workspaces`, {
+      method: 'POST',
+      headers: { cookie: alice, 'content-type': 'application/json' },
+      body: '{"name":',
+    });
+    expect(malformed.status).toBe(400);
+    expect(await malformed.json()).toEqual({ error: 'invalid JSON' });
+
+    const oversized = await fetch(`${base}/api/workspaces`, {
+      method: 'POST',
+      headers: { cookie: alice, 'content-type': 'application/json' },
+      body: JSON.stringify({ padding: 'x'.repeat(1_000_001) }),
+    });
+    expect(oversized.status).toBe(413);
+
+    const longName = await api('/api/workspaces', {
+      method: 'POST',
+      cookie: alice,
+      body: { name: 'x'.repeat(101), slug: 'long-name' },
+    });
+    expect(longName.status).toBe(400);
+  });
 });
 
 describe('upgrade via verified webhook', () => {
+  it('ignores a validly signed event with forged workspace metadata or product', async () => {
+    const forgedBinding = subscriptionEvent({
+      workspaceId: acme.id,
+      workspaceSig: '0'.repeat(64),
+      eventId: 'evt_forged_binding',
+    });
+    expect((await postWebhook(forgedBinding.body)).status).toBe(200);
+    expect(await workspacePlan(acme.id)).toBe('free');
+
+    const wrongProduct = subscriptionEvent({
+      workspaceId: acme.id,
+      priceId: 'pri_other',
+      productId: 'pro_other',
+      eventId: 'evt_wrong_product',
+    });
+    expect((await postWebhook(wrongProduct.body)).status).toBe(200);
+    expect(await workspacePlan(acme.id)).toBe('free');
+  });
+
   it('applies subscription.activated: subscriptions row + workspaces.plan=pro', async () => {
     const { event_id, body } = subscriptionEvent({
       workspaceId: acme.id,
@@ -561,7 +668,10 @@ describe('cancellation', () => {
     });
     expect((await postWebhook(body)).status).toBe(200);
     expect(await workspacePlan(acme.id)).toBe('free');
-    expect((await subscriptionRow(acme.id))!.status).toBe('canceled');
+    expect((await subscriptionRow(acme.id))!).toMatchObject({
+      status: 'canceled',
+      plan: 'free',
+    });
   });
 
   it('the doc gate re-engages live (4 docs > free limit of 3)', async () => {

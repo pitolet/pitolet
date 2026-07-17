@@ -61,6 +61,8 @@
 }
 
 .ptl-activity-label {
+  display: flex;
+  gap: 4px;
   font-size: var(--ptl-text-sm);
   color: var(--ptl-text-1);
   overflow: hidden;
@@ -69,13 +71,27 @@
 }
 
 .ptl-activity-actor {
+  flex-shrink: 0;
   font-weight: 600;
   color: var(--ptl-text-1);
 }
 
+.ptl-activity-actor::after {
+  content: ':';
+}
+
 .ptl-activity-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   font-size: var(--ptl-text-xs);
   color: var(--ptl-text-3);
+}
+
+.ptl-activity-meta > span {
+  padding: 1px 5px;
+  border-radius: var(--ptl-radius-full);
+  background: var(--ptl-bg-3);
 }
 
 .ptl-activity-row--agent .ptl-activity-meta {

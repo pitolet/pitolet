@@ -1,4 +1,5 @@
 import {
+  componentContentBaseStyles,
   matchingVariantKeys,
   resolveTokenRefs,
   styleToCssProps,
@@ -10,16 +11,21 @@ import {
   type StyleDecl,
   type TextSpan,
 } from '@pitolet/schema';
+import {
+  booleanAttributeEnabled,
+  safeAttributes,
+  safeCssValue,
+  safeImageUrl,
+  safeNavigationUrl,
+  safeTag,
+} from './safety.js';
 
 /**
  * Secondary target: semantic HTML + a plain stylesheet. Styles come from the
  * SAME styleToCssProps the editor canvas renders with — this target is
  * pixel-identical to the canvas by construction.
  */
-export function nodeToHtml(
-  doc: PitoletDocument,
-  nodeId: NodeId,
-): { html: string; css: string } {
+export function nodeToHtml(doc: PitoletDocument, nodeId: NodeId): { html: string; css: string } {
   const cssRules: string[] = [];
   const classCounter = new Map<string, number>();
 
@@ -29,9 +35,9 @@ export function nodeToHtml(
   function render(
     id: NodeId,
     depth: number,
-    parent: { display?: Display; direction?: FlexDirection },
+    parent: LayoutContext,
     /** Set while flattening a component instance's master subtree. */
-    flatten?: { instance: InstanceNode },
+    flatten?: { instance: InstanceNode; contentRootId: NodeId },
   ): string | null {
     const node = doc.nodes[id];
     if (!node) return null;
@@ -39,12 +45,14 @@ export function nodeToHtml(
     // Component instances flatten: render the master content with variant
     // patches and per-node overrides baked in.
     if (node.type === 'instance') {
+      if (!node.visible) return null;
       const component = doc.components[node.componentId];
       const master = component ? doc.nodes[component.rootId] : undefined;
       if (!component || !master) return null;
-      const contentRoot =
-        master.children.length === 1 ? master.children[0]! : component.rootId;
-      return render(contentRoot, depth, parent, { instance: node });
+      return render(component.contentRootId, depth, parent, {
+        instance: node,
+        contentRootId: component.contentRootId,
+      });
     }
 
     const override = flatten ? flatten.instance.overrides[id] : undefined;
@@ -62,7 +70,9 @@ export function nodeToHtml(
 
     // Base rule = base layer only; breakpoint/state layers emit their own
     // media-query and pseudo-class rules below (mobile-first, no doubling).
-    let baseDecl = node.styles.base;
+    let baseDecl = flatten
+      ? componentContentBaseStyles(doc.components[flatten.instance.componentId]!, node)
+      : node.styles.base;
     if (flatten) {
       const component = doc.components[flatten.instance.componentId]!;
       baseDecl = { ...baseDecl };
@@ -71,83 +81,110 @@ export function nodeToHtml(
         if (patch) Object.assign(baseDecl, patch);
       }
       if (override?.styles) Object.assign(baseDecl, override.styles);
+      if (id === flatten.contentRootId) Object.assign(baseDecl, flatten.instance.styles.base);
     }
     const resolved = resolveTokenRefs(baseDecl, doc.tokens) as StyleDecl;
-    const css = styleToCssProps(resolved, {
+    const baseParentContext = {
       parentDisplay: parent.display,
       parentDirection: parent.direction,
-    });
+    };
+    const css = styleToCssProps(resolved, baseParentContext);
 
     const className = uniqueClassName(node.name);
-    const declarations = Object.entries(css)
-      .map(([prop, value]) => `  ${kebab(prop)}: ${value};`)
-      .join('\n');
+    const declarations = cssDeclarations(css, 2);
     if (declarations) cssRules.push(`.${className} {\n${declarations}\n}`);
 
-    // Breakpoint overrides → real media queries (mobile-first).
+    // Breakpoint overrides → real media queries (mobile-first). Convert the
+    // full effective declaration at every width, then emit only its CSS delta.
+    // Some schema values depend on surrounding context: flexDirection needs
+    // the inherited base display, and fill sizing changes when a parent flips
+    // from column to row. Converting a sparse layer by itself loses both.
+    let effectiveDecl = baseDecl;
+    let previousCss = css;
+    const childBreakpointContexts: NonNullable<LayoutContext['breakpoints']> = {};
     for (const bp of doc.breakpoints) {
-      const layer = node.styles.breakpoints?.[bp.id];
-      if (!layer) continue;
-      const layerCss = styleToCssProps(
-        resolveTokenRefs(layer, doc.tokens) as StyleDecl,
-        { parentDisplay: parent.display, parentDirection: parent.direction },
-      );
-      const decls = Object.entries(layerCss)
-        .map(([prop, value]) => `    ${kebab(prop)}: ${value};`)
-        .join('\n');
+      const nodeLayer = node.styles.breakpoints?.[bp.id];
+      const instanceLayer =
+        flatten && id === flatten.contentRootId
+          ? flatten.instance.styles.breakpoints?.[bp.id]
+          : undefined;
+      const layer = nodeLayer || instanceLayer ? { ...nodeLayer, ...instanceLayer } : undefined;
+      if (layer) effectiveDecl = { ...effectiveDecl, ...layer };
+      const effectiveResolved = resolveTokenRefs(effectiveDecl, doc.tokens) as StyleDecl;
+      const parentContext = parent.breakpoints?.[bp.id] ?? baseParentContext;
+      const effectiveCss = styleToCssProps(effectiveResolved, parentContext);
+      const layerCss = cssDelta(previousCss, effectiveCss);
+      const decls = cssDeclarations(layerCss, 4);
       if (decls) {
         cssRules.push(
           `@media (min-width: ${bp.minWidth}px) {\n  .${className} {\n${decls}\n  }\n}`,
         );
       }
+      childBreakpointContexts[bp.id] = {
+        parentDisplay: effectiveResolved.display,
+        parentDirection: effectiveResolved.flexDirection,
+      };
+      previousCss = effectiveCss;
     }
 
     // Interaction states → real pseudo-class rules.
     for (const state of ['hover', 'focus', 'active'] as const) {
-      const layer = node.styles.states?.[state];
+      const nodeLayer = node.styles.states?.[state];
+      const instanceLayer =
+        flatten && id === flatten.contentRootId
+          ? flatten.instance.styles.states?.[state]
+          : undefined;
+      const layer = nodeLayer || instanceLayer ? { ...nodeLayer, ...instanceLayer } : undefined;
       if (!layer) continue;
-      const layerCss = styleToCssProps(
-        resolveTokenRefs(layer, doc.tokens) as StyleDecl,
-        { parentDisplay: parent.display, parentDirection: parent.direction },
-      );
-      const decls = Object.entries(layerCss)
-        .map(([prop, value]) => `  ${kebab(prop)}: ${value};`)
-        .join('\n');
+      const stateDecl = { ...baseDecl, ...layer };
+      const stateCss = styleToCssProps(resolveTokenRefs(stateDecl, doc.tokens) as StyleDecl, {
+        parentDisplay: parent.display,
+        parentDirection: parent.direction,
+      });
+      const decls = cssDeclarations(cssDelta(css, stateCss), 2);
       if (decls) cssRules.push(`.${className}:${state} {\n${decls}\n}`);
     }
 
     const attrs = [`class="${className}"`];
-    for (const [key, value] of Object.entries(node.attrs ?? {})) {
-      if (BOOLEAN_ATTRS.has(key)) attrs.push(key);
-      else attrs.push(`${key}="${escapeHtml(value)}"`);
+    for (const [key, value] of safeAttributes(node.attrs)) {
+      if (node.type === 'image' && key === 'alt') continue;
+      if (BOOLEAN_ATTRS.has(key)) {
+        if (booleanAttributeEnabled(value)) attrs.push(key);
+      } else attrs.push(`${key}="${escapeHtml(value)}"`);
     }
     const attrString = ` ${attrs.join(' ')}`;
 
     switch (node.type) {
       case 'text': {
         const content = override?.content ?? node.content;
-        return `${pad}<${node.tag}${attrString}>${spansToHtml(content)}</${node.tag}>`;
+        const tag = safeTag(node.tag, 'span');
+        return `${pad}<${tag}${attrString}>${spansToHtml(content)}</${tag}>`;
       }
       case 'image': {
         const src = override?.src ?? node.src;
-        const url = 'url' in src ? src.url : `assets/${src.asset}`;
+        const url = 'url' in src ? safeImageUrl(src.url) : `assets/${src.asset}`;
         return `${pad}<img${attrString} src="${escapeHtml(url)}" alt="${escapeHtml(node.alt)}">`;
       }
       case 'frame':
       case 'element': {
+        const tag = safeTag(node.tag, 'div');
         const children = node.children
           .map((childId) =>
             render(
               childId,
               depth + 1,
-              { display: resolved.display, direction: resolved.flexDirection },
+              {
+                display: resolved.display,
+                direction: resolved.flexDirection,
+                breakpoints: childBreakpointContexts,
+              },
               flatten,
             ),
           )
           .filter((c): c is string => c !== null);
-        if (VOID_TAGS.has(node.tag)) return `${pad}<${node.tag}${attrString}>`;
-        if (children.length === 0) return `${pad}<${node.tag}${attrString}></${node.tag}>`;
-        return `${pad}<${node.tag}${attrString}>\n${children.join('\n')}\n${pad}</${node.tag}>`;
+        if (VOID_TAGS.has(tag)) return `${pad}<${tag}${attrString}>`;
+        if (children.length === 0) return `${pad}<${tag}${attrString}></${tag}>`;
+        return `${pad}<${tag}${attrString}>\n${children.join('\n')}\n${pad}</${tag}>`;
       }
       default:
         return null;
@@ -166,6 +203,39 @@ export function nodeToHtml(
   }
 }
 
+interface LayoutContext {
+  display?: Display;
+  direction?: FlexDirection;
+  breakpoints?: Record<
+    string,
+    {
+      parentDisplay?: Display;
+      parentDirection?: FlexDirection;
+    }
+  >;
+}
+
+function cssDelta(
+  previous: Record<string, string | number>,
+  current: Record<string, string | number>,
+): Record<string, string | number> {
+  const delta: Record<string, string | number> = {};
+  for (const key of new Set([...Object.keys(previous), ...Object.keys(current)])) {
+    if (previous[key] === current[key]) continue;
+    delta[key] = current[key] ?? 'unset';
+  }
+  return delta;
+}
+
+function cssDeclarations(css: Record<string, string | number>, indent: number): string {
+  const padding = ' '.repeat(indent);
+  return Object.entries(css)
+    .map(([prop, value]) => [prop, safeCssValue(value)] as const)
+    .filter((entry): entry is readonly [string, string | number] => entry[1] !== null)
+    .map(([prop, value]) => `${padding}${kebab(prop)}: ${value};`)
+    .join('\n');
+}
+
 const BOOLEAN_ATTRS = new Set(['checked', 'disabled', 'selected']);
 const VOID_TAGS = new Set(['input', 'br', 'hr', 'meta', 'link', 'source', 'track', 'wbr']);
 
@@ -173,7 +243,8 @@ function spansToHtml(spans: TextSpan[]): string {
   return spans
     .map((span) => {
       let text = escapeHtml(span.text);
-      if (span.marks?.link !== undefined) text = `<a href="${escapeHtml(span.marks.link)}">${text}</a>`;
+      if (span.marks?.link !== undefined && safeNavigationUrl(span.marks.link))
+        text = `<a href="${escapeHtml(span.marks.link)}">${text}</a>`;
       if (span.marks?.italic) text = `<em>${text}</em>`;
       if (span.marks?.bold) text = `<strong>${text}</strong>`;
       return text;

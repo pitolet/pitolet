@@ -1,7 +1,7 @@
 import type { NodeId, TextNode } from '@pitolet/schema';
 import { createElement, useEffect, useRef, type CSSProperties } from 'react';
 import { useEditor } from '../store/index.js';
-import { renderSpans } from './NodeRenderer.js';
+import { renderSpans, safeTextTag, sanitizeAttrs } from './NodeRenderer.js';
 import { domToSpans } from './textSpans.js';
 
 /**
@@ -9,13 +9,7 @@ import { domToSpans } from './textSpans.js';
  * contentEditable. Commit on blur/Enter (parsed through domToSpans);
  * Escape cancels.
  */
-export function TextEditable({
-  node,
-  css,
-}: {
-  node: TextNode;
-  css: CSSProperties;
-}) {
+export function TextEditable({ node, css }: { node: TextNode; css: CSSProperties }) {
   const ref = useRef<HTMLElement>(null);
   const cancelled = useRef(false);
   const nodeId: NodeId = node.id;
@@ -47,8 +41,9 @@ export function TextEditable({
   };
 
   return createElement(
-    node.tag,
+    safeTextTag(node.tag),
     {
+      ...sanitizeAttrs(node.attrs),
       ref,
       'data-node-id': nodeId,
       style: css,

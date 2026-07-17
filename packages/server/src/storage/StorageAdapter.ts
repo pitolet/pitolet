@@ -16,6 +16,9 @@ export interface LoadedDoc {
 export interface AssetStorage {
   put(data: Buffer, mime: string): Promise<{ assetId: string }>;
   get(assetId: string): Promise<{ stream: Readable; mime: string; size?: number } | null>;
+  /** Optional filesystem/object-store capabilities used by orphan collection. */
+  list?(): Promise<Array<{ assetId: string; size: number; modifiedAt: number }>>;
+  remove?(assetId: string): Promise<boolean>;
 }
 
 /**
@@ -55,10 +58,16 @@ export const ASSET_EXT_BY_MIME: Record<string, string> = {
   'image/gif': 'gif',
   'image/webp': 'webp',
   'image/svg+xml': 'svg',
+  'font/woff': 'woff',
+  'font/woff2': 'woff2',
 };
 
-/** Content-addressed asset ids: <16-hex-hash>.<ext> — no traversal possible. */
-export const ASSET_ID_PATTERN = /^[a-f0-9]{16}\.[a-z0-9]+$/;
+/**
+ * Content-addressed asset ids. New assets use the complete SHA-256 digest.
+ * The 16-character form remains readable for documents created by older
+ * Pitolet releases.
+ */
+export const ASSET_ID_PATTERN = /^(?:[a-f0-9]{16}|[a-f0-9]{64})\.[a-z0-9]+$/;
 
 /** Derive the mime type from a content-addressed asset id's extension. */
 export function assetMimeForId(assetId: string): string {

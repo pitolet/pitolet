@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import type { Tool } from '../store/index.js';
 import { CameraController } from './CameraController.js';
+import { cancelActiveInteraction, interactionState } from './interaction/interactionState.js';
 import './CanvasViewport.css';
 
 export interface CanvasViewportProps {
   camera: CameraController;
+  activeTool: Tool;
   children?: ReactNode;
   /** Screen-space overlay content (selection handles, guides…). */
   overlay?: ReactNode;
@@ -11,6 +14,8 @@ export interface CanvasViewportProps {
   onContentPointerDown?: (e: PointerEvent, viewport: HTMLElement) => void;
   /** Pointer-move over canvas content (hover tracking). */
   onContentPointerMove?: (e: PointerEvent) => void;
+  /** Pointer left the canvas; used to clear stale hover chrome. */
+  onContentPointerLeave?: () => void;
   /** Double-click on canvas content (deep select / text edit). */
   onContentDoubleClick?: (e: MouseEvent) => void;
   /** Files dropped onto the canvas. */
@@ -30,17 +35,22 @@ export interface CanvasViewportProps {
  */
 export function CanvasViewport({
   camera,
+  activeTool,
   children,
   overlay,
   onContentPointerDown,
   onContentPointerMove,
+  onContentPointerLeave,
   onContentDoubleClick,
   onContentDrop,
   onContentContextMenu,
 }: CanvasViewportProps) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const worldRef = useRef<HTMLDivElement>(null);
-  const [panning, setPanning] = useState(false);
+  const [spacePanning, setSpacePanning] = useState(false);
+  const [panDragging, setPanDragging] = useState(false);
+  const panDraggingRef = useRef(false);
+  const panCleanupRef = useRef<(() => void) | null>(null);
   const spaceDown = useRef(false);
 
   useEffect(() => {
@@ -56,6 +66,8 @@ export function CanvasViewport({
 
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
+      if (interactionState.cancel) return;
+      camera.cancelAnimation();
       // Normalize line-mode deltas (some mice report deltaMode=1) to pixels.
       const scale = e.deltaMode === 1 ? 16 : 1;
       if (e.ctrlKey || e.metaKey) {
@@ -73,10 +85,13 @@ export function CanvasViewport({
     let gestureStartZoom = 1;
     const onGestureStart = (e: Event) => {
       e.preventDefault();
+      if (interactionState.cancel) return;
+      camera.cancelAnimation();
       gestureStartZoom = camera.zoom;
     };
     const onGestureChange = (e: Event) => {
       e.preventDefault();
+      if (interactionState.cancel) return;
       const scale = (e as unknown as { scale: number; clientX: number; clientY: number }).scale;
       const pt = localPoint(e as unknown as { clientX: number; clientY: number });
       camera.zoomAt(pt, (gestureStartZoom * scale) / camera.zoom);
@@ -86,6 +101,8 @@ export function CanvasViewport({
     viewport.addEventListener('gesturestart', onGestureStart);
     viewport.addEventListener('gesturechange', onGestureChange);
     return () => {
+      panCleanupRef.current?.();
+      cancelActiveInteraction();
       viewport.removeEventListener('wheel', onWheel);
       viewport.removeEventListener('gesturestart', onGestureStart);
       viewport.removeEventListener('gesturechange', onGestureChange);
@@ -93,34 +110,33 @@ export function CanvasViewport({
     };
   }, [camera]);
 
-  // Space key toggles pan mode (ignored while typing in inputs).
+  // Space key toggles pan mode without stealing native activation from
+  // focused application controls.
   useEffect(() => {
-    const isTyping = () => {
-      const el = document.activeElement;
-      return (
-        el instanceof HTMLInputElement ||
-        el instanceof HTMLTextAreaElement ||
-        (el instanceof HTMLElement && el.isContentEditable)
-      );
-    };
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.code === 'Space' && !isTyping() && !e.repeat) {
+      if (e.code === 'Space' && shouldStartSpacePan(e.target) && !e.repeat) {
         spaceDown.current = true;
-        setPanning(true);
+        setSpacePanning(true);
         e.preventDefault();
       }
     };
     const onKeyUp = (e: KeyboardEvent) => {
       if (e.code === 'Space') {
         spaceDown.current = false;
-        setPanning(false);
+        setSpacePanning(false);
       }
+    };
+    const resetSpace = () => {
+      spaceDown.current = false;
+      setSpacePanning(false);
     };
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('blur', resetSpace);
     return () => {
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
+      window.removeEventListener('blur', resetSpace);
     };
   }, []);
 
@@ -134,28 +150,51 @@ export function CanvasViewport({
     }
     e.preventDefault();
     const viewport = viewportRef.current!;
+    panCleanupRef.current?.();
+    camera.cancelAnimation();
+    panDraggingRef.current = true;
+    setPanDragging(true);
     viewport.setPointerCapture(e.pointerId);
+    const pointerId = e.pointerId;
     let last = { x: e.clientX, y: e.clientY };
-    const onMove = (ev: PointerEvent) => {
+    let cleanup = () => {};
+    const applyMovement = (ev: PointerEvent) => {
       camera.panBy(ev.clientX - last.x, ev.clientY - last.y);
       last = { x: ev.clientX, y: ev.clientY };
     };
-    const onUp = (ev: PointerEvent) => {
-      viewport.releasePointerCapture(ev.pointerId);
+    const onMove = (ev: PointerEvent) => applyMovement(ev);
+    const finish = (finalEvent?: PointerEvent) => {
+      if (finalEvent) applyMovement(finalEvent);
+      panDraggingRef.current = false;
+      setPanDragging(false);
+      if (viewport.hasPointerCapture(pointerId)) viewport.releasePointerCapture(pointerId);
       viewport.removeEventListener('pointermove', onMove);
       viewport.removeEventListener('pointerup', onUp);
+      viewport.removeEventListener('pointercancel', onCancel);
+      window.removeEventListener('blur', onBlur);
+      if (panCleanupRef.current === cleanup) panCleanupRef.current = null;
     };
+    const onUp = (ev: PointerEvent) => finish(ev);
+    const onCancel = () => finish();
+    const onBlur = () => finish();
+    cleanup = () => finish();
+    panCleanupRef.current = cleanup;
     viewport.addEventListener('pointermove', onMove);
     viewport.addEventListener('pointerup', onUp);
+    viewport.addEventListener('pointercancel', onCancel);
+    window.addEventListener('blur', onBlur);
   };
 
   return (
     <div
       ref={viewportRef}
-      className={`ptl-canvas-viewport ${panning ? 'ptl-canvas-viewport--panning' : ''}`}
+      className={`ptl-canvas-viewport ptl-canvas-viewport--tool-${activeTool} ${spacePanning ? 'ptl-canvas-viewport--pan-ready' : ''} ${panDragging ? 'ptl-canvas-viewport--pan-dragging' : ''}`}
       onPointerDown={onPointerDown}
       onPointerMove={(e) => {
-        if (!panning) onContentPointerMove?.(e.nativeEvent);
+        if (!panDraggingRef.current) onContentPointerMove?.(e.nativeEvent);
+      }}
+      onPointerLeave={() => {
+        if (!panDraggingRef.current) onContentPointerLeave?.();
       }}
       onDoubleClick={(e) => onContentDoubleClick?.(e.nativeEvent)}
       onDragOver={(e) => {
@@ -172,6 +211,15 @@ export function CanvasViewport({
         const el = (e.target as Element).closest('[data-node-id]');
         if (el) e.preventDefault();
       }}
+      onAuxClickCapture={(e) => {
+        // Middle-click otherwise bypasses onClick and can open an imported link.
+        const el = (e.target as Element).closest('[data-node-id]');
+        if (el) e.preventDefault();
+      }}
+      onSubmitCapture={(e) => {
+        // Imported forms are visual content, never live navigation surfaces.
+        e.preventDefault();
+      }}
       data-canvas-viewport
     >
       <div ref={worldRef} className="ptl-canvas-world">
@@ -179,5 +227,24 @@ export function CanvasViewport({
       </div>
       <div className="ptl-canvas-overlay">{overlay}</div>
     </div>
+  );
+}
+
+export function shouldStartSpacePan(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return true;
+  if (target === document.body || target === document.documentElement) return true;
+  if (
+    target instanceof HTMLInputElement ||
+    target instanceof HTMLTextAreaElement ||
+    target instanceof HTMLSelectElement ||
+    target.isContentEditable
+  ) {
+    return false;
+  }
+  // Page content on the canvas is deliberately inert, so focus left behind by
+  // a pointer click there should not disable the canvas pan shortcut.
+  if (target.closest('[data-node-id]')) return true;
+  return !target.closest(
+    'button, a[href], summary, [role="button"], [role="option"], [role="menuitem"], [role="tab"], [role="treeitem"], [role="slider"], [role="switch"], [role="checkbox"], [role="radio"], [tabindex]:not([tabindex="-1"])',
   );
 }

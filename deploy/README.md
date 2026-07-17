@@ -10,13 +10,14 @@ Target hosts:
 
 ## 1. Provision the VPS
 
-1. Create a Hetzner Cloud **CPX31** (Ubuntu 24.04), or larger.
+1. Create a Virtarix VPS running **Ubuntu 24.04**. Start with 2 vCPU and
+   4 GB RAM; move up only if the database or image builds need it.
 2. Point DNS **A records** at the server's public IPv4 (and **AAAA** at the
    IPv6 if you use it):
    - `pitolet.com`
    - `app.pitolet.com`
-   Wait for propagation before step 6. Caddy needs the names resolving to the
-   box to issue Let's Encrypt certificates.
+     Wait for propagation before step 6. Caddy needs the names resolving to the
+     box to issue Let's Encrypt certificates.
 
 ## 2. Create a deploy user + harden SSH
 
@@ -55,7 +56,7 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.
   https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable" \
   | sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
 sudo apt-get update
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin rsync
 sudo usermod -aG docker deploy    # log out/in for group to take effect
 docker compose version            # verify v2
 ```
@@ -74,43 +75,58 @@ sudo ufw enable
 ```sh
 sudo mkdir -p /opt/pitolet && sudo chown deploy:deploy /opt/pitolet
 # from your workstation:
-#   scp -r deploy/* deploy@<host>:/opt/pitolet/
+#   rsync -av deploy/ deploy@<host>:/opt/pitolet/
 cd /opt/pitolet
 cp .env.example .env
 nano .env    # set POSTGRES_PASSWORD, DATABASE_URL (same password), BETTER_AUTH_SECRET,
-             # BETTER_AUTH_URL, RESTIC_REPOSITORY, RESTIC_PASSWORD (see hints in the file)
+             # BETTER_AUTH_URL, RESEND_API_KEY, RESTIC_REPOSITORY,
+             # RESTIC_PASSWORD, and either Paddle credentials or
+             # PADDLE_BILLING_DISABLED=true (see hints in the file)
 ```
 
 Generate secrets with `openssl rand -hex 32`.
+Set `TAG` to an immutable published version such as `1.1.0`; do not use
+`latest`. Both deploy and rollback rely on that exact value.
 
-For `RESTIC_REPOSITORY` (Hetzner Storage Box over sftp) make sure the deploy
-user's SSH key is authorized on the Storage Box so restic can connect
-non-interactively.
+For an SFTP `RESTIC_REPOSITORY`, create a dedicated key and pin the host key:
+
+```sh
+mkdir -p backup-ssh
+ssh-keygen -t ed25519 -f backup-ssh/id_ed25519 -N ""
+# Add backup-ssh/id_ed25519.pub at your storage provider, then:
+ssh-keyscan -H <backup-host> > backup-ssh/known_hosts
+chmod 700 backup-ssh
+chmod 600 backup-ssh/id_ed25519 backup-ssh/known_hosts
+```
+
+Set `RESTIC_SSH_DIR=./backup-ssh`. Keep the private key and `known_hosts` out
+of Git.
 
 ## 6. Launch
 
 ```sh
 cd /opt/pitolet
 docker login ghcr.io          # if the image is private
-docker compose pull
+docker compose config         # catches missing variables and YAML errors
+docker compose pull app caddy postgres
+docker compose build --pull backup
 docker compose up -d
 docker compose ps             # all services healthy?
 ```
 
-Run the DB migrations once (the deploy workflow does this on every release, but
-do it explicitly the first time):
-
-```sh
-docker compose run --rm app node dist/migrate.js
-```
+The app applies pending database migrations before it starts listening. During
+a deploy, the isolated candidate starts first and applies those migrations
+before the live container is replaced.
 
 ## 7. Verify
 
 ```sh
-curl -I https://pitolet.com            # 200, landing page
-curl -I https://app.pitolet.com/       # 200 (app liveness endpoint)
+curl -fsS https://pitolet.com >/dev/null
+curl -fsS https://app.pitolet.com/healthz
+curl -fsS https://app.pitolet.com/readyz
 docker compose logs -f app             # watch boot / requests
-docker compose logs backup             # confirm first nightly backup path
+docker compose logs backup             # the first backup runs immediately
+docker compose exec backup restic snapshots --host pitolet-cloud --tag pitolet-nightly
 ```
 
 Caddy fetches certs on the first HTTPS request, so the first hit may take a few
@@ -132,11 +148,11 @@ curl -H "Authorization: Bearer $PITOLET_METRICS_TOKEN" \
 #  "uptimeSeconds":...,"pgPoolTotal":...,"pgPoolIdle":...,"pgPoolWaiting":...}
 ```
 
-**Uptime checks.** Point [UptimeRobot](https://uptimerobot.com) (or similar)
-at two HTTP(S) monitors, both expecting `200`:
+**Uptime checks.** Point an uptime monitor at these URLs, all expecting `200`:
 
-- `https://app.pitolet.com/` — the app liveness endpoint (same URL the
-  Dockerfile HEALTHCHECK hits).
+- `https://app.pitolet.com/healthz` — process liveness.
+- `https://app.pitolet.com/readyz` — readiness, including a database query
+  (the Docker health check uses this URL).
 - `https://pitolet.com` — the static landing page.
 
 **Gauge log.** Every 5 minutes (and once at shutdown) the app logs a single
@@ -151,8 +167,9 @@ docker compose logs app | grep gauges
 process-level `uncaughtException` / `unhandledRejection` events. Any
 Sentry-DSN-compatible backend works, including self-hosted
 [GlitchTip](https://glitchtip.com) (paste its project DSN as `SENTRY_DSN`).
-The `@sentry/node` package is intentionally not bundled — install it in the
-image (`pnpm add @sentry/node`) to opt in; without it, `SENTRY_DSN` is a no-op.
+The stock image includes the Sentry client. If `SENTRY_DSN` is configured but
+the client cannot initialize, startup stops instead of silently running
+without reporting. When `SENTRY_DSN` is unset, error tracking stays off.
 
 **When memory grows.** Watch `rssBytes` against `loadedWorkspaces` in the
 gauge log or metrics endpoint. RSS tracking `loadedWorkspaces` upward is
@@ -162,7 +179,18 @@ evicted by the sweep (15 min idle, LRU hard cap). If RSS climbs while
 
 ## 8. GitHub Actions deploy key
 
-The `.github/workflows/deploy.yml` workflow copies the generated landing pages to Caddy, then rolls the app forward.
+The `.github/workflows/deploy.yml` workflow uploads the complete `deploy/`
+directory, not only the static site. It validates Compose and Caddy, takes a
+fresh database-and-assets backup, boots the new image as an isolated candidate,
+and requires `/readyz` to pass before replacing the live app. If a later check
+fails, it restores the previous image tag, Compose file, Caddyfile, backup
+configuration, and static site.
+
+Migrations run in the candidate before it receives traffic. Production
+migrations must still be backward compatible with the previous app release:
+automatic rollback intentionally does not rewrite a live database. The
+pre-deploy restic snapshot is the recovery point for a manual database restore.
+
 Add these repository **secrets**:
 
 - `VPS_HOST` — the server IP or hostname.
@@ -173,8 +201,8 @@ Add these repository **secrets**:
   to the deploy user's `authorized_keys`, and paste `pitolet_deploy` (private)
   as the secret.
 
-Trigger from the Actions tab (**workflow_dispatch**), optionally with a `tag`
-input; it pulls that tag, runs migrations, and restarts `app` + `caddy`.
+Trigger from the Actions tab (**workflow_dispatch**) with the immutable image
+tag to deploy, for example `1.1.0`.
 
 ## 9. Monthly restore drill
 
@@ -185,28 +213,39 @@ the dump loads:
 cd /opt/pitolet
 
 # 1. See what's in the repo.
-docker compose run --rm backup sh -c 'restic snapshots'
+docker compose run --rm backup sh -c \
+  'restic snapshots --host pitolet-cloud --tag pitolet-nightly'
 
-# 2. Restore the latest DB dump + assets into a scratch dir inside the container.
+# 2. Restore the latest complete nightly snapshot into the persistent
+#    backup_restore volume (never into the live asset volume).
 docker compose run --rm backup sh -c '
-  restic restore latest --target /restore &&
-  ls -la /restore /restore/data
+  rm -rf /restore/* &&
+  restic restore latest --host pitolet-cloud --tag pitolet-nightly --target /restore &&
+  test -s /restore/tmp/pitolet-backup/pitolet.dump &&
+  test -d /restore/data &&
+  ls -la /restore/data
 '
 
 # 3. Load the dump into a scratch database and sanity-check row counts.
 docker compose exec postgres sh -c '
-  createdb -U "$POSTGRES_USER" pitolet_restore_test 2>/dev/null || true
+  dropdb -U "$POSTGRES_USER" --if-exists pitolet_restore_test &&
+  createdb -U "$POSTGRES_USER" pitolet_restore_test
 '
 docker compose run --rm backup sh -c '
-  restic dump latest /pitolet.dump \
-    | PGPASSWORD="$POSTGRES_PASSWORD" pg_restore -h postgres -U "$POSTGRES_USER" \
-        -d pitolet_restore_test --clean --if-exists --no-owner
+  PGPASSWORD="$POSTGRES_PASSWORD" pg_restore \
+    -h postgres -U "$POSTGRES_USER" -d pitolet_restore_test \
+    --clean --if-exists --no-owner \
+    /restore/tmp/pitolet-backup/pitolet.dump
 '
 docker compose exec postgres sh -c '
   psql -U "$POSTGRES_USER" -d pitolet_restore_test -c "\dt" &&
   dropdb -U "$POSTGRES_USER" pitolet_restore_test
 '
+
+# 4. Remove the decrypted restore from the VPS after the drill.
+docker compose run --rm backup sh -c 'rm -rf /restore/*'
 ```
 
 If every step succeeds and the tables/rows look right, the backup chain is
-sound. Write down the drill date where you'll find it again.
+sound. Record the drill date and snapshot ID. If a step fails, remove the
+scratch database and `/restore/*` before retrying.

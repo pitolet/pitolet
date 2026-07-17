@@ -3,25 +3,23 @@ import { createRequire } from 'node:module';
 /**
  * Optional, Sentry-compatible error tracking.
  *
- * `@sentry/node` is deliberately NOT a dependency of this package. Self-hosters
- * and ops who want error reporting opt in by installing it themselves
- * (`pnpm add @sentry/node`) and setting `SENTRY_DSN`. Any Sentry-DSN-compatible
- * backend works — e.g. GlitchTip. When the package isn't present, or no DSN is
- * configured, every export is a silent no-op.
- *
- * The dynamic import mirrors the OSS Playwright guard in
- * packages/server/src/mcp/tools.ts: an indirect variable specifier plus
- * `/* @vite-ignore *\/` so bundlers don't try to resolve the optional module at
- * build time, wrapped in try/catch so a missing package degrades gracefully.
+ * The client ships in the production image, but is loaded only when a DSN is
+ * configured. A configured tracker that cannot initialise is a boot error:
+ * silently dropping production exceptions would make the setting misleading.
  */
 
-interface SentryLike {
-  init: (options: { dsn: string; release?: string }) => void;
+export interface ErrorTrackingClient {
+  init: (options: {
+    dsn: string;
+    release?: string;
+    environment?: string;
+    sendDefaultPii: boolean;
+  }) => void;
   captureException: (err: unknown) => void;
   close: (timeout?: number) => Promise<boolean>;
 }
 
-let sentry: SentryLike | null = null;
+let sentry: ErrorTrackingClient | null = null;
 
 /** Read this package's version for the Sentry release tag. */
 function readRelease(): string | undefined {
@@ -35,30 +33,30 @@ function readRelease(): string | undefined {
 }
 
 /**
- * Initialise error tracking if `SENTRY_DSN` (env or arg) is set AND the
- * optional `@sentry/node` package is installed. Idempotent-ish: safe to call
+ * Initialise error tracking when `SENTRY_DSN` (env or arg) is set. Safe to call
  * once at boot. Returns true when tracking is live.
  */
 export async function initErrorTracking(
   dsn: string | undefined = process.env.SENTRY_DSN,
+  loadClient: () => Promise<ErrorTrackingClient> = async () => import('@sentry/node'),
 ): Promise<boolean> {
-  if (!dsn) return false;
+  if (!dsn?.trim()) return false;
   try {
-    // Indirect specifier + @vite-ignore: keep bundlers from resolving an
-    // intentionally-absent optional dependency.
-    const specifier = '@sentry/node';
-    const mod = (await import(/* @vite-ignore */ specifier)) as SentryLike;
-    mod.init({ dsn, release: readRelease() });
-    sentry = mod;
+    const client = await loadClient();
+    client.init({
+      dsn: dsn.trim(),
+      release: readRelease(),
+      environment: process.env.NODE_ENV,
+      sendDefaultPii: false,
+    });
+    sentry = client;
     console.log('[pitolet-cloud] error tracking enabled (Sentry-compatible DSN)');
     return true;
   } catch (err) {
-    console.error(
-      '[pitolet-cloud] SENTRY_DSN is set but @sentry/node is not installed — ' +
-        'error tracking disabled. Install it to opt in: pnpm add @sentry/node',
-      err instanceof Error ? err.message : err,
-    );
-    return false;
+    sentry = null;
+    throw new Error('SENTRY_DSN is set but error tracking failed to initialise', {
+      cause: err,
+    });
   }
 }
 

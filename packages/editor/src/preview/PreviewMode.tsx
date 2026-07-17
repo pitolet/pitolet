@@ -4,14 +4,7 @@ import { X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useEditor } from '../store/index.js';
 import './PreviewMode.css';
-
-const WIDTHS = [
-  { label: 'Fill', value: 0 },
-  { label: '375', value: 375 },
-  { label: '768', value: 768 },
-  { label: '1024', value: 1024 },
-  { label: '1280', value: 1280 },
-];
+import { previewWidthOptions, resolvePreviewAssetUrls } from './previewUtils.js';
 
 /**
  * Interactive preview: the frame rendered from GENERATED code in an iframe —
@@ -23,18 +16,23 @@ export function PreviewMode() {
   const doc = useEditor((s) => s.doc);
   const setPreviewFrame = useEditor((s) => s.setPreviewFrame);
   const [width, setWidth] = useState(0);
+  const widths = useMemo(() => previewWidthOptions(doc?.breakpoints ?? []), [doc?.breakpoints]);
 
   useEffect(() => {
+    if (!frameId) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setPreviewFrame(null);
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      setPreviewFrame(null);
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [setPreviewFrame]);
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [frameId, setPreviewFrame]);
 
   const srcdoc = useMemo(() => {
     if (!doc || !frameId || !doc.nodes[frameId]) return '';
-    return buildPreviewHtml(doc, frameId);
+    return resolvePreviewAssetUrls(buildPreviewHtml(doc, frameId), Object.keys(doc.assets));
   }, [doc, frameId]);
 
   if (!frameId || !doc) return null;
@@ -45,7 +43,7 @@ export function PreviewMode() {
       <div className="ptl-preview-bar">
         <span className="ptl-preview-title">{frameName}</span>
         <div className="ptl-preview-widths">
-          {WIDTHS.map((w) => (
+          {widths.map((w) => (
             <button
               key={w.label}
               type="button"
@@ -56,7 +54,7 @@ export function PreviewMode() {
             </button>
           ))}
         </div>
-        <span className="ptl-preview-hint">Real CSS. Try hovering.</span>
+        <span className="ptl-preview-hint">Hover to test states</span>
         <Tooltip content="Close preview" shortcut="esc">
           <IconButton label="Close preview" onClick={() => setPreviewFrame(null)}>
             <X size={15} />
@@ -64,13 +62,14 @@ export function PreviewMode() {
         </Tooltip>
       </div>
       <div className="ptl-preview-stage">
-        <iframe
-          title="Preview"
-          className="ptl-preview-iframe"
-          style={width > 0 ? { width } : { width: '100%' }}
-          srcDoc={srcdoc}
-          sandbox="allow-same-origin"
-        />
+        <div className="ptl-preview-frame-shell" style={width > 0 ? { width } : { width: '100%' }}>
+          <iframe
+            title="Preview"
+            className="ptl-preview-iframe"
+            srcDoc={srcdoc}
+            sandbox="allow-same-origin"
+          />
+        </div>
       </div>
     </div>
   );

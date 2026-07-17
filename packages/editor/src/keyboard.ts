@@ -1,22 +1,30 @@
 import { tinykeys } from 'tinykeys';
 import { parentOfSelection } from './canvas/interaction/selection.js';
+import { cancelActiveInteraction } from './canvas/interaction/interactionState.js';
 import type { CameraController } from './canvas/CameraController.js';
 import { COMMANDS, type CommandContext } from './commands/registry.js';
 import { useEditor } from './store/index.js';
+import { isEffectivelyLocked } from './store/locks.js';
 import { moveFrames } from './store/mutations.js';
+import { openPreview } from './panels/TopBar.js';
 
 /**
  * Keyboard layer: registry commands bind via tinykeys; positional keys
- * (arrow nudging, Escape ascent) stay hand-rolled. Everything is gated off
+ * (arrow nudging and Escape's cancel/tool/ascent sequence) stay hand-rolled. Everything is gated off
  * while typing in inputs or contentEditable.
  */
-export function installKeyboard(camera: CameraController, zoomToFit: () => void): () => void {
+export function installKeyboard(
+  camera: CameraController,
+  zoomToFit: () => void,
+  zoomToSelection: () => void,
+): () => void {
   const ctx: CommandContext = {
     zoomToFit,
+    zoomToSelection,
     zoomIn: () => camera.setZoomCentered(camera.zoom * 1.25),
     zoomOut: () => camera.setZoomCentered(camera.zoom / 1.25),
     zoomTo100: () => camera.setZoomCentered(1),
-    openPreview: () => void import('./panels/TopBar.js').then((m) => m.openPreview()),
+    openPreview,
   };
 
   const bindings: Record<string, (e: KeyboardEvent) => void> = {};
@@ -34,21 +42,46 @@ export function installKeyboard(camera: CameraController, zoomToFit: () => void)
   const unsubscribeTinykeys = tinykeys(window, bindings);
 
   const onKeyDown = (e: KeyboardEvent) => {
-    if (isTyping()) return;
+    if (e.defaultPrevented || isTyping()) return;
     const store = useEditor.getState();
 
     if (e.key === 'Escape') {
+      if (cancelActiveInteraction()) {
+        e.preventDefault();
+        if (store.activeTool !== 'select') store.setTool('select');
+        return;
+      }
+      if (store.activeTool !== 'select') {
+        e.preventDefault();
+        store.setTool('select');
+        return;
+      }
       if (store.editingContext.state || store.editingContext.breakpointId) {
+        e.preventDefault();
         store.setEditingContext({ breakpointId: null, state: null });
         return;
       }
       const parent = store.doc ? parentOfSelection(store.doc, store.selection) : null;
+      e.preventDefault();
       store.select(parent ? [parent] : []);
       return;
     }
 
-    if (e.key.startsWith('Arrow') && store.selection.length > 0 && !e.metaKey && !e.ctrlKey) {
-      const frames = store.selection.filter((id) => store.doc?.nodes[id]?.parent === null);
+    if (
+      e.key.startsWith('Arrow') &&
+      store.selection.length > 0 &&
+      !e.metaKey &&
+      !e.ctrlKey &&
+      store.connected &&
+      !store.readOnly &&
+      !store.switchingDocument
+    ) {
+      const frames = store.selection.filter(
+        (id) =>
+          store.doc?.nodes[id]?.parent === null &&
+          store.doc !== null &&
+          !isEffectivelyLocked(store.doc, id),
+      );
       if (frames.length > 0) {
         e.preventDefault();
         const step = e.shiftKey ? 10 : 1;

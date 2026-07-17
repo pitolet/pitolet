@@ -32,6 +32,13 @@ export function SignIn({ onAuthed }: { onAuthed: () => void }) {
       if (mode === 'sign-up') {
         const { error } = await authClient.signUp.email({ email, password, name });
         if (error) throw new Error(error.message ?? 'Could not create account');
+        const session = await authClient.getSession();
+        if (!session.data) {
+          setNotice(`Check ${email} to verify your account.`);
+          setMode('sign-in');
+          setPassword('');
+          return;
+        }
       } else {
         const { error } = await authClient.signIn.email({ email, password });
         if (error) throw new Error(error.message ?? 'Invalid email or password');
@@ -141,12 +148,7 @@ export function SignIn({ onAuthed }: { onAuthed: () => void }) {
         {error && <div className="ptl-dash-error">{error}</div>}
 
         <div className="ptl-dash-auth-actions">
-          <Button
-            type="submit"
-            variant="primary"
-            className="ptl-dash-btn-block"
-            disabled={busy}
-          >
+          <Button type="submit" variant="primary" className="ptl-dash-btn-block" disabled={busy}>
             {mode === 'sign-in' ? 'Sign in' : 'Create account'}
           </Button>
         </div>

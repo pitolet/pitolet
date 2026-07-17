@@ -1,45 +1,211 @@
 name: Deploy (Cloud VPS)
 
-# Manual roll-forward of the production app on the Hetzner VPS.
-# The image is built + pushed by "Release (Docker)" (docker.yml); this only
-# pulls a published tag, migrates, and restarts.
 on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Image tag to deploy (ghcr.io/pitolet/pitolet-cloud:<tag>)
-        required: false
-        default: latest
+        description: Immutable semver image tag to deploy, for example 1.1.0
+        required: true
+
+concurrency:
+  group: pitolet-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: production
+    env:
+      DEPLOY_TAG: ${{ inputs.tag }}
+      DEPLOY_ID: ${{ github.run_id }}-${{ github.run_attempt }}
     steps:
+      - name: Validate the image tag
+        run: |
+          if ! printf '%s' "$DEPLOY_TAG" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'; then
+            echo "::error::Deploy tag must be an immutable semver tag, not latest or a shell expression"
+            exit 1
+          fi
       - uses: actions/checkout@v4
+        with:
+          ref: v${{ inputs.tag }}
 
-      - name: Publish the static site
+      - name: Upload the complete deployment configuration
         uses: appleboy/scp-action@v1.0.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          source: deploy/static/*
-          target: /opt/pitolet/static
-          strip_components: 2
-          overwrite: true
+          source: deploy
+          target: /tmp/pitolet-${{ github.run_id }}-${{ github.run_attempt }}
 
-      - name: Roll the VPS forward
+      - name: Validate, roll forward, verify, and roll back on failure
         uses: appleboy/ssh-action@v1
+        env:
+          DEPLOY_TAG: ${{ inputs.tag }}
+          DEPLOY_ID: ${{ github.run_id }}-${{ github.run_attempt }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          envs: DEPLOY_TAG,DEPLOY_ID
+          command_timeout: 20m
           script: |
             set -eu
-            cd /opt/pitolet
-            export TAG="${{ github.event.inputs.tag }}"
-            docker compose pull app
-            # Apply pending migrations before the new code serves traffic.
-            docker compose run --rm app node dist/migrate.js
-            docker compose up -d app caddy
+            umask 077
+            case "$DEPLOY_TAG" in
+              *[!0-9A-Za-z.-]*|'') echo "invalid deploy tag"; exit 1 ;;
+            esac
+            printf '%s' "$DEPLOY_TAG" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'
+
+            INCOMING="/tmp/pitolet-$DEPLOY_ID/deploy"
+            LIVE=/opt/pitolet
+            ROLLBACK="/tmp/pitolet-rollback-$DEPLOY_ID"
+            CANDIDATE="pitolet-candidate-$DEPLOY_ID"
+            test -f "$INCOMING/docker-compose.yml"
+            test -f "$INCOMING/Caddyfile"
+            test -d "$INCOMING/static"
+            test -f "$LIVE/.env"
+            test -f "$LIVE/docker-compose.yml"
+
+            PREVIOUS_TAG=$(sed -n 's/^TAG=//p' "$LIVE/.env" 2>/dev/null | tail -1)
+            printf '%s' "$PREVIOUS_TAG" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'
+
+            # Validate the incoming release in isolation. The live Compose,
+            # Caddy, backup, and static files remain untouched until the new
+            # app has booted and passed readiness.
+            cp "$LIVE/.env" "$INCOMING/.env"
+            if [ -d "$LIVE/backup-ssh" ] && [ ! -e "$INCOMING/backup-ssh" ]; then
+              ln -s "$LIVE/backup-ssh" "$INCOMING/backup-ssh"
+            fi
+
+            export TAG="$DEPLOY_TAG"
+            docker compose \
+              --project-name pitolet \
+              --project-directory "$INCOMING" \
+              -f "$INCOMING/docker-compose.yml" \
+              config --quiet
+            docker run --rm \
+              -v "$INCOMING/Caddyfile:/etc/caddy/Caddyfile:ro" \
+              caddy:2 caddy validate --config /etc/caddy/Caddyfile
+            docker compose \
+              --project-name pitolet \
+              --project-directory "$INCOMING" \
+              -f "$INCOMING/docker-compose.yml" \
+              pull app
+            docker compose \
+              --project-name pitolet \
+              --project-directory "$INCOMING" \
+              -f "$INCOMING/docker-compose.yml" \
+              build backup
+            docker compose \
+              --project-name pitolet \
+              --project-directory "$INCOMING" \
+              -f "$INCOMING/docker-compose.yml" \
+              run --rm --no-deps app node --check dist/server.js
+            docker compose \
+              --project-name pitolet \
+              --project-directory "$INCOMING" \
+              -f "$INCOMING/docker-compose.yml" \
+              run --rm --no-deps app node --check dist/migrate.js
+
+            # Keep one recoverable database-and-assets snapshot immediately
+            # before the candidate applies any pending migrations.
+            docker compose \
+              --project-name pitolet \
+              --project-directory "$INCOMING" \
+              -f "$INCOMING/docker-compose.yml" \
+              run --rm backup once
+
+            rm -rf "$ROLLBACK"
+            mkdir -p "$ROLLBACK"
+            cp -a "$LIVE/." "$ROLLBACK/"
+            SUCCESS=0
+
+            rollback() {
+              status=$?
+              trap - EXIT INT TERM HUP
+              set +e
+              docker rm -f "$CANDIDATE" >/dev/null 2>&1
+              if [ "$SUCCESS" -eq 0 ]; then
+                restore_failed=0
+                echo "deployment failed; restoring image, configuration, and static site"
+                rsync -a --delete "$ROLLBACK/" "$LIVE/" || restore_failed=1
+                unset TAG
+                cd "$LIVE"
+                docker compose up -d --no-deps --force-recreate app || restore_failed=1
+                docker compose up -d --force-recreate caddy backup || restore_failed=1
+                if [ "$restore_failed" -eq 0 ]; then
+                  rm -rf "$ROLLBACK"
+                else
+                  echo "rollback had errors; retained recovery copy at $ROLLBACK"
+                  status=1
+                fi
+              fi
+              rm -rf "/tmp/pitolet-$DEPLOY_ID"
+              if [ "$status" -eq 0 ] && [ "$SUCCESS" -eq 0 ]; then status=1; fi
+              exit "$status"
+            }
+            trap rollback EXIT INT TERM HUP
+
+            # A one-off candidate runs the complete production entrypoint,
+            # including migrations, without receiving traffic. Do not replace
+            # the live service unless that exact image reaches /readyz.
+            docker compose \
+              --project-name pitolet \
+              --project-directory "$INCOMING" \
+              -f "$INCOMING/docker-compose.yml" \
+              run -d --no-deps --name "$CANDIDATE" app
+            candidate_ready=0
+            for attempt in $(seq 1 45); do
+              if docker exec "$CANDIDATE" node -e \
+                "fetch('http://127.0.0.1:8080/readyz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"; then
+                candidate_ready=1
+                break
+              fi
+              if [ "$(docker inspect --format '{{.State.Running}}' "$CANDIDATE" 2>/dev/null)" != true ]; then
+                docker logs "$CANDIDATE"
+                false
+              fi
+              sleep 2
+            done
+            test "$candidate_ready" -eq 1
+            docker rm -f "$CANDIDATE" >/dev/null
+
+            rsync -a --delete \
+              --exclude .env \
+              --exclude static \
+              --exclude backup-ssh \
+              "$INCOMING/" "$LIVE/"
+            rm -rf "$LIVE/static"
+            cp -a "$INCOMING/static" "$LIVE/static"
+            if grep -q '^TAG=' "$LIVE/.env"; then
+              sed -i "s/^TAG=.*/TAG=$DEPLOY_TAG/" "$LIVE/.env"
+            else
+              printf '\nTAG=%s\n' "$DEPLOY_TAG" >> "$LIVE/.env"
+            fi
+
+            cd "$LIVE"
+            docker compose up -d --no-deps app
+            ready=0
+            for attempt in $(seq 1 45); do
+              if docker compose exec -T app node -e \
+                "fetch('http://127.0.0.1:8080/readyz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"; then
+                ready=1
+                break
+              fi
+              sleep 2
+            done
+            test "$ready" -eq 1
+
+            docker compose up -d --force-recreate caddy backup
+            curl -fsS https://app.pitolet.com/readyz >/dev/null
+            curl -fsS https://pitolet.com/ | grep -Fq 'Give your agent'
+            curl -fsS https://pitolet.com/vs-figma/ | grep -Fq 'Use Pitolet'
+
+            SUCCESS=1
+            trap - EXIT INT TERM HUP
+            rm -rf "$ROLLBACK" "/tmp/pitolet-$DEPLOY_ID"
             docker compose ps

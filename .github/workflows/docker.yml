@@ -1,89 +1,174 @@
 name: Release (Docker)
 
 on:
-  push:
-    tags:
-      - 'v*'
+  # The npm release workflow calls this only after npm publish succeeds.
+  # Keeping the image build reusable also allows a deliberate retry without
+  # pushing another Git tag.
+  workflow_call:
+    inputs:
+      tag:
+        description: Existing v<semver> Git tag whose npm package is published
+        required: true
+        type: string
   workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing v<semver> Git tag whose npm package is already published
+        required: true
+        type: string
 
 permissions:
   contents: read
   packages: write
 
+concurrency:
+  group: docker-release-${{ inputs.tag }}
+  cancel-in-progress: false
+
+env:
+  RELEASE_TAG: ${{ inputs.tag }}
+
 jobs:
-  # OSS self-host image (root Dockerfile).
-  image:
+  preflight:
     runs-on: ubuntu-latest
-    env:
-      IMAGE: ghcr.io/pitolet/pitolet
+    timeout-minutes: 35
+    outputs:
+      release_tag: ${{ steps.release.outputs.release_tag }}
+      version: ${{ steps.release.outputs.version }}
+      prerelease: ${{ steps.release.outputs.prerelease }}
+    steps:
+      - name: Validate the requested release tag
+        run: |
+          if ! printf '%s' "$RELEASE_TAG" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'; then
+            echo "::error::Expected an immutable v<semver> release tag"
+            exit 1
+          fi
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+      - name: Set browser QA artifact directory
+        run: echo "PITOLET_QA_ARTIFACT_DIR=$RUNNER_TEMP/pitolet-browser-qa" >> "$GITHUB_ENV"
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Verify tag and package versions
+        id: release
+        run: node scripts/check-release-version.mjs "$RELEASE_TAG"
+      - name: Verify the npm release succeeded
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          for attempt in $(seq 1 12); do
+            published="$(npm view "pitolet@$VERSION" version 2>/dev/null || true)"
+            if [ "$published" = "$VERSION" ]; then
+              echo "pitolet@$VERSION is available from npm"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::pitolet@$VERSION is not available from npm; refusing to publish Docker images"
+          exit 1
+      - name: Locate PostgreSQL binaries (cloud tests spin ephemeral instances)
+        run: |
+          if ! command -v pg_config >/dev/null 2>&1; then
+            sudo apt-get update && sudo apt-get install -y postgresql
+          fi
+          echo "PGBIN=$(pg_config --bindir)" >> "$GITHUB_ENV"
+      - run: pnpm install --frozen-lockfile
+      - name: Install Chromium for website-import and landing-page tests
+        run: node packages/server/node_modules/playwright-core/cli.js install --with-deps chromium
+      - name: Run release quality gates
+        run: pnpm verify
+      - name: Keep browser QA screenshots and axe reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-browser-qa-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/pitolet-browser-qa
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Check AGPL boundary
+        run: |
+          if grep -rE "@pitolet/cloud|apps/cloud" packages/ --include='*.ts' --include='*.tsx' --include='*.json'; then
+            echo "::error::AGPL boundary violation: packages/ references commercial cloud code"
+            exit 1
+          fi
+
+  # Build every image successfully before either registry tag becomes visible.
+  validate-images:
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: oss
+            file: Dockerfile
+          - name: cloud
+            file: apps/cloud/Dockerfile
     steps:
       - uses: actions/checkout@v4
-
+        with:
+          ref: ${{ needs.preflight.outputs.release_tag }}
       - uses: docker/setup-buildx-action@v3
+      - name: Validate ${{ matrix.name }} image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.file }}
+          push: false
+          cache-from: type=gha,scope=release-${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=release-${{ matrix.name }}
 
+  publish-images:
+    needs: [preflight, validate-images]
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: oss
+            file: Dockerfile
+            image: ghcr.io/pitolet/pitolet
+          - name: cloud
+            file: apps/cloud/Dockerfile
+            image: ghcr.io/pitolet/pitolet-cloud
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.preflight.outputs.release_tag }}
+      - uses: docker/setup-buildx-action@v3
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Derive image tags
+      - name: Derive immutable and compatibility tags
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.IMAGE }}
+          images: ${{ matrix.image }}
+          flavor: latest=false
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
-
-      - name: Build and push
+            type=semver,pattern={{version}},value=${{ needs.preflight.outputs.release_tag }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ needs.preflight.outputs.release_tag }}
+            type=semver,pattern={{major}},value=${{ needs.preflight.outputs.release_tag }}
+            type=raw,value=latest,enable=${{ needs.preflight.outputs.prerelease == 'false' }}
+      - name: Build and push ${{ matrix.name }} image
         uses: docker/build-push-action@v6
         with:
           context: .
+          file: ${{ matrix.file }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-  # Commercial hosted-app image (apps/cloud/Dockerfile).
-  cloud-image:
-    runs-on: ubuntu-latest
-    env:
-      IMAGE: ghcr.io/pitolet/pitolet-cloud
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: docker/setup-buildx-action@v3
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Derive image tags
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.IMAGE }}
-          tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
-
-      - name: Build and push
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: apps/cloud/Dockerfile
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          annotations: ${{ steps.meta.outputs.annotations }}
+          provenance: mode=max
+          sbom: true
+          cache-from: type=gha,scope=release-${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=release-${{ matrix.name }}

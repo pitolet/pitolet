@@ -35,6 +35,12 @@ import { buildPreviewHtml } from '../packages/codegen/src/index.ts';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, '..');
+// Freshness checks render into a temporary mirror so verification never
+// rewrites a developer's working tree. Normal builds continue writing to the
+// repository.
+const outputRoot = process.env.PITOLET_SITE_OUTPUT_ROOT
+  ? resolve(process.env.PITOLET_SITE_OUTPUT_ROOT)
+  : repoRoot;
 
 // ---------------------------------------------------------------------------
 // Token helpers — reference the document's own token set (dark Pitolet theme)
@@ -87,15 +93,21 @@ function applyPitoletTheme(doc: PitoletDocument) {
     'surface-2': { $value: oklch(0.2, 0.009, 250), $description: 'Card surface' },
     foreground: { $value: oklch(0.95, 0.006, 250), $description: 'Primary text' },
     'muted-foreground': { $value: oklch(0.7, 0.012, 250), $description: 'Secondary text' },
-    'subtle-foreground': { $value: oklch(0.55, 0.014, 250), $description: 'Tertiary text' },
+    'subtle-foreground': { $value: oklch(0.62, 0.014, 250), $description: 'Tertiary text' },
     primary: { $value: oklch(0.71, 0.125, 215), $description: 'Glacial accent' },
     'primary-strong': { $value: oklch(0.6, 0.14, 222), $description: 'Accent (pressed)' },
     'primary-foreground': { $value: oklch(0.14, 0.02, 222), $description: 'Text on accent' },
     border: { $value: oklch(1, 0, 0, 0.09), $description: 'Hairline border' },
     'border-strong': { $value: oklch(1, 0, 0, 0.16), $description: 'Stronger border' },
   };
-  doc.tokens.typography.fontFamily.sans = { $value: 'Inter' };
-  doc.tokens.typography.fontFamily.mono = { $value: 'JetBrains Mono' };
+  // The static site ships no font binaries and makes no third-party requests.
+  // Declare stacks that are actually present on visitors' systems.
+  doc.tokens.typography.fontFamily.sans = {
+    $value: "-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif",
+  };
+  doc.tokens.typography.fontFamily.mono = {
+    $value: "ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace",
+  };
   // Extend the type scale for the hero display size.
   doc.tokens.typography.fontSize['7xl'] = { $value: px(72) };
 }
@@ -133,12 +145,13 @@ function buildDoc(): { doc: PitoletDocument; frameId: string } {
   );
 
   buildNav(doc, frame.id);
-  buildHero(doc, frame.id);
-  buildProofStrip(doc, frame.id);
-  buildValueProps(doc, frame.id);
-  buildImportCallout(doc, frame.id);
-  buildDogfoodNote(doc, frame.id);
-  buildPricing(doc, frame.id);
+  const main = pageMain(doc, frame.id);
+  buildHero(doc, main.id);
+  buildProofStrip(doc, main.id);
+  buildValueProps(doc, main.id);
+  buildImportCallout(doc, main.id);
+  buildDogfoodNote(doc, main.id);
+  buildPricing(doc, main.id);
   buildFooter(doc, frame.id);
 
   return { doc, frameId: frame.id };
@@ -177,11 +190,12 @@ function buildComparisonDoc(): { doc: PitoletDocument; frameId: string } {
   );
 
   buildNav(doc, frame.id);
-  buildComparisonHero(doc, frame.id);
-  buildComparisonMatrix(doc, frame.id);
-  buildFigmaWins(doc, frame.id);
-  buildTeamUseCases(doc, frame.id);
-  buildComparisonCta(doc, frame.id);
+  const main = pageMain(doc, frame.id);
+  buildComparisonHero(doc, main.id);
+  buildComparisonMatrix(doc, main.id);
+  buildFigmaWins(doc, main.id);
+  buildTeamUseCases(doc, main.id);
+  buildComparisonCta(doc, main.id);
   buildFooter(doc, frame.id);
 
   return { doc, frameId: frame.id };
@@ -190,6 +204,23 @@ function buildComparisonDoc(): { doc: PitoletDocument; frameId: string } {
 // ---------------------------------------------------------------------------
 // Shared building blocks
 // ---------------------------------------------------------------------------
+
+function pageMain(doc: PitoletDocument, parentId: string) {
+  return attach(
+    doc,
+    parentId,
+    createElement({
+      name: 'Main',
+      tag: 'main',
+      styles: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        width: 'fill',
+      },
+    }),
+  );
+}
 
 /** A centered content column: sections attach a full-bleed band, then this. */
 function contentColumn(
@@ -263,17 +294,6 @@ function band(
   return el;
 }
 
-const RIDGELINE_PATH = 'M3 18 L9.5 6 L13.5 13 L16.5 8.5 L21 18';
-
-/** BrandMark ridgeline as an SVG data URI, rendered via an image node. */
-function brandMarkDataUri(strokeCss: string): string {
-  const svg =
-    `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" ` +
-    `fill="none" stroke="${strokeCss}" stroke-width="2" stroke-linecap="round" ` +
-    `stroke-linejoin="round"><path d="${RIDGELINE_PATH}"/></svg>`;
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-}
-
 const ACCENT_CSS = 'oklch(0.71 0.125 215)';
 
 // ---------------------------------------------------------------------------
@@ -326,7 +346,7 @@ function buildNav(doc: PitoletDocument, frameId: string) {
     brand.id,
     createImage({
       name: 'BrandMark',
-      src: { url: brandMarkDataUri(ACCENT_CSS) },
+      src: { url: '/media/pitolet-mark.svg' },
       alt: 'Pitolet',
       styles: { width: px(24), height: px(24) },
     }),
@@ -620,6 +640,10 @@ function buildHero(doc: PitoletDocument, frameId: string) {
       },
     }),
   );
+  media.styles.breakpoints = {
+    md: { maxWidth: px(680) },
+    lg: { maxWidth: px(580) },
+  };
   attach(
     doc,
     media.id,
@@ -1158,11 +1182,11 @@ function buildImportCallout(doc: PitoletDocument, frameId: string) {
       'One responsive document',
       'Pitolet captures the page at three widths and stores the differences as breakpoints.',
     ],
-    ['Local assets', 'Images are copied into Pitolet instead of staying linked to the source site.'],
     [
-      'See what changed',
-      'The import report shows how closely each width matches the source.',
+      'Local assets',
+      'Images are copied into Pitolet instead of staying linked to the source site.',
     ],
+    ['See what changed', 'The import report shows how closely each width matches the source.'],
   ];
   for (const [title, body] of points) {
     const row = attach(
@@ -1795,11 +1819,7 @@ function buildComparisonMatrix(doc: PitoletDocument, frameId: string) {
   }
 
   const rows: Array<[string, string, string]> = [
-    [
-      'Layout',
-      'Uses Figma’s own layout model.',
-      'Uses flexbox and grid in the browser.',
-    ],
+    ['Layout', 'Uses Figma’s own layout model.', 'Uses flexbox and grid in the browser.'],
     [
       'Responsive design',
       'Responsive work stays in Figma’s design model.',
@@ -2330,14 +2350,14 @@ function emitPage(opts: {
   }
 
   // (a) write the source document
-  const docPath = resolve(repoRoot, opts.docPath);
+  const docPath = resolve(outputRoot, opts.docPath);
   mkdirSync(dirname(docPath), { recursive: true });
   writeFileSync(docPath, JSON.stringify(doc, null, 2) + '\n');
 
   // (b) generate the static page via Pitolet's own codegen
   const previewHtml = buildPreviewHtml(doc, frameId);
   const page = wrapForProduction(previewHtml, opts.meta);
-  const outPath = resolve(repoRoot, opts.outPath);
+  const outPath = resolve(outputRoot, opts.outPath);
   mkdirSync(dirname(outPath), { recursive: true });
   writeFileSync(outPath, page);
 
@@ -2346,11 +2366,15 @@ function emitPage(opts: {
     ['contains @media rules', page.includes('@media (min-width: 768px)')],
     ['no /assets-store refs', !page.includes('/assets-store')],
     ['no app-relative asset urls', !page.includes('src="assets/')],
+    ['no undeclared Inter font', !/\bInter\b/.test(page)],
+    ['no undeclared JetBrains Mono font', !/\bJetBrains Mono\b/.test(page)],
     ['favicon inlined', page.includes('rel="icon"')],
     ['no em dashes in page copy', !page.includes('—')],
     [
       'no stock marketing phrases',
-      !/\b(delv(?:e|es|ed|ing)|tapestry|realm|landscape|leverage|robust|seamless(?:ly)?|nuanced|foster|navigate|underscore|pivotal|crucial|comprehensive|intricate|effortless(?:ly)?|revolutionary|game-changing|supercharge|unlock)\b/i.test(page),
+      !/\b(delv(?:e|es|ed|ing)|tapestry|realm|landscape|leverage|robust|seamless(?:ly)?|nuanced|foster|navigate|underscore|pivotal|crucial|comprehensive|intricate|effortless(?:ly)?|revolutionary|game-changing|supercharge|unlock)\b/i.test(
+        page,
+      ),
     ],
     [
       'no formulaic AI phrases',
@@ -2375,11 +2399,15 @@ function emitPage(opts: {
 }
 
 function main() {
-  const mediaDir = resolve(repoRoot, 'deploy/static/media');
+  const mediaDir = resolve(outputRoot, 'deploy/static/media');
   mkdirSync(mediaDir, { recursive: true });
   copyFileSync(
     resolve(repoRoot, 'marketing/assets/pitolet-insert.png'),
     resolve(mediaDir, 'pitolet-insert.png'),
+  );
+  copyFileSync(
+    resolve(repoRoot, 'site/assets/pitolet-mark.svg'),
+    resolve(mediaDir, 'pitolet-mark.svg'),
   );
 
   emitPage({

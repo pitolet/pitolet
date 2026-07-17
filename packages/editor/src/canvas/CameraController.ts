@@ -23,12 +23,33 @@ export class CameraController {
   private rafId = 0;
   private listeners = new Set<() => void>();
   private animation: number | null = null;
-  private pendingFit: (() => { x: number; y: number; width: number; height: number }) | null =
-    null;
+  private resizeObserver: ResizeObserver | null = null;
+  private viewportSize = { width: 0, height: 0 };
+  private pendingFit: (() => { x: number; y: number; width: number; height: number }) | null = null;
+  private fitGeneration = 0;
 
   attach(viewport: HTMLElement, world: HTMLElement): void {
     this.viewportEl = viewport;
     this.worldEl = world;
+    this.viewportSize = { width: viewport.clientWidth, height: viewport.clientHeight };
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = new ResizeObserver(() => {
+      const width = viewport.clientWidth;
+      const height = viewport.clientHeight;
+      const previous = this.viewportSize;
+      this.viewportSize = { width, height };
+      if (
+        previous.width > 0 &&
+        previous.height > 0 &&
+        (width !== previous.width || height !== previous.height)
+      ) {
+        // Preserve the world point at the center of the viewport when panels
+        // open, close, or resize. Otherwise the canvas appears to jump toward
+        // the side that changed.
+        this.panBy((width - previous.width) / 2, (height - previous.height) / 2);
+      }
+    });
+    this.resizeObserver.observe(viewport);
     this.applyNow();
     // A fit requested before the viewport was attached runs now that it is.
     if (this.pendingFit) this.runPendingFit();
@@ -40,6 +61,7 @@ export class CameraController {
    */
   requestInitialFit(getRect: () => { x: number; y: number; width: number; height: number }): void {
     this.pendingFit = getRect;
+    this.fitGeneration += 1;
     if (this.viewportEl) this.runPendingFit();
   }
 
@@ -47,6 +69,7 @@ export class CameraController {
     const getRect = this.pendingFit;
     const vp = this.viewportEl;
     if (!getRect || !vp) return;
+    const generation = this.fitGeneration;
     this.pendingFit = null;
     // Poll on rAF until the viewport has a size that's stable for two frames
     // (panels finish laying out), then fit. rAF works everywhere; a fixed
@@ -55,6 +78,7 @@ export class CameraController {
     let stable = 0;
     let tries = 0;
     const attempt = () => {
+      if (generation !== this.fitGeneration || this.viewportEl !== vp) return;
       const w = vp.clientWidth;
       if (w > 0 && w === lastW) stable++;
       else stable = 0;
@@ -70,6 +94,10 @@ export class CameraController {
   }
 
   detach(): void {
+    this.cancelAnimation();
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = null;
+    this.viewportSize = { width: 0, height: 0 };
     this.viewportEl = null;
     this.worldEl = null;
   }
@@ -87,18 +115,16 @@ export class CameraController {
   }
 
   panBy(dx: number, dy: number): void {
+    this.stopAnimation();
     this.set(this.x + dx, this.y + dy, this.zoom);
   }
 
   /** Zoom by a factor, keeping the given viewport-local point fixed. */
   zoomAt(point: { x: number; y: number }, factor: number): void {
+    this.stopAnimation();
     const next = clamp(this.zoom * factor, MIN_ZOOM, MAX_ZOOM);
     const applied = next / this.zoom;
-    this.set(
-      point.x - (point.x - this.x) * applied,
-      point.y - (point.y - this.y) * applied,
-      next,
-    );
+    this.set(point.x - (point.x - this.x) * applied, point.y - (point.y - this.y) * applied, next);
   }
 
   /** Convert a viewport-local point to world coordinates. */
@@ -154,8 +180,20 @@ export class CameraController {
     this.zoomAt(center, zoom / this.zoom);
   }
 
+  /** Freeze camera motion before a canvas manipulation starts. */
+  cancelAnimation(): void {
+    this.stopAnimation();
+    this.pendingFit = null;
+    this.fitGeneration += 1;
+    if (this.rafId !== 0) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = 0;
+      this.applyNow();
+    }
+  }
+
   private animateTo(tx: number, ty: number, tzoom: number): void {
-    if (this.animation !== null) cancelAnimationFrame(this.animation);
+    this.stopAnimation();
     const start = performance.now();
     const duration = 220;
     const { x: sx, y: sy, zoom: sz } = this;
@@ -167,6 +205,13 @@ export class CameraController {
       else this.animation = null;
     };
     this.animation = requestAnimationFrame(step);
+  }
+
+  /** Stop a fit/focus animation as soon as the user starts moving the camera. */
+  private stopAnimation(): void {
+    if (this.animation === null) return;
+    cancelAnimationFrame(this.animation);
+    this.animation = null;
   }
 
   private scheduleApply(): void {

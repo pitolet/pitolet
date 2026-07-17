@@ -22,6 +22,7 @@ export interface PaddleConfig {
   apiKey: string;
   webhookSecret: string;
   priceIdPro: string;
+  productIdPro: string;
   env: 'sandbox' | 'production';
   apiBase: string;
 }
@@ -35,35 +36,41 @@ const REQUIRED_ENV = [
   'PADDLE_API_KEY',
   'PADDLE_WEBHOOK_SECRET',
   'PADDLE_PRICE_ID_PRO',
+  'PADDLE_PRODUCT_ID_PRO',
   'PADDLE_ENV',
 ] as const;
 
 /**
- * Billing config from env; null = billing disabled (dev / self-host): the
- * webhook route 404s, reconcile never runs, all workspaces stay 'free'.
- * Partial env is a deploy mistake — warn loudly, then stay disabled rather
- * than half-run the money path.
+ * Billing config from env. Production requires either a complete config or
+ * an explicit PADDLE_BILLING_DISABLED=true. Partial/invalid money-path
+ * configuration is a boot error rather than a silent free-plan deployment.
  */
 export function loadPaddleConfig(env: NodeJS.ProcessEnv = process.env): PaddleConfig | null {
   const missing = REQUIRED_ENV.filter((name) => !env[name]);
-  if (missing.length === REQUIRED_ENV.length) return null;
-  if (missing.length > 0) {
-    console.warn(
-      `[pitolet-cloud] billing DISABLED: partial Paddle env (missing ${missing.join(', ')})`,
-    );
+  const explicitlyDisabled = env.PADDLE_BILLING_DISABLED === 'true';
+  if (missing.length === REQUIRED_ENV.length) {
+    if (env.NODE_ENV === 'production' && !explicitlyDisabled) {
+      throw new Error(
+        'Paddle billing is not configured; set all Paddle variables or PADDLE_BILLING_DISABLED=true',
+      );
+    }
     return null;
+  }
+  if (explicitlyDisabled) {
+    throw new Error('PADDLE_BILLING_DISABLED=true cannot be combined with Paddle credentials');
+  }
+  if (missing.length > 0) {
+    throw new Error(`partial Paddle configuration (missing ${missing.join(', ')})`);
   }
   const paddleEnv = env.PADDLE_ENV;
   if (paddleEnv !== 'sandbox' && paddleEnv !== 'production') {
-    console.warn(
-      `[pitolet-cloud] billing DISABLED: PADDLE_ENV must be 'sandbox' or 'production' (got '${paddleEnv}')`,
-    );
-    return null;
+    throw new Error(`PADDLE_ENV must be 'sandbox' or 'production' (got '${paddleEnv}')`);
   }
   return {
     apiKey: env.PADDLE_API_KEY!,
     webhookSecret: env.PADDLE_WEBHOOK_SECRET!,
     priceIdPro: env.PADDLE_PRICE_ID_PRO!,
+    productIdPro: env.PADDLE_PRODUCT_ID_PRO!,
     env: paddleEnv,
     apiBase: API_BASES[paddleEnv],
   };
@@ -116,11 +123,7 @@ export function verifyPaddleSignature(
 
   // HMAC-SHA256(secret, `${ts}:${rawBody}`) over the raw BYTES — computing
   // from a re-serialized JSON parse would silently accept forgeries.
-  const expected = createHmac('sha256', secret)
-    .update(ts)
-    .update(':')
-    .update(rawBody)
-    .digest();
+  const expected = createHmac('sha256', secret).update(ts).update(':').update(rawBody).digest();
   for (const mac of macs) {
     if (!/^[0-9a-f]{64}$/i.test(mac)) continue;
     const provided = Buffer.from(mac, 'hex');
@@ -143,6 +146,8 @@ export type WebhookOutcome =
   | { status: 'duplicate' }
   | { status: 'stale' } // out-of-order: older than the subscription row
   | { status: 'unknown-workspace' }
+  | { status: 'invalid-workspace-binding' }
+  | { status: 'invalid-product' }
   | { status: 'ignored-event-type' }
   | { status: 'invalid' }; // structurally malformed (router answers 400)
 
@@ -172,6 +177,9 @@ interface ParsedEvent {
   status: string;
   currentPeriodEnd: string | null;
   workspaceId: string | null;
+  workspaceSignature: string | null;
+  priceIds: string[];
+  productIds: string[];
 }
 
 function parseEvent(payload: unknown): ParsedEvent | null {
@@ -196,6 +204,24 @@ function parseEvent(payload: unknown): ParsedEvent | null {
       : {}
   ) as Record<string, unknown>;
   const periodEnd = period.ends_at;
+  const items = Array.isArray(data.items) ? data.items : [];
+  const priceIds: string[] = [];
+  const productIds: string[] = [];
+  for (const item of items) {
+    if (typeof item !== 'object' || item === null) continue;
+    const price = (
+      typeof (item as Record<string, unknown>).price === 'object' &&
+      (item as Record<string, unknown>).price !== null
+        ? (item as Record<string, unknown>).price
+        : {}
+    ) as Record<string, unknown>;
+    if (typeof price.id === 'string') priceIds.push(price.id);
+    if (typeof price.product_id === 'string') productIds.push(price.product_id);
+    const product = (
+      typeof price.product === 'object' && price.product !== null ? price.product : {}
+    ) as Record<string, unknown>;
+    if (typeof product.id === 'string') productIds.push(product.id);
+  }
   return {
     eventId,
     eventType,
@@ -206,7 +232,31 @@ function parseEvent(payload: unknown): ParsedEvent | null {
     currentPeriodEnd:
       typeof periodEnd === 'string' && !Number.isNaN(Date.parse(periodEnd)) ? periodEnd : null,
     workspaceId: typeof customData.workspaceId === 'string' ? customData.workspaceId : null,
+    workspaceSignature:
+      typeof customData.workspaceSig === 'string' ? customData.workspaceSig : null,
+    priceIds,
+    productIds,
   };
+}
+
+/** Signed checkout metadata binds a paid subscription to one workspace. */
+export function workspaceCheckoutSignature(secret: string, workspaceId: string): string {
+  return createHmac('sha256', secret).update('pitolet-checkout:').update(workspaceId).digest('hex');
+}
+
+function validWorkspaceBinding(
+  config: PaddleConfig,
+  workspaceId: string | null,
+  signature: string | null,
+): workspaceId is string {
+  if (!workspaceId || !UUID_PATTERN.test(workspaceId) || !signature) return false;
+  if (!/^[0-9a-f]{64}$/i.test(signature)) return false;
+  const expected = Buffer.from(
+    workspaceCheckoutSignature(config.webhookSecret, workspaceId),
+    'hex',
+  );
+  const provided = Buffer.from(signature, 'hex');
+  return provided.length === expected.length && timingSafeEqual(provided, expected);
 }
 
 /**
@@ -217,10 +267,20 @@ function parseEvent(payload: unknown): ParsedEvent | null {
 export async function processPaddleWebhook(
   pool: Pool,
   payload: unknown,
+  config: PaddleConfig,
   listener?: PlanChangeListener,
 ): Promise<WebhookOutcome> {
   const event = parseEvent(payload);
   if (!event) return { status: 'invalid' };
+  // Lifecycle events without a subscription id or status cannot be ordered
+  // or reconciled safely. Reject them before the idempotency ledger so a
+  // corrected Paddle retry can still be processed under the same event id.
+  if (
+    SUBSCRIPTION_EVENTS.has(event.eventType) &&
+    (!event.subscriptionId || !event.status || event.status === 'unknown')
+  ) {
+    return { status: 'invalid' };
+  }
 
   const client = await pool.connect();
   try {
@@ -252,20 +312,48 @@ export async function processPaddleWebhook(
       return await commitNoop({ status: 'ignored-event-type' });
     }
 
-    // workspaceId comes from checkout custom_data — validate it names a real
-    // workspace. Unknown ⇒ log + processed (200), never 5xx a valid webhook.
-    if (!event.workspaceId || !UUID_PATTERN.test(event.workspaceId)) {
+    if (
+      !event.priceIds.includes(config.priceIdPro) ||
+      !event.productIds.includes(config.productIdPro)
+    ) {
       console.warn(
-        `[pitolet-cloud] paddle event ${event.eventId}: missing/malformed custom_data.workspaceId — ignored`,
+        `[pitolet-cloud] paddle event ${event.eventId}: subscription does not contain the configured Pro product and price — ignored`,
       );
-      return await commitNoop({ status: 'unknown-workspace' });
+      return await commitNoop({ status: 'invalid-product' });
     }
+
+    // An existing subscription id is the strongest binding and is never
+    // reassigned. A new subscription must carry server-signed custom data.
+    const existingBinding = event.subscriptionId
+      ? await client.query(
+          `SELECT workspace_id FROM subscriptions
+           WHERE paddle_subscription_id = $1 FOR UPDATE`,
+          [event.subscriptionId],
+        )
+      : null;
+    let workspaceId = existingBinding?.rows[0]?.workspace_id as string | undefined;
+    if (workspaceId) {
+      if (event.workspaceId && event.workspaceId !== workspaceId) {
+        console.warn(
+          `[pitolet-cloud] paddle event ${event.eventId}: subscription workspace binding changed — ignored`,
+        );
+        return await commitNoop({ status: 'invalid-workspace-binding' });
+      }
+    } else if (validWorkspaceBinding(config, event.workspaceId, event.workspaceSignature)) {
+      workspaceId = event.workspaceId;
+    } else {
+      console.warn(
+        `[pitolet-cloud] paddle event ${event.eventId}: invalid signed workspace binding — ignored`,
+      );
+      return await commitNoop({ status: 'invalid-workspace-binding' });
+    }
+
     const ws = await client.query('SELECT id FROM workspaces WHERE id = $1 FOR UPDATE', [
-      event.workspaceId,
+      workspaceId,
     ]);
     if (ws.rowCount === 0) {
       console.warn(
-        `[pitolet-cloud] paddle event ${event.eventId}: workspace ${event.workspaceId} does not exist — ignored`,
+        `[pitolet-cloud] paddle event ${event.eventId}: workspace ${workspaceId} does not exist — ignored`,
       );
       return await commitNoop({ status: 'unknown-workspace' });
     }
@@ -274,7 +362,7 @@ export async function processPaddleWebhook(
     // (updated_at stores the occurred_at of the last APPLIED event).
     const sub = await client.query(
       'SELECT updated_at FROM subscriptions WHERE workspace_id = $1 FOR UPDATE',
-      [event.workspaceId],
+      [workspaceId],
     );
     const watermark = sub.rows[0]?.updated_at as Date | undefined;
     if (watermark && Date.parse(event.occurredAt) < new Date(watermark).getTime()) {
@@ -288,36 +376,35 @@ export async function processPaddleWebhook(
     await client.query(
       `INSERT INTO subscriptions
          (workspace_id, paddle_subscription_id, paddle_customer_id, plan, status, current_period_end, updated_at)
-       VALUES ($1, $2, $3, 'pro', $4, $5, $6)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
        ON CONFLICT (workspace_id) DO UPDATE SET
          paddle_subscription_id = EXCLUDED.paddle_subscription_id,
          paddle_customer_id = EXCLUDED.paddle_customer_id,
+         plan = EXCLUDED.plan,
          status = EXCLUDED.status,
          current_period_end = EXCLUDED.current_period_end,
          updated_at = EXCLUDED.updated_at`,
       [
-        event.workspaceId,
+        workspaceId,
         event.subscriptionId,
         event.customerId,
+        plan,
         event.status,
         event.currentPeriodEnd,
         event.occurredAt,
       ],
     );
-    await client.query('UPDATE workspaces SET plan = $2 WHERE id = $1', [
-      event.workspaceId,
-      plan,
-    ]);
+    await client.query('UPDATE workspaces SET plan = $2 WHERE id = $1', [workspaceId, plan]);
     await markProcessed();
     await client.query('COMMIT');
 
     // Push into live runtimes AFTER commit — a rollback must never leave a
     // runtime believing in a plan the database rejected.
-    listener?.onPlanChanged(event.workspaceId, plan);
+    listener?.onPlanChanged(workspaceId, plan);
     console.log(
-      `[pitolet-cloud] paddle ${event.eventType} applied: workspace ${event.workspaceId} → plan ${plan} (status ${event.status})`,
+      `[pitolet-cloud] paddle ${event.eventType} applied: workspace ${workspaceId} → plan ${plan} (status ${event.status})`,
     );
-    return { status: 'processed', workspaceId: event.workspaceId, plan };
+    return { status: 'processed', workspaceId, plan };
   } catch (err) {
     await client.query('ROLLBACK').catch(() => {});
     throw err;
@@ -360,11 +447,29 @@ export async function reconcilePaddleSubscriptions(
         continue;
       }
       const body = (await res.json()) as {
-        data?: { status?: string; current_billing_period?: { ends_at?: string } };
+        data?: {
+          status?: string;
+          current_billing_period?: { ends_at?: string };
+          items?: Array<{
+            price?: { id?: string; product_id?: string; product?: { id?: string } };
+          }>;
+        };
       };
       const liveStatus = body.data?.status;
       if (!liveStatus) continue;
-      const livePlan: Plan = ACTIVE_STATUSES.has(liveStatus) ? 'pro' : 'free';
+      const hasConfiguredProduct = (body.data?.items ?? []).some(
+        (item) =>
+          item.price?.id === config.priceIdPro &&
+          (item.price.product_id === config.productIdPro ||
+            item.price.product?.id === config.productIdPro),
+      );
+      const livePlan: Plan =
+        ACTIVE_STATUSES.has(liveStatus) && hasConfiguredProduct ? 'pro' : 'free';
+      if (ACTIVE_STATUSES.has(liveStatus) && !hasConfiguredProduct) {
+        console.error(
+          `[pitolet-cloud] paddle reconcile: subscription ${subId} has an active status but not the configured Pro product`,
+        );
+      }
       const statusDrift = liveStatus !== (row.status as string);
       const planDrift = livePlan !== planOf(row.plan);
       if (!statusDrift && !planDrift) continue;
@@ -372,12 +477,27 @@ export async function reconcilePaddleSubscriptions(
         `[pitolet-cloud] paddle reconcile: correcting workspace ${workspaceId} ` +
           `(status ${row.status} → ${liveStatus}, plan ${row.plan} → ${livePlan})`,
       );
-      await pool.query(
-        `UPDATE subscriptions SET status = $2, current_period_end = $3, updated_at = now()
-         WHERE workspace_id = $1`,
-        [workspaceId, liveStatus, body.data?.current_billing_period?.ends_at ?? null],
-      );
-      await pool.query('UPDATE workspaces SET plan = $2 WHERE id = $1', [workspaceId, livePlan]);
+      const client = await pool.connect();
+      try {
+        await client.query('BEGIN');
+        await client.query('SELECT id FROM workspaces WHERE id = $1 FOR UPDATE', [workspaceId]);
+        await client.query(
+          `UPDATE subscriptions
+           SET status = $2, plan = $3, current_period_end = $4, updated_at = now()
+           WHERE workspace_id = $1`,
+          [workspaceId, liveStatus, livePlan, body.data?.current_billing_period?.ends_at ?? null],
+        );
+        await client.query('UPDATE workspaces SET plan = $2 WHERE id = $1', [
+          workspaceId,
+          livePlan,
+        ]);
+        await client.query('COMMIT');
+      } catch (err) {
+        await client.query('ROLLBACK').catch(() => {});
+        throw err;
+      } finally {
+        client.release();
+      }
       listener?.onPlanChanged(workspaceId, livePlan);
     } catch (err) {
       console.error(`[pitolet-cloud] paddle reconcile failed for subscription ${subId}:`, err);

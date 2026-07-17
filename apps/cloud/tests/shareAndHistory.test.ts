@@ -1,7 +1,8 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { createSampleDocument } from '@pitolet/schema';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import net from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -43,6 +44,7 @@ let globex: { id: string; slug: string; docId: string };
 
 /** The canonical share link for acme's doc A, minted in beforeAll. */
 let shareA: string;
+let docBOnlyAsset: string;
 
 async function freePort(): Promise<number> {
   return new Promise((resolve, reject) => {
@@ -87,7 +89,10 @@ function api(
 interface WsClient {
   ws: WebSocket;
   /** Next buffered message matching the predicate (default: any). */
-  next(predicate?: (m: Record<string, unknown>) => boolean, timeoutMs?: number): Promise<Record<string, unknown>>;
+  next(
+    predicate?: (m: Record<string, unknown>) => boolean,
+    timeoutMs?: number,
+  ): Promise<Record<string, unknown>>;
   close(): void;
 }
 
@@ -147,6 +152,15 @@ function mcpText(result: Awaited<ReturnType<Client['callTool']>>): string {
   return content.find((c) => c.type === 'text')?.text ?? '';
 }
 
+async function exchangeShare(token: string): Promise<string> {
+  const exchange = await fetch(`${base}/s/${token}`, { redirect: 'manual' });
+  expect(exchange.status).toBe(302);
+  const cookie = (exchange.headers.get('set-cookie') ?? '').split(';')[0]!;
+  expect(cookie).toContain('pitolet_share=psess_');
+  expect(exchange.headers.get('location')).not.toContain(token);
+  return cookie;
+}
+
 async function seedDocument(workspaceId: string, name: string): Promise<string> {
   const doc = createSampleDocument();
   doc.name = name;
@@ -168,7 +182,13 @@ async function mintShare(
   workspaceId: string,
   docId: string,
   expiresInDays?: number,
-): Promise<{ status: number; token?: string; url?: string; expiresAt?: string | null; error?: string }> {
+): Promise<{
+  status: number;
+  token?: string;
+  url?: string;
+  expiresAt?: string | null;
+  error?: string;
+}> {
   const res = await api(`/api/workspaces/${workspaceId}/share-links`, {
     method: 'POST',
     cookie,
@@ -179,13 +199,19 @@ async function mintShare(
 }
 
 /** Send a WS patch and wait for its ack (rev). */
-async function patchDoc(client: WsClient, docId: string, patchId: string, name: string): Promise<number> {
+async function patchDoc(
+  client: WsClient,
+  docId: string,
+  patchId: string,
+  name: string,
+  baseRev: number,
+): Promise<number> {
   client.ws.send(
     JSON.stringify({
       t: 'patch',
       docId,
       patchId,
-      baseRev: 0,
+      baseRev,
       label: 'rename',
       ops: [{ op: 'replace', path: ['name'], value: name }],
     }),
@@ -217,7 +243,12 @@ beforeAll(async () => {
     manager: {
       idleMs: 10 * 60_000,
       sweepMs: 60_000,
-      storage: { debounceMs: 25, maxWaitMs: 100, snapshotEveryRevs: 2, snapshotEveryMs: 60 * 60_000 },
+      storage: {
+        debounceMs: 25,
+        maxWaitMs: 100,
+        snapshotEveryRevs: 2,
+        snapshotEveryMs: 60 * 60_000,
+      },
     },
   });
   await new Promise<void>((resolve) => cloud.server.listen(port, '127.0.0.1', resolve));
@@ -239,7 +270,36 @@ beforeAll(async () => {
     docA: await seedDocument(acmeWs.id, 'Doc A'),
     docB: await seedDocument(acmeWs.id, 'Doc B'),
   };
-  globex = { id: globexWs.id, slug: 'globex', docId: await seedDocument(globexWs.id, 'Globex Doc') };
+  const privateAssetBytes = Buffer.from('doc-b-only-image');
+  docBOnlyAsset = `${createHash('sha256').update(privateAssetBytes).digest('hex')}.png`;
+  const assetDir = join(dataRoot, 'workspaces', acme.id, 'assets');
+  mkdirSync(assetDir, { recursive: true });
+  writeFileSync(join(assetDir, docBOnlyAsset), privateAssetBytes);
+  await pgi.pool.query(
+    `UPDATE documents
+     SET doc = jsonb_set(
+       doc,
+       '{assets}',
+       COALESCE(doc -> 'assets', '{}'::jsonb) ||
+         jsonb_build_object($2::text, $3::jsonb)
+     )
+     WHERE id = $1`,
+    [
+      acme.docB,
+      docBOnlyAsset,
+      JSON.stringify({
+        fileName: 'private.png',
+        width: 1,
+        height: 1,
+        mime: 'image/png',
+      }),
+    ],
+  );
+  globex = {
+    id: globexWs.id,
+    slug: 'globex',
+    docId: await seedDocument(globexWs.id, 'Globex Doc'),
+  };
 
   for (const [email, role] of [
     ['erin@acme.test', 'editor'],
@@ -320,10 +380,23 @@ describe('share link management', () => {
 });
 
 describe('GET /s/:token (public entry)', () => {
-  it('302s a valid token into the workspace with ?share=', async () => {
+  it('exchanges a valid URL token for an HttpOnly workspace cookie', async () => {
     const res = await fetch(`${base}/s/${shareA}`, { redirect: 'manual' });
     expect(res.status).toBe(302);
-    expect(res.headers.get('location')).toBe(`/w/acme/?share=${shareA}`);
+    expect(res.headers.get('location')).toBe('/w/acme/');
+    expect(res.headers.get('location')).not.toContain(shareA);
+    const cookie = res.headers.get('set-cookie') ?? '';
+    expect(cookie).toContain('pitolet_share=psess_');
+    expect(cookie).toContain('HttpOnly');
+    expect(cookie).toContain('SameSite=Lax');
+    expect(cookie).toContain('Path=/w/acme/');
+
+    const browser = await fetch(`${base}/w/acme/api/documents`, {
+      headers: { cookie: cookie.split(';')[0]! },
+    });
+    expect(browser.status).toBe(200);
+    const body = (await browser.json()) as { documents: Array<{ id: string }> };
+    expect(body.documents.map((doc) => doc.id)).toEqual([acme.docA]);
   });
 
   it('serves one byte-identical dark 404 page for invalid, revoked, and expired', async () => {
@@ -334,9 +407,10 @@ describe('GET /s/:token (public entry)', () => {
       body: { token: revoked },
     });
     const expired = (await mintShare(alice, acme.id, acme.docA)).token!;
-    await pgi.pool.query("UPDATE share_links SET expires_at = now() - interval '1 hour' WHERE token = $1", [
-      expired,
-    ]);
+    await pgi.pool.query(
+      "UPDATE share_links SET expires_at = now() - interval '1 hour' WHERE token = $1",
+      [expired],
+    );
 
     const responses = await Promise.all(
       [`pshare_${'0'.repeat(24)}`, 'not-even-a-token', revoked, expired].map((t) =>
@@ -354,23 +428,47 @@ describe('GET /s/:token (public entry)', () => {
 });
 
 describe('share-authenticated access (the security boundary)', () => {
-  it('lists ONLY the shared document over ?share=', async () => {
-    const res = await fetch(`${base}/w/acme/api/documents?share=${shareA}`);
+  it('lists only the shared document through an exchanged HttpOnly session', async () => {
+    const shareCookie = await exchangeShare(shareA);
+    const res = await fetch(`${base}/w/acme/api/documents`, {
+      headers: { cookie: shareCookie },
+    });
     expect(res.status).toBe(200);
+    expect(res.headers.get('x-pitolet-read-only')).toBe('true');
     const body = (await res.json()) as { documents: Array<{ id: string }> };
     expect(body.documents.map((d) => d.id)).toEqual([acme.docA]); // docB invisible
   });
 
-  it('rejects the token on another workspace with a byte-identical 401', async () => {
-    const foreign = await fetch(`${base}/w/globex/api/documents?share=${shareA}`);
-    const invalid = await fetch(`${base}/w/globex/api/documents?share=pshare_${'0'.repeat(24)}`);
+  it('serves only assets declared by the shared document', async () => {
+    const shareCookie = await exchangeShare(shareA);
+    const denied = await fetch(`${base}/w/acme/assets-store/${docBOnlyAsset}`, {
+      headers: { cookie: shareCookie },
+    });
+    expect(denied.status).toBe(404);
+
+    const owner = await fetch(`${base}/w/acme/assets-store/${docBOnlyAsset}`, {
+      headers: { cookie: alice },
+    });
+    expect(owner.status).toBe(200);
+    expect(Buffer.from(await owner.arrayBuffer())).toEqual(Buffer.from('doc-b-only-image'));
+  });
+
+  it('rejects a share session on another workspace with a byte-identical 401', async () => {
+    const shareCookie = await exchangeShare(shareA);
+    const foreign = await fetch(`${base}/w/globex/api/documents`, {
+      headers: { cookie: shareCookie },
+    });
+    const invalid = await fetch(`${base}/w/globex/api/documents`, {
+      headers: { 'x-pitolet-share': `pshare_${'0'.repeat(24)}` },
+    });
     expect(foreign.status).toBe(401);
     expect(invalid.status).toBe(401);
     expect(await foreign.text()).toBe(await invalid.text());
   });
 
-  it('opens a WS via ?share=, reads the shared doc, and gets rejected on writes and other docs', async () => {
-    const client = await wsConnect(`ws://127.0.0.1:${port}/w/acme/ws?share=${shareA}`);
+  it('opens a WS with the share cookie, reads one doc, and rejects writes and other docs', async () => {
+    const shareCookie = await exchangeShare(shareA);
+    const client = await wsConnect(`ws://127.0.0.1:${port}/w/acme/ws`, shareCookie);
     try {
       client.ws.send(JSON.stringify({ t: 'open', docId: acme.docA }));
       const doc = await client.next();
@@ -400,7 +498,9 @@ describe('share-authenticated access (the security boundary)', () => {
     }
 
     // Server state untouched.
-    const list = await fetch(`${base}/w/acme/api/documents?share=${shareA}`);
+    const list = await fetch(`${base}/w/acme/api/documents`, {
+      headers: { cookie: shareCookie },
+    });
     const body = (await list.json()) as { documents: Array<{ name: string }> };
     expect(body.documents[0]!.name).not.toBe('Pwned');
   });
@@ -424,7 +524,9 @@ describe('share-authenticated access (the security boundary)', () => {
       expect(names, writeTool).not.toContain(writeTool);
     }
 
-    const docs = JSON.parse(mcpText(await client.callTool({ name: 'list_documents', arguments: {} }))) as {
+    const docs = JSON.parse(
+      mcpText(await client.callTool({ name: 'list_documents', arguments: {} })),
+    ) as {
       documents: Array<{ id: string }>;
     };
     expect(docs.documents.map((d) => d.id)).toEqual([acme.docA]);
@@ -438,7 +540,10 @@ describe('share-authenticated access (the security boundary)', () => {
 
   it('revoked and expired tokens die with the byte-identical API 401', async () => {
     const doomed = (await mintShare(alice, acme.id, acme.docA)).token!;
-    const before = await fetch(`${base}/w/acme/api/documents?share=${doomed}`);
+    const shareCookie = await exchangeShare(doomed);
+    const before = await fetch(`${base}/w/acme/api/documents`, {
+      headers: { cookie: shareCookie },
+    });
     expect(before.status).toBe(200);
     const revoke = await api(`/api/workspaces/${acme.id}/share-links`, {
       method: 'DELETE',
@@ -448,22 +553,43 @@ describe('share-authenticated access (the security boundary)', () => {
     expect(revoke.status).toBe(200);
 
     const fading = (await mintShare(alice, acme.id, acme.docA)).token!;
-    await pgi.pool.query("UPDATE share_links SET expires_at = now() - interval '1 minute' WHERE token = $1", [
-      fading,
-    ]);
+    await pgi.pool.query(
+      "UPDATE share_links SET expires_at = now() - interval '1 minute' WHERE token = $1",
+      [fading],
+    );
 
-    const revokedRes = await fetch(`${base}/w/acme/api/documents?share=${doomed}`);
-    const expiredRes = await fetch(`${base}/w/acme/api/documents?share=${fading}`);
-    const invalidRes = await fetch(`${base}/w/acme/api/documents?share=pshare_${'f'.repeat(24)}`);
+    const revokedRes = await fetch(`${base}/w/acme/api/documents`, {
+      headers: { 'x-pitolet-share': doomed },
+    });
+    const expiredRes = await fetch(`${base}/w/acme/api/documents`, {
+      headers: { 'x-pitolet-share': fading },
+    });
+    const invalidRes = await fetch(`${base}/w/acme/api/documents`, {
+      headers: { 'x-pitolet-share': `pshare_${'f'.repeat(24)}` },
+    });
     expect(revokedRes.status).toBe(401);
     expect(expiredRes.status).toBe(401);
     expect(invalidRes.status).toBe(401);
+    const revokedSession = await fetch(`${base}/w/acme/api/documents`, {
+      headers: { cookie: shareCookie },
+    });
+    expect(revokedSession.status).toBe(401);
     const invalidText = await invalidRes.text();
     expect(await revokedRes.text()).toBe(invalidText);
     expect(await expiredRes.text()).toBe(invalidText);
 
     // And the WS upgrade dies the same way.
-    await expect(wsConnect(`ws://127.0.0.1:${port}/w/acme/ws?share=${doomed}`)).rejects.toThrow(
+    await expect(wsConnect(`ws://127.0.0.1:${port}/w/acme/ws`, shareCookie)).rejects.toThrow(
+      'ws upgrade rejected: 401',
+    );
+  });
+
+  it('never accepts raw share credentials in API, asset, or WebSocket URLs', async () => {
+    const apiResult = await fetch(`${base}/w/acme/api/documents?share=${shareA}`);
+    const assetResult = await fetch(`${base}/w/acme/assets-store/${docBOnlyAsset}?share=${shareA}`);
+    expect(apiResult.status).toBe(401);
+    expect(assetResult.status).toBe(401);
+    await expect(wsConnect(`ws://127.0.0.1:${port}/w/acme/ws?share=${shareA}`)).rejects.toThrow(
       'ws upgrade rejected: 401',
     );
   });
@@ -503,8 +629,8 @@ describe('version history', () => {
     try {
       client.ws.send(JSON.stringify({ t: 'open', docId: acme.docA }));
       await client.next((m) => m.t === 'doc');
-      await patchDoc(client, acme.docA, 'h1', 'Draft');
-      const rev = await patchDoc(client, acme.docA, 'h2', 'Version One');
+      const firstRev = await patchDoc(client, acme.docA, 'h1', 'Draft', 0);
+      const rev = await patchDoc(client, acme.docA, 'h2', 'Version One', firstRev);
       expect(rev).toBe(2);
     } finally {
       client.close();
@@ -550,7 +676,14 @@ describe('version history', () => {
     expect(body.snapshots.length).toBeGreaterThanOrEqual(2);
     expect(body.snapshots[0]).toMatchObject({ id: namedSnapshotId, kind: 'named', label: 'v1' });
     for (const s of body.snapshots) {
-      expect(Object.keys(s).sort()).toEqual(['createdAt', 'createdBy', 'id', 'kind', 'label', 'rev']);
+      expect(Object.keys(s).sort()).toEqual([
+        'createdAt',
+        'createdBy',
+        'id',
+        'kind',
+        'label',
+        'rev',
+      ]);
     }
     // Newest first.
     const times = body.snapshots.map((s) => new Date(s.createdAt as string).getTime());
@@ -576,7 +709,7 @@ describe('version history', () => {
       try {
         editorClient.ws.send(JSON.stringify({ t: 'open', docId: acme.docA }));
         await editorClient.next((m) => m.t === 'doc');
-        const revAfterEdit = await patchDoc(editorClient, acme.docA, 'h3', 'Version Two');
+        const revAfterEdit = await patchDoc(editorClient, acme.docA, 'h3', 'Version Two', 2);
         expect(revAfterEdit).toBe(3);
       } finally {
         editorClient.close();

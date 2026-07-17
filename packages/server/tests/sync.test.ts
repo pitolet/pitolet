@@ -1,4 +1,5 @@
 import {
+  createElement,
   createSampleDocument,
   type PitoletDocument,
   type PatchOp,
@@ -20,7 +21,12 @@ describe('DocumentStore', () => {
     const seen: string[] = [];
     store.subscribe((p) => seen.push(`${p.origin}@${p.rev}`));
 
-    const rev = store.applyPatch(doc.id, [{ op: 'replace', path: ['name'], value: 'Renamed' }], 'mcp', 'Rename');
+    const rev = store.applyPatch(
+      doc.id,
+      [{ op: 'replace', path: ['name'], value: 'Renamed' }],
+      'mcp',
+      'Rename',
+    );
     expect(rev).toBe(1);
     expect(store.get(doc.id)!.doc.name).toBe('Renamed');
     expect(seen).toEqual(['mcp@1']);
@@ -63,8 +69,94 @@ describe('DocumentStore', () => {
     const doc = createSampleDocument();
     store.load(doc);
     expect(() =>
-      store.applyPatch(doc.id, [{ op: 'replace', path: ['schemaVersion'], value: 99 }], 'mcp', 'Nope'),
+      store.applyPatch(
+        doc.id,
+        [{ op: 'replace', path: ['schemaVersion'], value: 99 }],
+        'mcp',
+        'Nope',
+      ),
     ).toThrow(PatchRejectedError);
+  });
+
+  it('fully validates root collection replacements', () => {
+    const store = new DocumentStore();
+    const doc = createSampleDocument();
+    store.load(doc);
+    const invalidNodes = structuredClone(doc.nodes);
+    const frame = invalidNodes[doc.rootOrder[0]!]!;
+    if (frame.type !== 'frame') throw new Error('expected frame');
+    frame.canvas.width = -12;
+
+    expect(() =>
+      store.applyPatch(
+        doc.id,
+        [{ op: 'replace', path: ['nodes'], value: invalidNodes }],
+        'mcp',
+        'Invalid root replacement',
+      ),
+    ).toThrow(PatchRejectedError);
+    expect(store.get(doc.id)!.rev).toBe(0);
+    expect(store.get(doc.id)!.doc.nodes[frame.id]).not.toEqual(frame);
+  });
+
+  it('rejects unreachable cyclic islands added through a root map patch', () => {
+    const store = new DocumentStore();
+    const doc = createSampleDocument();
+    store.load(doc);
+    const a = createElement({ name: 'Cycle A' });
+    const b = createElement({ name: 'Cycle B' });
+    a.parent = b.id;
+    a.children = [b.id];
+    b.parent = a.id;
+    b.children = [a.id];
+
+    expect(() =>
+      store.applyPatch(
+        doc.id,
+        [
+          {
+            op: 'replace',
+            path: ['nodes'],
+            value: { ...doc.nodes, [a.id]: a, [b.id]: b },
+          },
+        ],
+        'mcp',
+        'Cyclic island',
+      ),
+    ).toThrow(PatchRejectedError);
+    expect(store.get(doc.id)!.rev).toBe(0);
+  });
+
+  it('rejects stale expected revisions with the current revision', () => {
+    const store = new DocumentStore();
+    const doc = createSampleDocument();
+    store.load(doc);
+    store.applyPatch(
+      doc.id,
+      [{ op: 'replace', path: ['name'], value: 'First' }],
+      'editor:test',
+      'First',
+      undefined,
+      0,
+    );
+
+    let rejected: PatchRejectedError | undefined;
+    try {
+      store.applyPatch(
+        doc.id,
+        [{ op: 'replace', path: ['name'], value: 'Stale' }],
+        'editor:test',
+        'Stale',
+        undefined,
+        0,
+      );
+    } catch (error) {
+      rejected = error as PatchRejectedError;
+    }
+    expect(rejected).toBeInstanceOf(PatchRejectedError);
+    expect(rejected?.code).toBe('revision_conflict');
+    expect(rejected?.rev).toBe(1);
+    expect(store.get(doc.id)!.doc.name).toBe('First');
   });
 });
 
@@ -102,6 +194,7 @@ describe('WS sync end-to-end', () => {
 
     const ack = await a.next('ack');
     expect(ack.t === 'ack' && ack.patchId).toBe('p1');
+    expect(ack.t === 'ack' && ack.docId).toBe(docId);
 
     const patch = await b.next('patch');
     expect(patch.t === 'patch' && patch.label).toBe('Rename');
@@ -110,6 +203,98 @@ describe('WS sync end-to-end', () => {
     expect(app.store.get(docId)!.doc.name).toBe('From A');
     a.close();
     b.close();
+  });
+
+  it('deduplicates a replayed patch id after a lost acknowledgement', async () => {
+    const a = await connect();
+    const baseRev = a.rev;
+    const message = {
+      t: 'patch',
+      docId,
+      patchId: 'dedup-1',
+      baseRev,
+      label: 'Deduplicated rename',
+      ops: [{ op: 'replace', path: ['name'], value: 'Once only' }] as PatchOp[],
+    } as const;
+    a.send(message);
+    const firstAck = await a.next('ack');
+    expect(firstAck.t).toBe('ack');
+    const committedRev = firstAck.t === 'ack' ? firstAck.rev : -1;
+
+    a.send(message);
+    const duplicateAck = await a.next('ack');
+    expect(duplicateAck).toMatchObject({
+      t: 'ack',
+      docId,
+      patchId: 'dedup-1',
+      rev: committedRev,
+      duplicate: true,
+    });
+    expect(app.store.get(docId)!.rev).toBe(committedRev);
+
+    a.send({ t: 'open', docId });
+    const resync = await a.next('doc');
+    expect(resync.t === 'doc' && resync.appliedPatchIds).toContain('dedup-1');
+    a.close();
+  });
+
+  it('rejects a stale patch with a machine-readable revision conflict', async () => {
+    const a = await connect();
+    const staleRev = a.rev;
+    app.store.applyPatch(
+      docId,
+      [{ op: 'replace', path: ['name'], value: 'Concurrent write' }],
+      'mcp',
+      'Concurrent write',
+    );
+    await a.next('patch');
+
+    a.send({
+      t: 'patch',
+      docId,
+      patchId: 'stale-1',
+      baseRev: staleRev,
+      label: 'Stale rename',
+      ops: [{ op: 'replace', path: ['name'], value: 'Must not apply' }],
+    });
+    const reject = await a.next('reject');
+    expect(reject).toMatchObject({
+      t: 'reject',
+      docId,
+      patchId: 'stale-1',
+      rev: app.store.get(docId)!.rev,
+      code: 'revision_conflict',
+    });
+    expect(app.store.get(docId)!.doc.name).toBe('Concurrent write');
+    a.close();
+  });
+
+  it('validates messages, echoes heartbeats, and replaces the active document subscription', async () => {
+    const a = await connect();
+    a.send({ t: 'not-a-message' });
+    expect(await a.next('error')).toMatchObject({ t: 'error', message: 'invalid message' });
+
+    a.send({ t: 'ping', nonce: 'heartbeat-1' });
+    expect(await a.next('pong')).toMatchObject({ t: 'pong', nonce: 'heartbeat-1' });
+
+    const second = createSampleDocument();
+    second.name = 'Second';
+    app.store.load(second);
+    a.send({ t: 'open', docId: second.id });
+    expect(await a.next('doc')).toMatchObject({ t: 'doc', docId: second.id });
+    const selectedId = second.rootOrder[0]!;
+    a.send({ t: 'select', docId: second.id, nodeIds: [selectedId] });
+    await expect.poll(() => app.hub.getSelection(second.id)).toEqual([selectedId]);
+    expect(app.hub.getSelection(docId)).toEqual([]);
+
+    app.store.applyPatch(
+      docId,
+      [{ op: 'replace', path: ['name'], value: 'Old document changed' }],
+      'mcp',
+      'Old document changed',
+    );
+    await expect(a.next('patch', 150)).rejects.toThrow(/timed out/);
+    a.close();
   });
 
   it('invalid patch gets rejected without partial application', async () => {

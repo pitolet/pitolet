@@ -5,11 +5,21 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  test:
+  quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
+      - name: Set browser QA artifact directory
+        run: echo "PITOLET_QA_ARTIFACT_DIR=$RUNNER_TEMP/pitolet-browser-qa" >> "$GITHUB_ENV"
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -24,9 +34,44 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Install Chromium for website-import end-to-end tests
         run: node packages/server/node_modules/playwright-core/cli.js install --with-deps chromium
-      - run: pnpm -r typecheck
-      - run: pnpm vitest run
-      - run: pnpm build
+      - name: Check formatting
+        run: pnpm format:check
+      - name: Lint source
+        run: pnpm lint
+      - name: Audit production dependencies
+        run: pnpm audit:prod
+      - name: Build the published package
+        run: pnpm build
+      - name: Typecheck every package
+        run: pnpm typecheck
+      - name: Run unit and integration tests
+        run: pnpm test
+      - name: Check generated landing-site artifacts
+        run: pnpm check:site
+      - name: Check landing pages in Chromium
+        id: site_qa
+        continue-on-error: true
+        run: pnpm qa:site
+      - name: Check editor editing and persistence in Chromium
+        id: editor_qa
+        if: always()
+        continue-on-error: true
+        run: pnpm qa:editor
+      - name: Keep browser QA screenshots and axe reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-qa-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/pitolet-browser-qa
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Enforce browser QA results
+        if: steps.site_qa.outcome == 'failure' || steps.editor_qa.outcome == 'failure'
+        run: |
+          echo "::error::Browser QA failed; inspect the retained browser-qa artifact"
+          exit 1
+      - name: Install and boot the exact npm tarball
+        run: pnpm check:package
       - name: License boundary (OSS core must never reference commercial code)
         run: |
           if grep -rE "@pitolet/cloud|apps/cloud" packages/ --include='*.ts' --include='*.tsx' --include='*.json'; then
@@ -35,20 +80,68 @@ jobs:
           fi
           echo "License boundary clean"
 
-  # The cloud Dockerfile assembles artifacts from several workspace packages.
-  # Building it on every change catches runtime-image layout errors that the
-  # TypeScript and Vite builds cannot see (for example, nesting dashboard/dist
-  # under a source dashboard directory and serving the development index).
-  cloud-image-smoke:
+  # Dockerfiles assemble and prune workspace packages differently from the npm
+  # build. Build both images on every change; also boot the OSS image through
+  # its published port so loopback-only listeners and broken health checks fail.
+  container-smoke:
+    needs: quality
     runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: oss
+            file: Dockerfile
+            image: pitolet-ci:oss
+          - name: cloud
+            file: apps/cloud/Dockerfile
+            image: pitolet-ci:cloud
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
-      - name: Build production cloud image
+      - name: Build ${{ matrix.name }} production image
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: apps/cloud/Dockerfile
+          file: ${{ matrix.file }}
           push: false
+          load: true
+          tags: ${{ matrix.image }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+      - name: Boot OSS image and check its public listener
+        if: matrix.name == 'oss'
+        env:
+          IMAGE: ${{ matrix.image }}
+        run: |
+          container="$(docker run -d -e PITOLET_PASSWORD=ci-password -p 127.0.0.1::4517 "$IMAGE")"
+          trap 'docker logs "$container" || true; docker rm -f "$container" >/dev/null 2>&1 || true' EXIT
+          mapping="$(docker port "$container" 4517/tcp)"
+          port="${mapping##*:}"
+          for attempt in $(seq 1 40); do
+            if curl --fail --silent "http://127.0.0.1:${port}/api/health" >/dev/null; then
+              break
+            fi
+            if ! docker inspect --format '{{.State.Running}}' "$container" | grep -q true; then
+              echo "::error::OSS container exited before becoming healthy"
+              exit 1
+            fi
+            sleep 0.5
+          done
+          curl --fail --silent "http://127.0.0.1:${port}/api/health" | grep -q '"ok":true'
+
+  # Validate the production proxy and Compose files without publishing images
+  # or touching the live VPS.
+  deployment-config:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Docker Compose configuration
+        run: docker compose --env-file deploy/.env.example -f deploy/docker-compose.yml config --quiet
+      - name: Validate Caddy configuration
+        run: |
+          docker run --rm \
+            -v "$PWD/deploy/Caddyfile:/etc/caddy/Caddyfile:ro" \
+            caddy:2 caddy validate --config /etc/caddy/Caddyfile

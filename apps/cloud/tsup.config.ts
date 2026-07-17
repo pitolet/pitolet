@@ -24,6 +24,12 @@ export default defineConfig({
   // Workspace packages ship TypeScript source — inline them into the bundle
   // instead of leaving bare imports node can't resolve at runtime.
   noExternal: ['pitolet', '@pitolet/schema'],
+  // Pitolet loads Playwright only for browser-backed MCP tools. Keep it as a
+  // real runtime dependency: bundling Playwright's generated coreBundle makes
+  // esbuild follow lazy Chromium BiDi requires that are not standalone entry
+  // points. The direct cloud dependency below guarantees Node can resolve it
+  // from the flattened server bundle.
+  external: [/^playwright-core(?:\/.*)?$/],
   onSuccess: async () => {
     mkdirSync('dist/migrations', { recursive: true });
     cpSync('src/db/migrations', 'dist/migrations', { recursive: true });

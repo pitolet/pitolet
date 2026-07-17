@@ -1,13 +1,26 @@
-import { structuralProblems, validateDocument, type PitoletDocument } from '@pitolet/schema';
+import {
+  createDocument,
+  structuralProblems,
+  validateDocument,
+  type PitoletDocument,
+} from '@pitolet/schema';
 import type http from 'node:http';
 import { isDeepStrictEqual } from 'node:util';
 import { handleAssetUpload, serveAsset } from './assets.js';
-import { ANONYMOUS, check, type AuthContext, type AuthHooks, type AuthzResult } from './auth/types.js';
+import {
+  ANONYMOUS,
+  check,
+  type AuthContext,
+  type AuthHooks,
+  type AuthzResult,
+} from './auth/types.js';
 import { exportProject } from './export.js';
 import { createMcpHandler } from './mcp/mcpServer.js';
 import { DocumentStore } from './store/DocumentStore.js';
-import type { StorageAdapter } from './storage/StorageAdapter.js';
+import { ASSET_ID_PATTERN, assetMimeForId, type StorageAdapter } from './storage/StorageAdapter.js';
 import { WsHub } from './sync/wsHub.js';
+
+const importLocks = new Map<string, Promise<void>>();
 
 export interface PitoletRuntimeOptions {
   storage: StorageAdapter;
@@ -66,7 +79,7 @@ export async function createRuntime(options: PitoletRuntimeOptions): Promise<Pit
     console.log(`[pitolet] reloaded ${doc.name} from disk (external change)`);
   });
 
-  const mcpHandler = createMcpHandler(store, hub, adapter);
+  const mcpHandler = createMcpHandler(store, hub, adapter, auth);
 
   const handleRequest = (
     req: http.IncomingMessage,
@@ -99,12 +112,35 @@ export async function createRuntime(options: PitoletRuntimeOptions): Promise<Pit
     }
 
     if (pathname.startsWith('/assets-store/')) {
-      const result = check(auth, ctx, 'asset:read');
+      if (req.method !== 'GET' && req.method !== 'HEAD') {
+        res.writeHead(405, {
+          allow: 'GET, HEAD',
+          'content-type': 'application/json',
+        });
+        res.end(JSON.stringify({ error: 'method not allowed' }));
+        return true;
+      }
+      const assetId = pathname.slice('/assets-store/'.length);
+      const result = check(auth, ctx, 'asset:read', ctx.docId);
       if (!result.ok) {
         deny(res, ctx, result);
         return true;
       }
-      serveAsset(pathname.slice('/assets-store/'.length), res, adapter.assets).catch((err) =>
+      // A document-scoped share must not become a workspace-wide asset
+      // capability. Content ids are deterministic, so obscurity is not an
+      // authorization boundary.
+      if (ctx.kind === 'share' && ctx.docId) {
+        const sharedDocument = store.get(ctx.docId)?.doc;
+        if (!sharedDocument || !documentReferencesAsset(sharedDocument, assetId)) {
+          deny(res, ctx, {
+            ok: false,
+            status: 403,
+            reason: 'asset is outside the shared document',
+          });
+          return true;
+        }
+      }
+      serveAsset(assetId, res, adapter.assets, { head: req.method === 'HEAD' }).catch((err) =>
         fail(res, 'asset serve failed', err),
       );
       return true;
@@ -119,6 +155,20 @@ export async function createRuntime(options: PitoletRuntimeOptions): Promise<Pit
   };
 
   return { store, hub, adapter, mcpHandler, handleRequest };
+}
+
+function documentReferencesAsset(document: PitoletDocument, assetId: string): boolean {
+  // The manifest is the document-scoped asset capability. It includes
+  // resources that are not node sources, such as imported web fonts.
+  if (document.assets[assetId]) return true;
+  for (const node of Object.values(document.nodes)) {
+    if (node.type === 'image' && 'asset' in node.src && node.src.asset === assetId) return true;
+    if (node.type !== 'instance') continue;
+    for (const override of Object.values(node.overrides)) {
+      if (override.src && 'asset' in override.src && override.src.asset === assetId) return true;
+    }
+  }
+  return false;
 }
 
 /** Terminal error handler for fire-and-forget request handlers. */
@@ -137,7 +187,11 @@ function fail(res: http.ServerResponse, label: string, err: unknown): void {
 }
 
 /** 401 for anonymous/unauthenticated denials, 403 (or the hook's status) otherwise. */
-function deny(res: http.ServerResponse, ctx: AuthContext, result: AuthzResult & { ok: false }): void {
+function deny(
+  res: http.ServerResponse,
+  ctx: AuthContext,
+  result: AuthzResult & { ok: false },
+): void {
   const status = result.status ?? (ctx.kind === 'anonymous' ? 401 : 403);
   res.writeHead(status, { 'content-type': 'application/json' });
   res.end(
@@ -160,7 +214,7 @@ function handleApi(
   };
 
   if (pathname === '/api/health') {
-    json(200, { ok: true, name: 'pitolet', dataDir: adapter.exportBaseDir });
+    json(200, { ok: true, name: 'pitolet' });
     return;
   }
 
@@ -173,6 +227,48 @@ function handleApi(
     // Share contexts see only their document.
     const documents = store.list().filter((d) => ctx.docId === undefined || d.id === ctx.docId);
     json(200, { documents });
+    return;
+  }
+
+  if (pathname === '/api/documents' && req.method === 'POST') {
+    const result = check(auth, ctx, 'doc:create');
+    if (!result.ok) {
+      deny(res, ctx, result);
+      return;
+    }
+    readBody(req, 4096)
+      .then(async (body) => {
+        let name: string;
+        try {
+          const parsed = JSON.parse(body || '{}') as { name?: unknown };
+          if (typeof parsed.name !== 'string') throw new Error('name is required');
+          name = parsed.name.trim();
+          if (name.length === 0) throw new Error('name is required');
+          if (name.length > 120) throw new Error('name must be 120 characters or fewer');
+        } catch (err) {
+          json(400, {
+            error: err instanceof Error ? err.message : 'invalid document request',
+          });
+          return;
+        }
+
+        const document = createDocument({ name });
+        try {
+          await adapter.saveNow(document, 0);
+          store.load(document, 0);
+          json(201, { docId: document.id, name: document.name });
+        } catch (err) {
+          console.error('[pitolet] document creation failed:', err);
+          json(500, { error: 'document creation failed' });
+        }
+      })
+      .catch((err) => {
+        if (!res.headersSent) {
+          json((err as BodyTooLargeError).tooLarge ? 413 : 400, {
+            error: err instanceof Error ? err.message : 'invalid document request',
+          });
+        }
+      });
     return;
   }
 
@@ -199,8 +295,14 @@ function handleApi(
     }
     readBody(req, MAX_IMPORT_BYTES)
       .then(async (body) => {
+        let document: PitoletDocument;
         try {
-          const document = validateImportedDocument(JSON.parse(body || '{}'));
+          document = validateImportedDocument(JSON.parse(body || '{}'));
+        } catch (err) {
+          json(400, { error: err instanceof Error ? err.message.slice(0, 500) : 'invalid import' });
+          return;
+        }
+        await withImportLock(document.id, async () => {
           const existing = store.get(document.id);
           if (existing) {
             if (isDeepStrictEqual(existing.doc, document)) {
@@ -210,13 +312,23 @@ function handleApi(
             }
             return;
           }
-          await validateImportedAssets(document, adapter);
-          await adapter.saveNow(document, 0);
-          store.load(document, 0);
-          json(201, { docId: document.id, name: document.name, duplicate: false });
-        } catch (err) {
-          json(400, { error: err instanceof Error ? err.message.slice(0, 500) : 'invalid import' });
-        }
+          try {
+            await validateImportedAssets(document, adapter);
+          } catch (err) {
+            json(400, {
+              error: err instanceof Error ? err.message.slice(0, 500) : 'invalid import assets',
+            });
+            return;
+          }
+          try {
+            await adapter.saveNow(document, 0);
+            store.load(document, 0);
+            json(201, { docId: document.id, name: document.name, duplicate: false });
+          } catch (err) {
+            console.error('[pitolet] imported document persistence failed:', err);
+            json(500, { error: 'import could not be saved' });
+          }
+        });
       })
       .catch((err) => {
         if (!res.headersSent) {
@@ -238,7 +350,7 @@ function handleApi(
       return;
     }
     readBody(req)
-      .then((body) => {
+      .then(async (body) => {
         try {
           const { docId } = JSON.parse(body || '{}') as { docId?: string };
           const entry = docId ? store.get(docId) : store.get(store.list()[0]?.id ?? '');
@@ -252,7 +364,7 @@ function handleApi(
             deny(res, ctx, result);
             return;
           }
-          const { dir } = exportProject(entry.doc, exportBaseDir);
+          const { dir } = await exportProject(entry.doc, exportBaseDir, {}, adapter.assets);
           json(200, { dir });
         } catch (err) {
           json(500, { error: err instanceof Error ? err.message : 'export failed' });
@@ -276,6 +388,14 @@ interface BodyTooLargeError extends Error {
 
 function readBody(req: http.IncomingMessage, limit = 10_000_000): Promise<string> {
   return new Promise((resolve, reject) => {
+    const declaredSize = Number(req.headers['content-length']);
+    if (Number.isFinite(declaredSize) && declaredSize > limit) {
+      const err = new Error(`body exceeds ${limit} bytes`) as BodyTooLargeError;
+      err.tooLarge = true;
+      req.resume();
+      reject(err);
+      return;
+    }
     let body = '';
     let bytes = 0;
     let tooLarge = false;
@@ -300,6 +420,16 @@ function readBody(req: http.IncomingMessage, limit = 10_000_000): Promise<string
 
 function validateImportedDocument(raw: unknown): PitoletDocument {
   const document = validateDocument(raw);
+  if (!/^[A-Za-z0-9_-]{1,128}$/.test(document.id)) {
+    throw new Error(
+      'import document id must contain 1–128 letters, numbers, underscores, or hyphens',
+    );
+  }
+  const name = document.name.trim();
+  if (name.length === 0 || name.length > 120) {
+    throw new Error('import document name must contain 1–120 characters');
+  }
+  document.name = name;
   const nodeCount = Object.keys(document.nodes).length;
   if (nodeCount > MAX_IMPORT_NODES) {
     throw new Error(`import has ${nodeCount} nodes; maximum is ${MAX_IMPORT_NODES}`);
@@ -345,8 +475,42 @@ async function validateImportedAssets(
   }
   for (const assetId of referenced) {
     if (!document.assets[assetId]) throw new Error(`image references undeclared asset ${assetId}`);
+  }
+  for (const [assetId, metadata] of Object.entries(document.assets)) {
+    if (!ASSET_ID_PATTERN.test(assetId)) {
+      throw new Error(`document contains invalid asset id ${assetId.slice(0, 100)}`);
+    }
+    const expectedMime = assetMimeForId(assetId);
+    if (metadata.mime !== expectedMime) {
+      throw new Error(
+        `asset ${assetId} metadata type ${metadata.mime} does not match ${expectedMime}`,
+      );
+    }
+    if (metadata.fontFace && expectedMime !== 'font/woff' && expectedMime !== 'font/woff2') {
+      throw new Error(`asset ${assetId} declares a font face but is not a supported web font`);
+    }
     const stored = await adapter.assets.get(assetId);
-    if (!stored) throw new Error(`required asset ${assetId} was not uploaded`);
+    if (!stored) throw new Error(`declared asset ${assetId} was not uploaded`);
+    if (stored.mime !== expectedMime) {
+      stored.stream.destroy();
+      throw new Error(`stored asset ${assetId} has unexpected type ${stored.mime}`);
+    }
     stored.stream.destroy();
+  }
+}
+
+async function withImportLock<T>(docId: string, action: () => Promise<T>): Promise<T> {
+  const previous = importLocks.get(docId) ?? Promise.resolve();
+  let release!: () => void;
+  const current = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  importLocks.set(docId, current);
+  await previous.catch(() => {});
+  try {
+    return await action();
+  } finally {
+    release();
+    if (importLocks.get(docId) === current) importLocks.delete(docId);
   }
 }

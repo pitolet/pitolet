@@ -81,7 +81,13 @@ export function createElement(
 }
 
 export function createText(
-  init: { name?: string; tag?: string; text?: string; content?: TextSpan[]; styles?: StyleDecl } = {},
+  init: {
+    name?: string;
+    tag?: string;
+    text?: string;
+    content?: TextSpan[];
+    styles?: StyleDecl;
+  } = {},
 ): TextNode {
   return {
     id: newId(),

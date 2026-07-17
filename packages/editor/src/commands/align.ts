@@ -1,4 +1,5 @@
 import type { FrameNode } from '@pitolet/schema';
+import { AUTO_HEIGHT_FALLBACK, renderedFrameHeight } from '../canvas/frameMeasurements.js';
 import { useEditor } from '../store/index.js';
 
 type AlignEdge = 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom';
@@ -12,12 +13,7 @@ function selectedFrames(): FrameNode[] {
 
 function frameHeight(frame: FrameNode): number {
   if (frame.canvas.height !== 'auto') return frame.canvas.height;
-  const el = document.querySelector(`[data-node-id="${frame.id}"]`);
-  const viewport = document.querySelector<HTMLElement>('[data-canvas-viewport]');
-  const zoom = viewport
-    ? Number.parseFloat(getComputedStyle(viewport).getPropertyValue('--cam-zoom')) || 1
-    : 1;
-  return el ? el.getBoundingClientRect().height / zoom : 400;
+  return renderedFrameHeight(frame.id) ?? AUTO_HEIGHT_FALLBACK;
 }
 
 export function alignFrames(edge: AlignEdge): void {
@@ -40,7 +36,7 @@ export function alignFrames(edge: AlignEdge): void {
     for (const id of ids) {
       const node = draft.nodes[id];
       if (node?.type !== 'frame') continue;
-      const h = heights.get(id) ?? 400;
+      const h = heights.get(id) ?? AUTO_HEIGHT_FALLBACK;
       switch (edge) {
         case 'left':
           node.canvas.x = minX;

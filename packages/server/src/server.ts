@@ -1,6 +1,7 @@
 import { createReadStream, existsSync, statSync } from 'node:fs';
 import http from 'node:http';
-import { extname, join, normalize } from 'node:path';
+import { extname, join, resolve, sep } from 'node:path';
+import { createBrotliCompress, createGzip } from 'node:zlib';
 import { ANONYMOUS, type AuthContext, type AuthHooks } from './auth/types.js';
 import { createRuntime } from './runtime.js';
 import { FileStorageAdapter } from './storage/FileStorageAdapter.js';
@@ -35,6 +36,11 @@ const MIME: Record<string, string> = {
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp',
+  '.ico': 'image/x-icon',
+  '.woff': 'font/woff',
   '.woff2': 'font/woff2',
   '.map': 'application/json',
 };
@@ -64,8 +70,15 @@ export async function createApp(options: PitoletServerOptions): Promise<PitoletA
   const runtime = await createRuntime({ storage, auth });
 
   const handle = async (req: http.IncomingMessage, res: http.ServerResponse): Promise<void> => {
+    setSecurityHeaders(res);
     const url = new URL(req.url ?? '/', 'http://localhost');
     const pathname = url.pathname;
+
+    if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method ?? 'GET') && !sameOriginRequest(req)) {
+      res.writeHead(403, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ error: 'cross-origin mutation rejected' }));
+      return;
+    }
 
     // Login is owned by the auth hooks (they know the credential + cookie).
     if (pathname === '/api/login' && req.method === 'POST' && auth?.handleLogin) {
@@ -89,7 +102,7 @@ export async function createApp(options: PitoletServerOptions): Promise<PitoletA
     if (runtime.handleRequest(req, res, pathname, ctx)) return;
 
     if (options.editorDist) {
-      serveStatic(options.editorDist, pathname, res);
+      serveStatic(options.editorDist, pathname, req, res);
       return;
     }
 
@@ -108,25 +121,110 @@ export async function createApp(options: PitoletServerOptions): Promise<PitoletA
       }
     });
   });
+  server.requestTimeout = 120_000;
+  server.headersTimeout = 15_000;
+  server.keepAliveTimeout = 5_000;
+  server.maxHeadersCount = 100;
+  server.maxConnections = 1_000;
 
   runtime.hub.attach(server);
 
   return { server, store: runtime.store, hub: runtime.hub, adapter: storage };
 }
 
-function serveStatic(root: string, pathname: string, res: http.ServerResponse): void {
-  let filePath = normalize(join(root, pathname === '/' ? 'index.html' : pathname));
-  if (!filePath.startsWith(normalize(root))) {
+function setSecurityHeaders(res: http.ServerResponse): void {
+  res.setHeader('x-content-type-options', 'nosniff');
+  res.setHeader('x-frame-options', 'DENY');
+  res.setHeader('referrer-policy', 'strict-origin-when-cross-origin');
+  res.setHeader(
+    'permissions-policy',
+    'camera=(), microphone=(), geolocation=(), payment=(), usb=()',
+  );
+  res.setHeader(
+    'content-security-policy',
+    "default-src 'self'; script-src 'self'; " +
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+      "img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; " +
+      "connect-src 'self' ws: wss: https://fonts.googleapis.com; " +
+      "object-src 'none'; base-uri 'self'; " +
+      "frame-ancestors 'none'; form-action 'self'",
+  );
+}
+
+function sameOriginRequest(req: http.IncomingMessage): boolean {
+  const origin = req.headers.origin;
+  if (!origin) return true;
+  const host = req.headers.host;
+  if (!host) return false;
+  try {
+    return new URL(origin).host.toLowerCase() === host.toLowerCase();
+  } catch {
+    return false;
+  }
+}
+
+function serveStatic(
+  root: string,
+  pathname: string,
+  req: http.IncomingMessage,
+  res: http.ServerResponse,
+): void {
+  const resolvedRoot = resolve(root);
+  let filePath = resolve(resolvedRoot, `.${pathname === '/' ? '/index.html' : pathname}`);
+  if (filePath !== resolvedRoot && !filePath.startsWith(`${resolvedRoot}${sep}`)) {
     res.writeHead(403).end();
     return;
   }
   if (!existsSync(filePath) || statSync(filePath).isDirectory()) {
-    filePath = join(root, 'index.html');
+    filePath = join(resolvedRoot, 'index.html');
     if (!existsSync(filePath)) {
       res.writeHead(404).end('editor build not found — run `pnpm build` first');
       return;
     }
   }
-  res.writeHead(200, { 'content-type': MIME[extname(filePath)] ?? 'application/octet-stream' });
-  createReadStream(filePath).pipe(res);
+  const extension = extname(filePath);
+  const headers: Record<string, string> = {
+    'content-type': MIME[extension] ?? 'application/octet-stream',
+    'cache-control':
+      extension === '.html'
+        ? 'no-cache'
+        : /[-.][a-f0-9]{8,}\./i.test(filePath)
+          ? 'public, max-age=31536000, immutable'
+          : 'no-cache',
+  };
+  const compressible = ['.html', '.js', '.css', '.json', '.svg'].includes(extension);
+  const accepted = String(req.headers['accept-encoding'] ?? '');
+  const encoding = compressible
+    ? accepted.includes('br')
+      ? 'br'
+      : accepted.includes('gzip')
+        ? 'gzip'
+        : undefined
+    : undefined;
+  if (encoding) {
+    headers['content-encoding'] = encoding;
+    headers.vary = 'Accept-Encoding';
+  } else {
+    headers['content-length'] = String(statSync(filePath).size);
+  }
+  res.writeHead(200, headers);
+  if (req.method === 'HEAD') {
+    res.end();
+    return;
+  }
+  const stream = createReadStream(filePath);
+  stream.on('error', (error) => {
+    console.error('[pitolet] static file read failed:', error);
+    res.destroy();
+  });
+  if (encoding) {
+    const compressor = encoding === 'br' ? createBrotliCompress() : createGzip();
+    compressor.on('error', (error) => {
+      console.error('[pitolet] static compression failed:', error);
+      res.destroy();
+    });
+    stream.pipe(compressor).pipe(res);
+  } else {
+    stream.pipe(res);
+  }
 }

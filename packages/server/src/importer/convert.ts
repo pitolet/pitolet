@@ -13,6 +13,7 @@ import {
   validateDocument,
   type PitoletNode,
   type PitoletDocument,
+  type Fill,
   type Shadow,
   type StyleDecl,
 } from '@pitolet/schema';
@@ -82,13 +83,14 @@ const MIME_EXT: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/gif': 'gif',
   'image/webp': 'webp',
-  'image/svg+xml': 'svg',
+  'font/woff': 'woff',
+  'font/woff2': 'woff2',
 };
 
 export function assetIdFor(data: Buffer, mime: string): string {
   const ext = MIME_EXT[mime];
   if (!ext) throw new Error(`unsupported captured asset type ${mime}`);
-  return `${createHash('sha256').update(data).digest('hex').slice(0, 16)}.${ext}`;
+  return `${createHash('sha256').update(data).digest('hex')}.${ext}`;
 }
 
 export function convertCapture(capture: WebCapture, name?: string): ImportConversion {
@@ -97,20 +99,20 @@ export function convertCapture(capture: WebCapture, name?: string): ImportConver
   const base = snapshots[0]!;
   const widest = snapshots.at(-1)!;
   const rootKey = base.rootKey;
+  const breakpointWidths = [
+    ...new Set(capture.breakpointWidths ?? snapshots.slice(1).map((s) => s.width)),
+  ]
+    .filter((width) => width > base.width && snapshots.some((snapshot) => snapshot.width === width))
+    .sort((left, right) => left - right);
   if (!snapshots.every((s) => s.rootKey === rootKey)) {
     capture.warnings.push('selected root could not be matched identically across every viewport');
   }
 
   const document = createDocument({ name: name?.trim() || capture.title || 'Imported website' });
-  document.breakpoints = snapshots.slice(1).map((snapshot, index) => ({
-    id: index === 0 ? 'import-tablet' : `import-${index === 1 ? 'desktop' : snapshot.width}`,
-    name:
-      index === 0
-        ? 'Imported tablet'
-        : index === 1
-          ? 'Imported desktop'
-          : `Imported ${snapshot.width}`,
-    minWidth: snapshot.width,
+  document.breakpoints = breakpointWidths.map((width) => ({
+    id: importedBreakpointId(width),
+    name: importedBreakpointName(width),
+    minWidth: width,
   }));
 
   if (Object.keys(capture.cssVariables).length > 0) {
@@ -125,6 +127,22 @@ export function convertCapture(capture: WebCapture, name?: string): ImportConver
       );
     }
   }
+  for (const family of capture.fonts.map(cleanFont).filter(Boolean)) {
+    if (
+      Object.values(document.tokens.typography.fontFamily).some((token) => token.$value === family)
+    ) {
+      continue;
+    }
+    const baseName =
+      family
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '') || 'font';
+    let name = baseName;
+    let suffix = 2;
+    while (document.tokens.typography.fontFamily[name]) name = `${baseName}-${suffix++}`;
+    document.tokens.typography.fontFamily[name] = { $value: family };
+  }
 
   const assetIds = new Map<string, string>();
   for (const asset of capture.assets) {
@@ -135,6 +153,16 @@ export function convertCapture(capture: WebCapture, name?: string): ImportConver
       width: asset.width,
       height: asset.height,
       mime: asset.mime,
+      ...(asset.fontFace
+        ? {
+            fontFace: {
+              family: asset.fontFace.family,
+              ...(asset.fontFace.style ? { style: asset.fontFace.style } : {}),
+              ...(asset.fontFace.weight ? { weight: asset.fontFace.weight } : {}),
+              ...(asset.fontFace.display ? { display: asset.fontFace.display } : {}),
+            },
+          }
+        : {}),
     };
   }
 
@@ -172,11 +200,19 @@ export function convertCapture(capture: WebCapture, name?: string): ImportConver
 
   const canonical = new Map<string, CapturedNode>();
   for (const key of allKeys) {
-    const node = [...snapshots]
-      .reverse()
-      .map((s) => s.nodes[key])
-      .find(Boolean);
+    const node = snapshots.map((s) => s.nodes[key]).find(Boolean);
     if (node) canonical.set(key, { ...node, children: unionChildren(key, snapshots) });
+  }
+  const reparentedNodes = [...allKeys].filter((key) => {
+    const parents = new Set(
+      snapshots.map((snapshot) => snapshot.nodes[key]?.parentKey).filter((value) => value != null),
+    );
+    return parents.size > 1;
+  });
+  if (reparentedNodes.length > 0) {
+    capture.warnings.push(
+      `${reparentedNodes.length} nodes move between parents across viewports; the mobile DOM position was kept`,
+    );
   }
 
   const rootCapture = canonical.get(rootKey) ?? widest.nodes[widest.rootKey];
@@ -195,16 +231,23 @@ export function convertCapture(capture: WebCapture, name?: string): ImportConver
     height: 'auto',
     styles: rootStyles,
   });
-  if (!rootCapture.unsupportedReason) applyResponsiveStyles(frame, rootKey, snapshots);
+  if (!rootCapture.unsupportedReason)
+    applyResponsiveStyles(frame, rootKey, snapshots, breakpointWidths);
   attach(document, null, frame);
 
   let rasterizedRegions = 0;
   const emitted = new Set<string>([rootKey]);
 
   if (rootCapture.unsupportedReason) {
-    const rootImage = convertNode(rootCapture, rootKey, snapshots, assetIds);
-    if (!rootImage) throw new Error('captured root could not be rasterized');
-    attach(document, frame.id, rootImage);
+    const rootImages = convertRasterNodes(
+      rootCapture,
+      rootKey,
+      snapshots,
+      breakpointWidths,
+      assetIds,
+    );
+    if (rootImages.length === 0) throw new Error('captured root could not be rasterized');
+    for (const rootImage of rootImages) attach(document, frame.id, rootImage);
     rasterizedRegions += 1;
   }
 
@@ -216,9 +259,20 @@ export function convertCapture(capture: WebCapture, name?: string): ImportConver
       const captured = canonical.get(childKey);
       if (!captured) continue;
       emitted.add(childKey);
-      const pitoletNode = convertNode(captured, childKey, snapshots, assetIds);
+      if (captured.unsupportedReason) {
+        const rasterNodes = convertRasterNodes(
+          captured,
+          childKey,
+          snapshots,
+          breakpointWidths,
+          assetIds,
+        );
+        for (const rasterNode of rasterNodes) attach(document, parentId, rasterNode);
+        if (rasterNodes.length > 0) rasterizedRegions += 1;
+        continue;
+      }
+      const pitoletNode = convertNode(captured, childKey, snapshots, breakpointWidths, assetIds);
       if (!pitoletNode) continue;
-      if (captured.unsupportedReason) rasterizedRegions += 1;
       attach(document, parentId, pitoletNode);
       if (pitoletNode.type === 'element' || pitoletNode.type === 'frame') {
         appendChildren(childKey, pitoletNode.id);
@@ -257,22 +311,13 @@ function convertNode(
   captured: CapturedNode,
   key: string,
   snapshots: WebCapture['snapshots'],
+  breakpointWidths: number[],
   assetIds: Map<string, string>,
 ): PitoletNode | null {
   const styles = styleForKey(key, 0, snapshots);
   let node: PitoletNode;
 
-  if (captured.unsupportedReason) {
-    const rasterKey = `raster:${key}:${snapshots.at(-1)!.width}`;
-    const assetId = assetIds.get(rasterKey);
-    if (!assetId) return null;
-    node = createImage({
-      name: captured.name || `Rasterized ${captured.tag}`,
-      src: { asset: assetId },
-      alt: captured.attrs.alt ?? '',
-      styles,
-    });
-  } else if (captured.tag === 'img' && captured.assetUrl) {
+  if (captured.tag === 'img' && captured.assetUrl) {
     const assetId = assetIds.get(`url:${captured.assetUrl}`);
     if (!assetId) return null;
     node = createImage({
@@ -311,23 +356,84 @@ function convertNode(
 
   const attrs = sanitizeAttrs(captured.attrs);
   if (Object.keys(attrs).length > 0) node.attrs = attrs;
-  applyResponsiveStyles(node, key, snapshots);
+  applyResponsiveStyles(node, key, snapshots, breakpointWidths);
   return node;
+}
+
+function convertRasterNodes(
+  captured: CapturedNode,
+  key: string,
+  snapshots: WebCapture['snapshots'],
+  breakpointWidths: number[],
+  assetIds: Map<string, string>,
+): PitoletNode[] {
+  const result: PitoletNode[] = [];
+  const available = snapshots
+    .map((snapshot, index) => ({
+      snapshot,
+      index,
+      captured: snapshot.nodes[key],
+      assetId: assetIds.get(`raster:${key}:${snapshot.width}`),
+    }))
+    .filter(
+      (
+        entry,
+      ): entry is {
+        snapshot: WebCapture['snapshots'][number];
+        index: number;
+        captured: CapturedNode;
+        assetId: string;
+      } => !!entry.captured && !!entry.assetId,
+    );
+
+  for (let variantIndex = 0; variantIndex < available.length; variantIndex++) {
+    const entry = available[variantIndex]!;
+    const isMobileBase = entry.index === 0;
+    const activeDisplay = styleForKey(key, entry.index, snapshots).display ?? 'block';
+    const baseStyles = styleForKey(key, entry.index, snapshots);
+    if (!isMobileBase) baseStyles.display = 'none';
+    const image = createImage({
+      name:
+        variantIndex === 0
+          ? captured.name || `Rasterized ${captured.tag}`
+          : `${captured.name || captured.tag} fallback ${entry.snapshot.width}px`,
+      src: { asset: entry.assetId },
+      alt: captured.attrs.alt ?? '',
+      styles: baseStyles,
+    });
+    const activationWidth = isMobileBase ? undefined : entry.snapshot.width;
+    const nextWidth = available[variantIndex + 1]?.snapshot.width;
+    if (activationWidth !== undefined || nextWidth !== undefined) {
+      image.styles.breakpoints ??= {};
+      if (activationWidth !== undefined && breakpointWidths.includes(activationWidth)) {
+        image.styles.breakpoints[importedBreakpointId(activationWidth)] = {
+          display: activeDisplay,
+        };
+      }
+      if (nextWidth !== undefined && breakpointWidths.includes(nextWidth)) {
+        image.styles.breakpoints[importedBreakpointId(nextWidth)] = { display: 'none' };
+      }
+    }
+    result.push(image);
+  }
+  return result;
 }
 
 function applyResponsiveStyles(
   node: PitoletNode,
   key: string,
   snapshots: WebCapture['snapshots'],
+  breakpointWidths: number[],
 ): void {
   let previous = styleForKey(key, 0, snapshots);
-  for (let i = 1; i < snapshots.length; i++) {
+  for (const width of breakpointWidths) {
+    const i = snapshots.findIndex((snapshot) => snapshot.width === width);
+    if (i < 0) continue;
     const current = styleForKey(key, i, snapshots);
     const patch = diffStyle(previous, current);
     if (Object.keys(patch).length > 0) {
       node.styles.breakpoints ??= {};
-      const id = i === 1 ? 'import-tablet' : `import-${i === 2 ? 'desktop' : snapshots[i]!.width}`;
-      node.styles.breakpoints[id] = patch;
+      node.styles.breakpoints[importedBreakpointId(width)] = patch;
     }
     previous = current;
   }
@@ -337,12 +443,127 @@ function styleForKey(key: string, index: number, snapshots: WebCapture['snapshot
   const snapshot = snapshots[index]!;
   const node = snapshot.nodes[key];
   if (!node) return { display: 'none' };
-  return capturedStylesToDecl(
+  const decl = capturedStylesToDecl(
     node.styles,
     node.rect,
     node.tag,
     node.unsupportedReason !== undefined,
   );
+  const parent = node.parentKey ? snapshot.nodes[node.parentKey] : undefined;
+  const fluidImage = node.tag === 'img' && imageKeepsAspectRatio(key, snapshots);
+  if (parent && shouldFillAvailableWidth(node, parent) && (node.tag !== 'img' || fluidImage)) {
+    decl.width = 'fill';
+    if (fluidImage) decl.height = 'auto';
+    const alignment = inferConstrainedFillAlignment(node, parent);
+    if (alignment) decl.alignSelf = alignment;
+  }
+  return decl;
+}
+
+/**
+ * Computed styles expose used pixel widths, not whether the source asked a
+ * block to fill its container. Recreate that intent from the captured
+ * geometry so centered flex sections and max-width content columns do not
+ * collapse to their intrinsic width after import.
+ */
+export function shouldFillAvailableWidth(node: CapturedNode, parent: CapturedNode): boolean {
+  if (
+    node.kind === 'text' ||
+    TEXT_TAGS.has(node.tag) ||
+    node.unsupportedReason !== undefined ||
+    ['absolute', 'fixed'].includes(node.styles.position ?? '') ||
+    (node.tag !== 'img' && ['inline', 'inline-flex', 'none'].includes(node.styles.display ?? ''))
+  ) {
+    return false;
+  }
+
+  const parentInnerWidth = Math.max(
+    0,
+    parent.rect.width -
+      finiteNumber(parent.styles.paddingLeft, 0) -
+      finiteNumber(parent.styles.paddingRight, 0),
+  );
+  if (near(node.rect.width, parentInnerWidth)) return true;
+
+  const maxWidth = finiteLength(node.styles.maxWidth);
+  return (
+    maxWidth !== null &&
+    maxWidth > 0 &&
+    parentInnerWidth >= maxWidth - 2 &&
+    near(node.rect.width, maxWidth)
+  );
+}
+
+function imageKeepsAspectRatio(key: string, snapshots: WebCapture['snapshots']): boolean {
+  const rects = snapshots
+    .map((snapshot) => snapshot.nodes[key]?.rect)
+    .filter((rect): rect is CaptureRect => !!rect && rect.width > 0 && rect.height > 0);
+  if (rects.length < 2) return false;
+
+  const widths = rects.map((rect) => rect.width);
+  if (Math.max(...widths) - Math.min(...widths) <= 2) return false;
+  const ratios = rects.map((rect) => rect.width / rect.height);
+  const smallestRatio = Math.min(...ratios);
+  return Math.max(...ratios) - smallestRatio <= Math.max(0.01, smallestRatio * 0.01);
+}
+
+function importedBreakpointId(width: number): string {
+  return `import-${width}`;
+}
+
+function importedBreakpointName(width: number): string {
+  const familiarNames: Record<number, string> = {
+    640: 'Small',
+    768: 'Tablet',
+    1024: 'Desktop',
+    1280: 'Wide',
+    1440: 'Wide',
+  };
+  return familiarNames[width] ?? `${width}px`;
+}
+
+/**
+ * A computed `align-self: stretch` does not tell us where a max-width flex
+ * item actually sat. Recover that intent from its captured bounds so a
+ * centered `width: 100%; max-width: ...` wrapper stays centered after import.
+ */
+export function inferConstrainedFillAlignment(
+  node: CapturedNode,
+  parent: CapturedNode,
+): 'start' | 'center' | 'end' | undefined {
+  if (
+    parent.styles.display !== 'flex' ||
+    !['column', 'column-reverse'].includes(parent.styles.flexDirection ?? '')
+  ) {
+    return undefined;
+  }
+
+  const maxWidth = finiteLength(node.styles.maxWidth);
+  if (maxWidth === null || maxWidth <= 0 || !near(node.rect.width, maxWidth)) return undefined;
+
+  const innerStart = parent.rect.x + finiteNumber(parent.styles.paddingLeft, 0);
+  const innerEnd = parent.rect.x + parent.rect.width - finiteNumber(parent.styles.paddingRight, 0);
+  const freeSpace = innerEnd - innerStart - node.rect.width;
+  if (freeSpace <= 2) return undefined;
+
+  const startSpace = node.rect.x - innerStart;
+  const endSpace = innerEnd - (node.rect.x + node.rect.width);
+  const tolerance = Math.max(2, freeSpace * 0.02);
+
+  if (Math.abs(startSpace - endSpace) <= tolerance) return 'center';
+  if (Math.abs(startSpace) <= tolerance) return 'start';
+  if (Math.abs(endSpace) <= tolerance) return 'end';
+  return undefined;
+}
+
+function near(left: number, right: number): boolean {
+  return Math.abs(left - right) <= Math.max(2, Math.min(left, right) * 0.005);
+}
+
+function finiteLength(value?: string): number | null {
+  if (!value || value === 'none' || value.endsWith('%')) return null;
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 export function capturedStylesToDecl(
@@ -352,17 +573,25 @@ export function capturedStylesToDecl(
   forceSize = false,
 ): StyleDecl {
   const display = displayValue(styles.display);
-  const position = ['relative', 'absolute', 'sticky'].includes(styles.position ?? '')
-    ? (styles.position as 'relative' | 'absolute' | 'sticky')
+  const backgroundColor =
+    parseColor(styles.backgroundColor || 'transparent') ?? parseColor('transparent')!;
+  const gradient = parseGradientFill(styles.backgroundImage);
+  const fills: Fill[] = gradient
+    ? backgroundColor.alpha === undefined || backgroundColor.alpha > 0
+      ? [{ type: 'solid', color: backgroundColor }, gradient]
+      : [gradient]
+    : [{ type: 'solid', color: backgroundColor }];
+  const position = ['static', 'relative', 'absolute', 'sticky'].includes(styles.position ?? '')
+    ? (styles.position as 'static' | 'relative' | 'absolute' | 'sticky')
     : undefined;
   const decl: StyleDecl = {
     display,
-    flexDirection: styles.flexDirection === 'row' ? 'row' : 'column',
-    flexWrap: styles.flexWrap === 'wrap' ? 'wrap' : 'nowrap',
+    flexDirection: flexDirectionValue(styles.flexDirection),
+    flexWrap: flexWrapValue(styles.flexWrap),
     alignItems: alignValue(styles.alignItems),
     justifyContent: justifyValue(styles.justifyContent),
     gap: { row: length(styles.rowGap), column: length(styles.columnGap) },
-    alignSelf: alignValue(styles.alignSelf),
+    alignSelf: alignSelfValue(styles.alignSelf),
     flexGrow: finiteNumber(styles.flexGrow, 0),
     padding: sides4(styles, 'padding'),
     margin: sides4(styles, 'margin'),
@@ -370,21 +599,12 @@ export function capturedStylesToDecl(
     fontFamily: cleanFont(styles.fontFamily),
     fontSize: length(styles.fontSize),
     fontWeight: clamp(finiteNumber(styles.fontWeight, 400), 1, 1000),
-    lineHeight: length(styles.lineHeight),
+    lineHeight: lineHeightValue(styles.lineHeight, styles.fontSize),
     letterSpacing: length(styles.letterSpacing),
     textAlign: textAlign(styles.textAlign),
     color: parseColor(styles.color || 'transparent') ?? undefined,
-    fills: [
-      {
-        type: 'solid',
-        color: parseColor(styles.backgroundColor || 'transparent') ?? parseColor('transparent')!,
-      },
-    ],
-    border: {
-      width: length(styles.borderTopWidth),
-      style: borderStyle(styles.borderTopStyle),
-      color: parseColor(styles.borderTopColor || 'transparent') ?? parseColor('transparent')!,
-    },
+    fills,
+    border: borderValue(styles),
     radius: {
       tl: length(styles.borderTopLeftRadius),
       tr: length(styles.borderTopRightRadius),
@@ -397,11 +617,8 @@ export function capturedStylesToDecl(
     objectFit: objectFit(styles.objectFit),
   };
 
-  const shadows = parseShadows(styles.boxShadow);
-  if (shadows.length > 0) decl.shadows = shadows;
-  if (styles.mixBlendMode && styles.mixBlendMode !== 'normal') {
-    decl.blendMode = styles.mixBlendMode;
-  }
+  decl.shadows = parseShadows(styles.boxShadow);
+  decl.blendMode = styles.mixBlendMode || 'normal';
 
   if (tag === '#text') {
     decl.display = 'inline';
@@ -418,8 +635,8 @@ export function capturedStylesToDecl(
 
   const rowTracks = tracks(styles.gridTemplateRows);
   const columnTracks = tracks(styles.gridTemplateColumns);
-  if (rowTracks.length > 0) decl.gridTemplateRows = rowTracks;
-  if (columnTracks.length > 0) decl.gridTemplateColumns = columnTracks;
+  decl.gridTemplateRows = rowTracks;
+  decl.gridTemplateColumns = columnTracks;
   if (styles.gridColumn && styles.gridColumn !== 'auto') decl.gridColumn = styles.gridColumn;
   if (styles.gridRow && styles.gridRow !== 'auto') decl.gridRow = styles.gridRow;
   if (styles.zIndex && styles.zIndex !== 'auto')
@@ -436,12 +653,135 @@ export function capturedStylesToDecl(
   if (forceSize || tag === 'img' || position === 'absolute') {
     decl.width = px(Math.max(1, round(rect.width)));
     decl.height = px(Math.max(1, round(rect.height)));
-  } else {
+  } else if (tag !== '#text') {
+    decl.width = 'auto';
     if (styles.maxWidth && styles.maxWidth !== 'none') decl.maxWidth = length(styles.maxWidth);
     if (styles.minWidth && parseFloat(styles.minWidth) > 0) decl.minWidth = length(styles.minWidth);
     if (display === 'inline') decl.width = px(Math.max(1, round(rect.width)));
   }
   return removeUndefined(decl);
+}
+
+/** Parse the single linear/radial gradients supported by Pitolet fills. */
+export function parseGradientFill(value?: string): Fill | null {
+  const input = value?.trim();
+  if (!input || input === 'none') return null;
+  const match = /^(linear|radial)-gradient\((.*)\)$/is.exec(input);
+  if (!match) return null;
+
+  const kind = match[1]!;
+  const parts = splitCssList(match[2]!);
+  if (parts.length < 2) return null;
+
+  let angle = 180;
+  if (kind === 'linear') {
+    const parsedAngle = gradientAngle(parts[0]!);
+    if (parsedAngle !== null) {
+      angle = parsedAngle;
+      parts.shift();
+    }
+  } else if (!parseGradientStop(parts[0]!)) {
+    // Shapes and positions are not represented in the schema yet. Pitolet's
+    // radial fill is centered and circular, which matches the common case.
+    parts.shift();
+  }
+
+  const parsedStops = parts.map(parseGradientStop);
+  if (parsedStops.some((stop) => stop === null)) return null;
+  const stops = interpolateStopPositions(
+    parsedStops as Array<{
+      color: NonNullable<ReturnType<typeof parseColor>>;
+      position: number | null;
+    }>,
+  );
+  if (stops.length < 2) return null;
+  return kind === 'linear' ? { type: 'linear', angle, stops } : { type: 'radial', stops };
+}
+
+function splitCssList(value: string): string[] {
+  const parts: string[] = [];
+  let depth = 0;
+  let start = 0;
+  for (let index = 0; index < value.length; index++) {
+    const character = value[index];
+    if (character === '(') depth += 1;
+    else if (character === ')') depth -= 1;
+    else if (character === ',' && depth === 0) {
+      parts.push(value.slice(start, index).trim());
+      start = index + 1;
+    }
+  }
+  parts.push(value.slice(start).trim());
+  return parts.filter(Boolean);
+}
+
+function gradientAngle(value: string): number | null {
+  const input = value.trim().toLowerCase();
+  const degrees = /^(-?\d+(?:\.\d+)?)deg$/.exec(input);
+  if (degrees) return normalizeAngle(Number(degrees[1]));
+  const turns = /^(-?\d+(?:\.\d+)?)turn$/.exec(input);
+  if (turns) return normalizeAngle(Number(turns[1]) * 360);
+  const directions: Record<string, number> = {
+    'to top': 0,
+    'to top right': 45,
+    'to right top': 45,
+    'to right': 90,
+    'to bottom right': 135,
+    'to right bottom': 135,
+    'to bottom': 180,
+    'to bottom left': 225,
+    'to left bottom': 225,
+    'to left': 270,
+    'to top left': 315,
+    'to left top': 315,
+  };
+  return directions[input] ?? null;
+}
+
+function normalizeAngle(value: number): number {
+  return ((value % 360) + 360) % 360;
+}
+
+function parseGradientStop(value: string): {
+  color: NonNullable<ReturnType<typeof parseColor>>;
+  position: number | null;
+} | null {
+  const match = /^(.*?)(?:\s+(-?\d+(?:\.\d+)?)%)?$/.exec(value.trim());
+  if (!match) return null;
+  const color = parseColor(match[1]!.trim());
+  if (!color) return null;
+  return {
+    color,
+    position: match[2] === undefined ? null : clamp(Number(match[2]) / 100, 0, 1),
+  };
+}
+
+function interpolateStopPositions(
+  input: Array<{
+    color: NonNullable<ReturnType<typeof parseColor>>;
+    position: number | null;
+  }>,
+): Array<{ color: NonNullable<ReturnType<typeof parseColor>>; position: number }> {
+  const stops = input.map((stop) => ({ ...stop }));
+  if (stops[0]!.position === null) stops[0]!.position = 0;
+  if (stops.at(-1)!.position === null) stops.at(-1)!.position = 1;
+
+  let anchor = 0;
+  while (anchor < stops.length - 1) {
+    let next = anchor + 1;
+    while (next < stops.length && stops[next]!.position === null) next += 1;
+    if (next >= stops.length) break;
+    const start = stops[anchor]!.position!;
+    const end = Math.max(start, stops[next]!.position!);
+    for (let index = anchor + 1; index < next; index++) {
+      stops[index]!.position = start + ((end - start) * (index - anchor)) / (next - anchor);
+    }
+    anchor = next;
+  }
+  return stops as Array<{
+    color: NonNullable<ReturnType<typeof parseColor>>;
+    position: number;
+  }>;
 }
 
 function diffStyle(previous: StyleDecl, current: StyleDecl): Partial<StyleDecl> {
@@ -455,9 +795,21 @@ function diffStyle(previous: StyleDecl, current: StyleDecl): Partial<StyleDecl> 
 }
 
 function sanitizeAttrs(attrs: Record<string, string>): Record<string, string> {
-  return Object.fromEntries(
-    Object.entries(attrs).filter(([key]) => INERT_ATTRS.has(key) || key.startsWith('aria-')),
+  const sanitized = Object.fromEntries(
+    Object.entries(attrs).filter(([key, value]) => {
+      if (!(INERT_ATTRS.has(key) || key.startsWith('aria-'))) return false;
+      if (key === 'href' && !isSafeNavigationUrl(value)) return false;
+      if (['checked', 'disabled', 'selected'].includes(key) && value === 'false') return false;
+      return true;
+    }),
   );
+  if (sanitized.target === '_blank') {
+    const rel = new Set((sanitized.rel ?? '').split(/\s+/).filter(Boolean));
+    rel.add('noopener');
+    rel.add('noreferrer');
+    sanitized.rel = [...rel].join(' ');
+  }
+  return sanitized;
 }
 
 function sides4(styles: CapturedStyles, prefix: 'padding' | 'margin') {
@@ -471,6 +823,75 @@ function sides4(styles: CapturedStyles, prefix: 'padding' | 'margin') {
 
 function length(value?: string) {
   return px(round(finiteNumber(value, 0)));
+}
+
+function lineHeightValue(value?: string, fontSize?: string): StyleDecl['lineHeight'] {
+  if (!value || value === 'normal') return 1.2;
+  const parsed = Number.parseFloat(value);
+  if (!Number.isFinite(parsed)) return 1.2;
+  if (/^-?\d*\.?\d+$/.test(value.trim())) return parsed;
+  if (value.endsWith('px')) return px(round(parsed));
+  const size = Number.parseFloat(fontSize ?? '');
+  return Number.isFinite(size) && size > 0 ? round(parsed / size) : px(round(parsed));
+}
+
+function flexDirectionValue(value?: string): NonNullable<StyleDecl['flexDirection']> {
+  if (
+    value === 'row' ||
+    value === 'row-reverse' ||
+    value === 'column' ||
+    value === 'column-reverse'
+  ) {
+    return value;
+  }
+  return 'column';
+}
+
+function flexWrapValue(value?: string): NonNullable<StyleDecl['flexWrap']> {
+  if (value === 'wrap' || value === 'wrap-reverse') return value;
+  return 'nowrap';
+}
+
+function borderValue(styles: CapturedStyles): NonNullable<StyleDecl['border']> {
+  const sides = (['Top', 'Right', 'Bottom', 'Left'] as const).map((side) => ({
+    side: side.toLowerCase() as 'top' | 'right' | 'bottom' | 'left',
+    width: finiteNumber(styles[`border${side}Width`], 0),
+    style: styles[`border${side}Style`],
+    color: styles[`border${side}Color`],
+  }));
+  const active = sides.filter((side) => side.width > 0 && side.style !== 'none');
+  const representative = active[0] ?? sides[0]!;
+  const border: NonNullable<StyleDecl['border']> = {
+    width: px(round(representative.width)),
+    style: borderStyle(representative.style),
+    color: parseColor(representative.color || 'transparent') ?? parseColor('transparent')!,
+  };
+  if (active.length > 0 && active.length < 4) {
+    border.sides = Object.fromEntries(
+      sides.map((side) => [side.side, active.some((entry) => entry.side === side.side)]),
+    );
+  }
+  return border;
+}
+
+function isSafeNavigationUrl(value: string): boolean {
+  const trimmed = value.trim();
+  if (!trimmed) return true;
+  if (
+    trimmed.startsWith('/') ||
+    trimmed.startsWith('./') ||
+    trimmed.startsWith('../') ||
+    trimmed.startsWith('#') ||
+    trimmed.startsWith('?')
+  ) {
+    return true;
+  }
+  try {
+    const parsed = new URL(trimmed);
+    return ['http:', 'https:', 'mailto:', 'tel:'].includes(parsed.protocol);
+  } catch {
+    return false;
+  }
 }
 
 function finiteNumber(value: string | undefined, fallback: number): number {
@@ -507,6 +928,11 @@ function alignValue(value?: string): NonNullable<StyleDecl['alignItems']> {
     auto: 'stretch',
   };
   return mapped[value ?? ''] ?? 'stretch';
+}
+
+function alignSelfValue(value?: string): NonNullable<StyleDecl['alignSelf']> {
+  if (!value || value === 'auto') return 'auto';
+  return alignValue(value);
 }
 
 function justifyValue(value?: string): NonNullable<StyleDecl['justifyContent']> {

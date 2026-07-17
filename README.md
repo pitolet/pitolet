@@ -4,20 +4,20 @@
 
 [![Claude Code editing a Pitolet canvas live](marketing/gifs/pitolet-insert.gif)](pitolet-demo.mp4)
 
-*Claude Code adds a section over MCP. You can watch the edit happen and undo it with ⌘Z. [Watch the 44-second demo.](pitolet-demo.mp4)*
+_Claude Code adds a section over MCP. You can watch the edit happen and undo it with ⌘Z. [Watch the 44-second demo.](pitolet-demo.mp4)_
 
 Pitolet is a design tool for web interfaces. The canvas runs in the browser, so every layer uses real DOM and CSS: flexbox, grid, text wrapping, fonts, breakpoints, and interaction states. Exported code comes from that same document instead of a separate interpretation of it.
 
 ## Why Pitolet
 
-| Figma | Pitolet |
-|---|---|
-| A separate layout model | Real flexbox and grid, rendered by the browser |
-| Several frames for several widths | One frame with cascading breakpoint overrides |
-| Interaction mockups and variants | Real `:hover`, `:focus`, and `:active` styles |
-| Design-to-code translation | React, Tailwind, or HTML generated from the canvas document |
-| Design files stored behind an API | Readable JSON files that can live in your repo |
-| Agent access varies by tool and plan | Built-in read/write MCP with live, undoable edits |
+| Figma                                | Pitolet                                                     |
+| ------------------------------------ | ----------------------------------------------------------- |
+| A separate layout model              | Real flexbox and grid, rendered by the browser              |
+| Several frames for several widths    | One frame with cascading breakpoint overrides               |
+| Interaction mockups and variants     | Real `:hover`, `:focus`, and `:active` styles               |
+| Design-to-code translation           | React, Tailwind, or HTML generated from the canvas document |
+| Design files stored behind an API    | Readable JSON files that can live in your repo              |
+| Agent access varies by tool and plan | Built-in read/write MCP with live, undoable edits           |
 
 ## Quickstart
 
@@ -66,7 +66,9 @@ Documents persist in the `pitolet-data` volume (mounted at `/data`). To build th
 
 ```bash
 docker build -t pitolet .
-docker run -p 4517:4517 -v pitolet-data:/data pitolet
+docker run -p 4517:4517 -v pitolet-data:/data \
+  -e PITOLET_PASSWORD=change-me \
+  pitolet
 ```
 
 ## Connect your coding agent (MCP)
@@ -77,7 +79,7 @@ claude mcp add --transport http pitolet http://localhost:4517/mcp
 
 Then, in Claude Code:
 
-> *"In Pitolet, add a testimonial section to the Landing frame using the design tokens."*
+> _"In Pitolet, add a testimonial section to the Landing frame using the design tokens."_
 
 ### Import an existing site
 
@@ -109,13 +111,13 @@ The first import downloads a compatible Chromium build and caches it. Each run s
 
 Agent edits use the same validation and history as edits made in the UI. They appear on the open canvas, show a short highlight, and can be undone with ⌘Z.
 
-**Read**: `list_documents`, `list_frames`, `get_node`, `get_selection`, `get_design_as_code`, `get_tokens`, `get_screenshot` (uses the open editor; falls back to headless Playwright if installed).
+**Read**: `list_documents`, `list_frames`, `get_node`, `get_selection`, `get_design_as_code`, `get_tokens`, `get_screenshot` (uses the open editor when available, then the bundled Playwright Core fallback).
 **Write**: `create_frame`, `insert_nodes`, `update_node`, `delete_nodes`, `set_tokens`, `set_selection`, `create_document`.
 **Collaborate**: `add_comment` / `get_comments` / `resolve_comment`. The agent reads the notes you pin on nodes and can leave its own, threaded to the same node.
 **Design system**: `import_design_system` merges your real `theme.css` / `globals.css` custom properties (colors, spacing, radius, shadows, fonts, type scale) into the document's tokens, so agent output uses your system rather than the defaults.
-**Repo linking**: `export_project { annotate }` writes the project plus a `.pitolet-manifest.json` (per-file source frame + content hash) and, with `annotate`, stamps `data-pl-id` attributes and `// @pitolet` headers into the code. `check_drift` then reports, per file, whether the design changed, the file was hand-edited, both, or everything is in sync, so the agent knows what to reconcile.
+**Repo linking**: `export_project { annotate }` writes the project plus a `.pitolet-manifest.json` (per-file source frame + content hash) and, with `annotate`, stamps `data-ptl-id` attributes and `// @pitolet` headers into the code. `check_drift` then reports, per file, whether the design changed, the file was hand-edited, both, or everything is in sync, so the agent knows what to reconcile.
 
-`get_screenshot` without an open editor falls back to headless Chromium if Playwright is present (`pnpm add -D playwright && npx playwright install chromium`); it is a pure optional dependency, never required.
+The import command includes Playwright Core. If its matching Chromium build is missing, the first import downloads and caches it. MCP's `get_screenshot` uses the open editor when it can; otherwise it reuses that cached browser for a headless capture. A screenshot request never starts a browser download on its own. If Chromium is still missing, open the document in the editor or run one import first.
 
 ## The editor
 
@@ -124,8 +126,8 @@ Agent edits use the same validation and history as edits made in the UI. They ap
 - **Inspector**: Framer-style Stack vocabulary over real CSS. Direction, alignment, gap, padding/margin, sizing with `auto`/`fill`/`%`/`px`, typography (Google Fonts, variable weights), fills, gradients, borders, radius, shadows, opacity, overflow, absolute positioning. Every field can bind to a design token (◈).
 - **Tokens**: colors, spacing, radius, type scale. Editing a token reflows the whole canvas live and re-emits as Tailwind `@theme` variables.
 - **Components**: ⌘⌥K componentizes a subtree. Instances take variant props and per-node overrides, and codegen emits a real typed React component.
-- **Breakpoints & states**: pick a context in the top bar (Base · sm · md · lg · xl · :hover…) and edits record into that layer. Duplicate a frame at 375px to see the cascade side by side.
-- **Collaboration**: leave comments on any node, from the inspector Comments section or a canvas pin, and your coding agent reads them and can reply. The top bar shows an "Agent editing" badge, an activity feed of who changed what, and a document switcher for multiple `.pitolet.json` files.
+- **Breakpoints & states**: pick Base, a named width, or `:hover`, `:focus`, or `:active` in the top bar. The selected frame previews that context immediately. Edits stay in the chosen layer and wider breakpoints inherit the narrower styles.
+- **Collaboration**: open Comments from the top bar, select a layer, and write a note. The inspector footer is a shortcut to the same panel, and canvas markers appear while comments are open. Your coding agent reads and replies to the same threads. The top bar also has an activity feed and a document switcher for multiple `.pitolet.json` files.
 - **Preview (⌘↩)**: the frame rendered from generated code in an iframe, so hover states and media queries are real.
 - **Code panel (⌘J)**: live React+Tailwind or HTML+CSS for the selection, plus one-click full-project export (`theme.css`, `components/`, `frames/`).
 - **⌘K**: command palette with everything above.
@@ -154,7 +156,15 @@ Editor pixels and generated code can't drift, because both derive from the same 
 
 ```bash
 pnpm test        # vitest: schema, codegen (golden files), server (WS + MCP e2e), editor
+pnpm lint        # ESLint: TypeScript correctness and React hook rules
+pnpm audit:prod  # production dependency advisories
 pnpm typecheck   # strict TS across all packages
+pnpm format:check
+pnpm build
+pnpm check:site  # generated landing files match site/build.ts
+pnpm qa:site     # responsive screenshots, internal links, and axe
+pnpm qa:editor   # production editor edit/persistence flow and axe
+pnpm check:package # install and boot the exact npm tarball
 UPDATE_GOLDEN=1 pnpm vitest run --project codegen   # regenerate golden files intentionally
 ```
 

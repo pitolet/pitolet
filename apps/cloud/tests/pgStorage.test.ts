@@ -4,12 +4,16 @@ import pg from 'pg';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import type { AppliedPatch } from 'pitolet';
+import { FileStorageAdapter, type AppliedPatch } from 'pitolet';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { runMigrations } from '../src/db/migrate.js';
 import { ensureWorkspaceStarterDocuments } from '../src/cloud/workspaces.js';
 import { PgStorageAdapter } from '../src/storage/PgStorageAdapter.js';
-import { startEphemeralPg, type EphemeralPg } from './harness/ephemeralPg.js';
+import {
+  activeEphemeralPgCountForTests,
+  startEphemeralPg,
+  type EphemeralPg,
+} from './harness/ephemeralPg.js';
 
 enablePatches();
 
@@ -24,6 +28,8 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await pgi?.stop();
+  await pgi?.stop();
+  expect(activeEphemeralPgCountForTests()).toBe(0);
   rmSync(dataRoot, { recursive: true, force: true });
 });
 
@@ -82,7 +88,22 @@ describe('migrations', () => {
       '001_init.sql',
       '002_better_auth_users.sql',
       '003_billing_limits.sql',
+      '004_production_hardening.sql',
     ]);
+  });
+
+  it('refuses to run when an applied migration checksum changes', async () => {
+    const original = await pgi.pool.query<{ checksum: string }>(
+      `SELECT checksum FROM schema_migrations WHERE name = '001_init.sql'`,
+    );
+    await pgi.pool.query(`UPDATE schema_migrations SET checksum = $1 WHERE name = '001_init.sql'`, [
+      '0'.repeat(64),
+    ]);
+    await expect(runMigrations(pgi.pool)).rejects.toThrow(/checksum mismatch/);
+    await pgi.pool.query(`UPDATE schema_migrations SET checksum = $1 WHERE name = '001_init.sql'`, [
+      original.rows[0]!.checksum,
+    ]);
+    expect(await runMigrations(pgi.pool)).toEqual([]);
   });
 });
 
@@ -107,6 +128,106 @@ describe('workspace starter-document recovery', () => {
 });
 
 describe('PgStorageAdapter', () => {
+  it('counts a content-addressed asset once and enforces quota atomically', async () => {
+    const ws = await createWorkspace('asset-accounting');
+    const adapter = new PgStorageAdapter(pgi.pool, ws, dataRoot, {
+      quota: {
+        maxAssetBytes: () => 5,
+        assetLimitMessage: () => 'asset quota reached',
+        historyDays: () => 30,
+      },
+    });
+    const data = Buffer.from('abc');
+    const [first, duplicate] = await Promise.all([
+      adapter.assets.put(data, 'image/png'),
+      adapter.assets.put(data, 'image/png'),
+    ]);
+    expect(duplicate.assetId).toBe(first.assetId);
+    const accounted = await pgi.pool.query(
+      `SELECT w.asset_bytes,
+              (SELECT count(*)::int FROM workspace_assets a
+               WHERE a.workspace_id = w.id) AS assets
+       FROM workspaces w WHERE w.id = $1`,
+      [ws],
+    );
+    expect(Number(accounted.rows[0]!.asset_bytes)).toBe(3);
+    expect(accounted.rows[0]!.assets).toBe(1);
+    await expect(adapter.assets.put(Buffer.from('def'), 'image/png')).rejects.toThrow(
+      /asset quota reached/,
+    );
+    const files = await new FileStorageAdapter(join(dataRoot, 'workspaces', ws)).assets.list!();
+    expect(files.map((file) => file.assetId)).toEqual([first.assetId]);
+    await adapter.close();
+  });
+
+  it('collects old accounted and transaction-orphaned assets without touching references', async () => {
+    const ws = await createWorkspace('asset-gc');
+    const quota = {
+      maxAssetBytes: () => 1_000,
+      assetLimitMessage: () => 'asset quota reached',
+      historyDays: () => 30,
+    };
+    const adapter = new PgStorageAdapter(pgi.pool, ws, dataRoot, {
+      quota,
+      assetGcGraceMs: 0,
+      assetGcIntervalMs: 0,
+    });
+    const orphan = await adapter.assets.put(Buffer.from('orphan'), 'image/png');
+    const kept = await adapter.assets.put(Buffer.from('kept'), 'image/png');
+    const doc = createSampleDocument();
+    doc.assets[kept.assetId] = {
+      fileName: 'kept.png',
+      mime: 'image/png',
+      width: 1,
+      height: 1,
+    };
+    await adapter.saveNow(doc, 0);
+
+    // Simulate a file written before an upload transaction failed.
+    const rawAssets = new FileStorageAdapter(join(dataRoot, 'workspaces', ws)).assets;
+    const unaccounted = await rawAssets.put(Buffer.from('unaccounted'), 'image/png');
+    // File mtimes retain sub-millisecond precision while Date.now() does not.
+    await new Promise((resolve) => setTimeout(resolve, 5));
+
+    const result = await adapter.collectOrphanedAssets();
+    expect(result.removed).toBe(2);
+    expect(result.reclaimedBytes).toBe(Buffer.byteLength('orphan'));
+    expect(await adapter.assets.get(orphan.assetId)).toBeNull();
+    expect(await adapter.assets.get(unaccounted.assetId)).toBeNull();
+    const keptAsset = await adapter.assets.get(kept.assetId);
+    expect(keptAsset).not.toBeNull();
+    keptAsset?.stream.destroy();
+
+    const accounting = await pgi.pool.query(
+      `SELECT w.asset_bytes,
+              array_agg(a.asset_id ORDER BY a.asset_id) FILTER (WHERE a.asset_id IS NOT NULL) AS ids
+       FROM workspaces w
+       LEFT JOIN workspace_assets a ON a.workspace_id = w.id
+       WHERE w.id = $1
+       GROUP BY w.id`,
+      [ws],
+    );
+    expect(Number(accounting.rows[0]!.asset_bytes)).toBe(Buffer.byteLength('kept'));
+    expect(accounting.rows[0]!.ids).toEqual([kept.assetId]);
+    await adapter.close();
+  });
+
+  it('serializes concurrent document creation against the free limit', async () => {
+    const ws = await createWorkspace('concurrent-doc-quota');
+    const adapter = new PgStorageAdapter(pgi.pool, ws, dataRoot);
+    const docs = Array.from({ length: 5 }, () => createSampleDocument());
+    const outcomes = await Promise.allSettled(docs.map((doc) => adapter.saveNow(doc, 0)));
+    expect(outcomes.filter((outcome) => outcome.status === 'fulfilled')).toHaveLength(3);
+    expect(outcomes.filter((outcome) => outcome.status === 'rejected')).toHaveLength(2);
+    const live = await pgi.pool.query(
+      `SELECT count(*)::int AS n FROM documents
+       WHERE workspace_id = $1 AND deleted_at IS NULL`,
+      [ws],
+    );
+    expect(live.rows[0]!.n).toBe(3);
+    await adapter.close();
+  });
+
   it('saveNow + loadAll round-trips a real document', async () => {
     const ws = await createWorkspace('roundtrip');
     const adapter = new PgStorageAdapter(pgi.pool, ws, dataRoot);
@@ -133,7 +254,10 @@ describe('PgStorageAdapter', () => {
 
     // The revision append is immediate (not debounced).
     await poll(async () => {
-      const r = await pgi.pool.query('SELECT count(*)::int AS n FROM doc_revisions WHERE doc_id = $1', [doc.id]);
+      const r = await pgi.pool.query(
+        'SELECT count(*)::int AS n FROM doc_revisions WHERE doc_id = $1',
+        [doc.id],
+      );
       return r.rows[0].n === 1;
     });
     const rev = await pgi.pool.query(
@@ -165,7 +289,10 @@ describe('PgStorageAdapter', () => {
 
   it('a patch storm settles to a consistent doc with a full monotonic revision log', async () => {
     const ws = await createWorkspace('storm');
-    const adapter = new PgStorageAdapter(pgi.pool, ws, dataRoot, { debounceMs: 50, maxWaitMs: 500 });
+    const adapter = new PgStorageAdapter(pgi.pool, ws, dataRoot, {
+      debounceMs: 50,
+      maxWaitMs: 500,
+    });
     const doc = createSampleDocument();
     await adapter.saveNow(doc, 0);
 
@@ -199,7 +326,10 @@ describe('PgStorageAdapter', () => {
     const { steps, final } = makePatches(doc, 3);
     for (const step of steps) crashed.handlePatch(step.patch, step.doc);
     await poll(async () => {
-      const r = await pgi.pool.query('SELECT count(*)::int AS n FROM doc_revisions WHERE doc_id = $1', [doc.id]);
+      const r = await pgi.pool.query(
+        'SELECT count(*)::int AS n FROM doc_revisions WHERE doc_id = $1',
+        [doc.id],
+      );
       return r.rows[0].n === 3;
     });
     // Deliberately NO flush — the stored doc row is stale at rev 0.
@@ -248,7 +378,7 @@ describe('PgStorageAdapter', () => {
     // … and cross-tenant handlePatch drops the revision without throwing.
     const { steps } = makePatches(docB, 1);
     adapterA.handlePatch(steps[0]!.patch, steps[0]!.doc);
-    await adapterA.flush();
+    await expect(adapterA.flush()).rejects.toThrow(/failed to durably store/);
     const revCount = await pgi.pool.query(
       'SELECT count(*)::int AS n FROM doc_revisions WHERE doc_id = $1',
       [docB.id],
@@ -266,7 +396,7 @@ describe('PgStorageAdapter', () => {
     expect(rowB.rows[0].rev).toBe(0);
     expect(rowB.rows[0].doc.name).toBe(docB.name);
 
-    await adapterA.close();
+    await expect(adapterA.close()).rejects.toThrow(/failed to durably store/);
     await adapterB.close();
   });
 
@@ -285,7 +415,10 @@ describe('PgStorageAdapter', () => {
 
   it('writes an auto snapshot after 200+ revisions', async () => {
     const ws = await createWorkspace('snapshots');
-    const adapter = new PgStorageAdapter(pgi.pool, ws, dataRoot, { debounceMs: 50, maxWaitMs: 500 });
+    const adapter = new PgStorageAdapter(pgi.pool, ws, dataRoot, {
+      debounceMs: 50,
+      maxWaitMs: 500,
+    });
     const doc = createSampleDocument();
     await adapter.saveNow(doc, 0);
 
@@ -303,7 +436,44 @@ describe('PgStorageAdapter', () => {
     await adapter.close();
   });
 
-  it('handlePatch never throws, even with a dead pool', async () => {
+  it('latches persistence failures, reports them on flush, and retries the latest document', async () => {
+    const ws = await createWorkspace('persistence-retry');
+    let failPersistence = false;
+    const faultPool = Object.create(pgi.pool) as pg.Pool;
+    faultPool.connect = pgi.pool.connect.bind(pgi.pool);
+    faultPool.query = ((query: unknown, values?: unknown[]) => {
+      const sql = typeof query === 'string' ? query : '';
+      if (
+        failPersistence &&
+        (sql.includes('INSERT INTO doc_revisions') || sql.includes('UPDATE documents SET doc'))
+      ) {
+        return Promise.reject(new Error('injected storage outage'));
+      }
+      return pgi.pool.query(query as never, values as never);
+    }) as typeof pgi.pool.query;
+
+    const adapter = new PgStorageAdapter(faultPool, ws, dataRoot, {
+      debounceMs: 10_000,
+      maxWaitMs: 20_000,
+    });
+    const doc = createSampleDocument();
+    await adapter.saveNow(doc, 0);
+    const { steps } = makePatches(doc, 1);
+    failPersistence = true;
+    expect(() => adapter.handlePatch(steps[0]!.patch, steps[0]!.doc)).not.toThrow();
+    await expect(adapter.flush()).rejects.toThrow(/failed to durably store/);
+    const stale = await pgi.pool.query('SELECT rev FROM documents WHERE id = $1', [doc.id]);
+    expect(Number(stale.rows[0]!.rev)).toBe(0);
+
+    failPersistence = false;
+    await expect(adapter.flush()).resolves.toBeUndefined();
+    const durable = await pgi.pool.query('SELECT rev, doc FROM documents WHERE id = $1', [doc.id]);
+    expect(Number(durable.rows[0]!.rev)).toBe(1);
+    expect(durable.rows[0]!.doc.name).toBe(steps[0]!.doc.name);
+    await adapter.close();
+  });
+
+  it('handlePatch never throws synchronously, but dead storage fails flush and close', async () => {
     const ws = await createWorkspace('dead-pool');
     const deadPool = new pg.Pool({ connectionString: pgi.url });
     await deadPool.end(); // every query now rejects immediately
@@ -319,9 +489,8 @@ describe('PgStorageAdapter', () => {
     expect(() => {
       for (const step of steps) adapter.handlePatch(step.patch, step.doc);
     }).not.toThrow();
-    await expect(adapter.flush()).resolves.toBeUndefined();
+    await expect(adapter.flush()).rejects.toThrow(/failed to durably store/);
     expect(errors.length).toBeGreaterThan(0);
-    // close() must also survive a dead pool.
-    await expect(adapter.close()).resolves.toBeUndefined();
+    await expect(adapter.close()).rejects.toThrow(/failed to durably store/);
   });
 });

@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "fhNZWffA8Q",
   "name": "Welcome",
   "rootOrder": [
@@ -48,7 +48,25 @@
                 "$token": "color.background"
               }
             }
-          ]
+          ],
+          "radius": {
+            "tl": {
+              "value": 0,
+              "unit": "px"
+            },
+            "tr": {
+              "value": 0,
+              "unit": "px"
+            },
+            "br": {
+              "value": 0,
+              "unit": "px"
+            },
+            "bl": {
+              "value": 0,
+              "unit": "px"
+            }
+          }
         }
       },
       "type": "frame",
@@ -1046,7 +1064,7 @@
       "type": "frame",
       "canvas": {
         "x": 100,
-        "y": 1560,
+        "y": 1210,
         "width": 480,
         "height": "auto"
       },
@@ -1218,6 +1236,7 @@
       "id": "JjSzPKNOfH",
       "name": "Primary CTA",
       "rootId": "-8RMXuovJb",
+      "contentRootId": "l2r95K2BIE",
       "variantProps": [],
       "variants": {}
     },
@@ -1225,6 +1244,7 @@
       "id": "kvcwNv0Gac",
       "name": "Secondary CTA",
       "rootId": "C3FUcEbXxo",
+      "contentRootId": "ZDOL8CSIEn",
       "variantProps": [],
       "variants": {}
     }

@@ -1,7 +1,7 @@
 import { createReadStream, existsSync, statSync } from 'node:fs';
 import type http from 'node:http';
 import type { Duplex } from 'node:stream';
-import { extname, join, normalize } from 'node:path';
+import { extname, isAbsolute, relative, resolve } from 'node:path';
 import { migrateDocument, type PitoletDocument } from '@pitolet/schema';
 import type { Pool } from 'pg';
 import { PatchRejectedError, type AuthContext } from 'pitolet';
@@ -11,6 +11,7 @@ import type { CloudAuth } from './auth/auth.js';
 import {
   processPaddleWebhook,
   verifyPaddleSignature,
+  workspaceCheckoutSignature,
   type PaddleConfig,
 } from './billing/paddle.js';
 import {
@@ -20,29 +21,25 @@ import {
   verifyAgentToken,
   type TokenScope,
 } from './cloud/agentTokens.js';
-import {
-  memberLimitDenial,
-  planOf,
-  shareLinkLimitDenial,
-  tokenLimitDenial,
-  workspaceCreateDenial,
-  type Plan,
-} from './cloud/plans.js';
+import { planOf, PlanLimitError, type Plan } from './cloud/plans.js';
 import { TokenBucketLimiter } from './cloud/rateLimit.js';
 import {
-  countActiveShareLinks,
+  createShareSession,
   createShareLink,
   listShareLinks,
   revokeShareLink,
   verifyShareLink,
+  verifyShareSession,
 } from './cloud/shareLinks.js';
 import type { WorkspaceManager } from './cloud/workspaceManager.js';
 import {
   createWorkspace,
   findWorkspaceBySlug,
   listWorkspacesFor,
+  removeMember,
   roleFor,
   SlugError,
+  upsertMember,
   type Role,
   type Workspace,
 } from './cloud/workspaces.js';
@@ -83,6 +80,8 @@ export interface CloudRouterOptions {
   billing?: PaddleConfig | null;
   /** Injectable clock for rate limiters (tests). */
   clock?: () => number;
+  /** Require verified target accounts for email-based membership changes. */
+  requireVerifiedEmail?: boolean;
 }
 
 export interface CloudRouter {
@@ -90,6 +89,15 @@ export interface CloudRouter {
   handleUpgrade(req: http.IncomingMessage, socket: Duplex, head: Buffer): void;
   /** Propagate a plan change into live runtimes + router caches. */
   onPlanChanged(workspaceId: string, plan: Plan): void;
+}
+
+export class CloudHttpError extends Error {
+  constructor(
+    readonly status: 400 | 413,
+    message: string,
+  ) {
+    super(message);
+  }
 }
 
 const MIME: Record<string, string> = {
@@ -100,6 +108,7 @@ const MIME: Record<string, string> = {
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
+  '.woff': 'font/woff',
   '.woff2': 'font/woff2',
   '.map': 'application/json',
 };
@@ -148,17 +157,18 @@ const MCP_REQUESTS_PER_MINUTE = 60;
 /** Per-IP webhook budget — blunts garbage floods before HMAC work. */
 const WEBHOOK_REQUESTS_PER_MINUTE = 60;
 const MAX_WEBHOOK_BODY_BYTES = 1_000_000;
+const SHARE_SESSION_COOKIE = 'pitolet_share';
 
 type SessionUser = { id: string; email: string; name: string; image?: string | null };
 
 type WorkspacePrincipal =
-  | { ok: true; ctx: AuthContext; role: Role | null }
-  | { ok: false; status: 401 | 404 };
+  { ok: true; ctx: AuthContext; role: Role | null } | { ok: false; status: 401 | 404 };
 
 export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
   const { pool, auth, manager, editorDist, dashboardDist } = options;
   const billing = options.billing ?? null;
   const clock = options.clock ?? Date.now;
+  const requireVerifiedEmail = options.requireVerifiedEmail ?? true;
   const authHandler = toNodeHandler(auth);
   // One shared noServer WSS purely for the upgrade handshake; accepted
   // sockets are handed to the (per-workspace) hub.
@@ -198,10 +208,10 @@ export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
    *   - Bearer token: invalid, revoked, or SCOPED TO ANOTHER WORKSPACE →
    *     401, byte-identical responses. A foreign token must not learn that
    *     the workspace exists.
-   *   - Share token (?share= or X-Pitolet-Share; checked AFTER Bearer,
-   *     BEFORE session): invalid, revoked, expired, or scoped to another
-   *     workspace → the same byte-identical 401. Valid → read-only context
-   *     pinned to the link's single document.
+   *   - X-Pitolet-Share or an exchanged HttpOnly share session (checked
+   *     AFTER Bearer, BEFORE user session): invalid,
+   *     revoked, expired, or scoped to another workspace → the same
+   *     byte-identical 401. Valid → read-only context pinned to one document.
    *   - Session but not a member (or workspace doesn't exist) → 404.
    *   - No credentials → 401 (regardless of workspace existence).
    */
@@ -227,15 +237,14 @@ export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
       };
     }
 
-    // Share token: query param (browser + WS upgrade both carry the URL) or
-    // X-Pitolet-Share header (MCP/agents, where the URL is fixed). A present
-    // share credential is authoritative — it never falls through to the
-    // session branch, so a member using a share URL gets share-scoped access.
+    // Raw share tokens never travel in workspace URLs. Human links exchange
+    // `/s/:token` for an HttpOnly cookie; non-browser clients use the
+    // X-Pitolet-Share header. Treat a legacy query credential as invalid
+    // rather than falling through to a member session with broader access.
     const shareHeader = req.headers['x-pitolet-share'];
-    const shareToken =
-      (typeof shareHeader === 'string' ? shareHeader : undefined) ??
-      new URL(req.url ?? '/', 'http://localhost').searchParams.get('share') ??
-      undefined;
+    const requestUrl = new URL(req.url ?? '/', 'http://localhost');
+    if (requestUrl.searchParams.has('share')) return { ok: false, status: 401 };
+    const shareToken = typeof shareHeader === 'string' ? shareHeader : undefined;
     if (shareToken) {
       const link = await verifyShareLink(pool, shareToken);
       // Invalid/revoked/expired token, unknown workspace, or a token scoped
@@ -249,6 +258,25 @@ export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
         ctx: {
           kind: 'share',
           userId: `share:${shareToken.slice('pshare_'.length, 'pshare_'.length + 8)}`,
+          displayName: 'Guest',
+          scopes: ['read'],
+          docId: link.docId,
+        },
+      };
+    }
+
+    const shareSessionToken = parseCookies(req.headers.cookie)[SHARE_SESSION_COOKIE];
+    if (shareSessionToken) {
+      const link = await verifyShareSession(pool, shareSessionToken);
+      if (!link || !workspace || link.workspaceId !== workspace.id) {
+        return { ok: false, status: 401 };
+      }
+      return {
+        ok: true,
+        role: null,
+        ctx: {
+          kind: 'share',
+          userId: `share-session:${shareSessionToken.slice('psess_'.length, 'psess_'.length + 8)}`,
           displayName: 'Guest',
           scopes: ['read'],
           docId: link.docId,
@@ -274,19 +302,39 @@ export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
   }
 
   function json(res: http.ServerResponse, status: number, body: unknown): void {
-    res.writeHead(status, { 'content-type': 'application/json' });
+    res.writeHead(status, {
+      'content-type': 'application/json',
+      'cache-control': 'no-store',
+    });
     res.end(JSON.stringify(body));
   }
 
   const notFound = (res: http.ServerResponse) => json(res, 404, { error: 'not found' });
   const unauthorized = (res: http.ServerResponse) => json(res, 401, { error: 'unauthorized' });
 
-  async function handleRequest(
-    req: http.IncomingMessage,
-    res: http.ServerResponse,
-  ): Promise<void> {
+  async function handleRequest(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
+    setSecurityHeaders(res);
     const url = new URL(req.url ?? '/', 'http://localhost');
     const pathname = url.pathname;
+    if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method ?? 'GET') && !originAllowed(req)) {
+      return json(res, 403, { error: 'cross-origin mutation rejected' });
+    }
+
+    if (pathname === '/healthz') {
+      if (req.method !== 'GET') return json(res, 405, { error: 'method not allowed' });
+      return json(res, 200, { ok: true });
+    }
+    if (pathname === '/readyz') {
+      if (req.method !== 'GET') return json(res, 405, { error: 'method not allowed' });
+      try {
+        await pool.query('SELECT 1 FROM schema_migrations LIMIT 1');
+        await pool.query('SELECT 1 FROM workspaces LIMIT 1');
+        await manager.assertStorageReady();
+        return json(res, 200, { ok: true });
+      } catch {
+        return json(res, 503, { ok: false });
+      }
+    }
 
     if (pathname === '/auth' || pathname.startsWith('/auth/')) {
       await authHandler(req, res);
@@ -299,23 +347,49 @@ export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
       return handleBillingWebhook(req, res);
     }
 
-    // Public share-link entry (humans click these — never JSON). Valid →
-    // bounce into the workspace editor with the token as a query credential;
-    // anything else → ONE byte-identical 404 page (invalid == revoked ==
-    // expired, indistinguishable by construction).
+    // Public share-link entry (humans click these — never JSON). A valid raw
+    // token is exchanged for a scoped HttpOnly session cookie before the
+    // browser reaches the workspace URL. Anything else gets one byte-identical
+    // 404 page (invalid == revoked == expired).
     const share = SHARE_ENTRY_PATH.exec(pathname);
     if (share && (req.method === 'GET' || req.method === 'HEAD')) {
-      const link = await verifyShareLink(pool, share[1]!);
-      const slugRow = link
-        ? await pool.query('SELECT slug FROM workspaces WHERE id = $1', [link.workspaceId])
+      const session = await createShareSession(pool, share[1]!);
+      const slugRow = session
+        ? await pool.query('SELECT slug FROM workspaces WHERE id = $1', [session.workspaceId])
         : null;
       const slug = slugRow?.rows[0]?.slug as string | undefined;
-      if (!link || !slug) {
-        res.writeHead(404, { 'content-type': 'text/html; charset=utf-8' });
+      if (!session || !slug) {
+        res.writeHead(404, {
+          'content-type': 'text/html; charset=utf-8',
+          'cache-control': 'no-store',
+          'referrer-policy': 'no-referrer',
+        });
         res.end(SHARE_NOT_FOUND_HTML);
         return;
       }
-      res.writeHead(302, { location: `/w/${slug}/?share=${share[1]!}` });
+      const expiresInSeconds = Math.max(
+        1,
+        Math.floor((Date.parse(session.expiresAt) - Date.now()) / 1000),
+      );
+      const secure =
+        process.env.BETTER_AUTH_URL?.startsWith('https://') ||
+        req.headers['x-forwarded-proto'] === 'https';
+      const cookie = [
+        `${SHARE_SESSION_COOKIE}=${session.sessionToken}`,
+        `Path=/w/${slug}/`,
+        `Max-Age=${expiresInSeconds}`,
+        'HttpOnly',
+        'SameSite=Lax',
+        secure ? 'Secure' : '',
+      ]
+        .filter(Boolean)
+        .join('; ');
+      res.writeHead(302, {
+        location: `/w/${slug}/`,
+        'set-cookie': cookie,
+        'cache-control': 'no-store',
+        'referrer-policy': 'no-referrer',
+      });
       res.end();
       return;
     }
@@ -341,19 +415,14 @@ export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
         const name = typeof body?.name === 'string' ? body.name.trim() : '';
         const slug = typeof body?.slug === 'string' ? body.slug : '';
         if (!name) return json(res, 400, { error: 'name is required' });
-        // Plan gate — see the ownership rule in plans.ts: 1 owned workspace
-        // on free, up to 10 once the user owns a pro workspace.
-        const owned = await pool.query(
-          `SELECT w.plan FROM memberships m JOIN workspaces w ON w.id = m.workspace_id
-           WHERE m.user_id = $1 AND m.role = 'owner'`,
-          [user.id],
-        );
-        const denial = workspaceCreateDenial(owned.rows.map((r) => r.plan as string));
-        if (denial) return json(res, 429, { error: denial });
+        if (name.length > 100) {
+          return json(res, 400, { error: 'name must be at most 100 characters' });
+        }
         try {
           const workspace = await createWorkspace(pool, { name, slug, ownerUserId: user.id });
           return json(res, 201, { workspace: { ...workspace, role: 'owner' } });
         } catch (err) {
+          if (err instanceof PlanLimitError) return json(res, 429, { error: err.message });
           if (err instanceof SlugError) return json(res, 400, { error: err.message });
           if ((err as { code?: string }).code === '23505') {
             return json(res, 409, { error: 'slug is taken' });
@@ -394,7 +463,8 @@ export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
         [docId, workspaceId],
       );
       if (owned.rowCount === 0) return notFound(res);
-      if (docSub[3] === 'snapshots') return handleSnapshots(req, res, workspaceId, docId, user, role);
+      if (docSub[3] === 'snapshots')
+        return handleSnapshots(req, res, workspaceId, docId, user, role);
       return handleRestore(req, res, workspaceId, docId, user, role);
     }
 
@@ -415,7 +485,9 @@ export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
       }
       if (pathname === '/') {
         res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8' });
-        res.end('Pitolet cloud — dashboard build not found (run `pnpm --filter @pitolet/cloud build`)');
+        res.end(
+          'Pitolet cloud — dashboard build not found (run `pnpm --filter @pitolet/cloud build`)',
+        );
         return;
       }
     }
@@ -460,7 +532,7 @@ export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
     } catch {
       return json(res, 400, { error: 'invalid JSON' });
     }
-    const outcome = await processPaddleWebhook(pool, payload, { onPlanChanged });
+    const outcome = await processPaddleWebhook(pool, payload, billing, { onPlanChanged });
     if (outcome.status === 'invalid') return json(res, 400, { error: 'malformed event' });
     // Everything else (processed, duplicate, stale, unknown workspace,
     // unhandled type) is a 200 — a verified webhook is never retried-forever.
@@ -487,13 +559,19 @@ export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
       [workspaceId],
     );
     const r = row.rows[0] as
-      | { plan: string; status: string | null; period_end: Date | null }
-      | undefined;
+      { plan: string; status: string | null; period_end: Date | null } | undefined;
     return json(res, 200, {
       plan: planOf(r?.plan),
       status: r?.status ?? null,
       currentPeriodEnd: r?.period_end ? new Date(r.period_end).toISOString() : null,
       priceId: billing?.priceIdPro ?? null,
+      productId: billing?.productIdPro ?? null,
+      checkout: billing
+        ? {
+            workspaceId,
+            workspaceSig: workspaceCheckoutSignature(billing.webhookSecret, workspaceId),
+          }
+        : null,
       billingEnabled: billing !== null,
     });
   }
@@ -521,64 +599,50 @@ export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
       const body = await readJson(req);
       const email = typeof body?.email === 'string' ? body.email.trim() : '';
       const newRole = body?.role as Role;
-      if (!email || !['owner', 'editor', 'viewer'].includes(newRole)) {
+      if (
+        !email ||
+        email.length > 320 ||
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
+        !['owner', 'editor', 'viewer'].includes(newRole)
+      ) {
         return json(res, 400, { error: 'body must be {email, role: owner|editor|viewer}' });
       }
-      // I5: the invitee must already have an account (real invites in I6).
-      const target = await pool.query('SELECT id FROM "user" WHERE email = $1', [email]);
-      const targetId = target.rows[0]?.id as string | undefined;
-      if (!targetId) return json(res, 404, { error: 'no account with that email' });
-      const existingRole = await roleFor(pool, targetId, workspaceId);
-      // Same invariant as DELETE: the upsert path must not orphan the
-      // workspace by demoting its only owner.
-      if (existingRole === 'owner' && newRole !== 'owner') {
-        const owners = await pool.query(
-          "SELECT count(*)::int AS n FROM memberships WHERE workspace_id = $1 AND role = 'owner'",
-          [workspaceId],
-        );
-        if ((owners.rows[0].n as number) <= 1) {
+      try {
+        const result = await upsertMember(pool, {
+          workspaceId,
+          email,
+          role: newRole,
+          requireVerifiedEmail,
+        });
+        if (result.status === 'user-not-found') {
+          return json(res, 404, {
+            error: requireVerifiedEmail
+              ? 'no verified account with that email'
+              : 'no account with that email',
+          });
+        }
+        if (result.status === 'last-owner') {
           return json(res, 400, { error: 'cannot demote the last owner' });
         }
+        return json(res, 200, { member: { userId: result.userId, role: result.role } });
+      } catch (err) {
+        if (err instanceof PlanLimitError) return json(res, 429, { error: err.message });
+        throw err;
       }
-      // Plan gate for NEW members only — role changes are always allowed.
-      if (!existingRole) {
-        const info = await pool.query(
-          `SELECT w.plan,
-                  (SELECT count(*)::int FROM memberships m WHERE m.workspace_id = w.id) AS members
-           FROM workspaces w WHERE w.id = $1`,
-          [workspaceId],
-        );
-        const denial = memberLimitDenial(
-          planOf(info.rows[0]?.plan),
-          (info.rows[0]?.members as number) ?? 0,
-        );
-        if (denial) return json(res, 429, { error: denial });
-      }
-      await pool.query(
-        `INSERT INTO memberships (workspace_id, user_id, role) VALUES ($1, $2, $3)
-         ON CONFLICT (workspace_id, user_id) DO UPDATE SET role = EXCLUDED.role`,
-        [workspaceId, targetId, newRole],
-      );
-      return json(res, 200, { member: { userId: targetId, role: newRole } });
     }
 
     if (req.method === 'DELETE') {
       const body = await readJson(req);
       const targetId = typeof body?.userId === 'string' ? body.userId : '';
-      if (!targetId) return json(res, 400, { error: 'body must be {userId}' });
-      const owners = await pool.query(
-        "SELECT count(*)::int AS n FROM memberships WHERE workspace_id = $1 AND role = 'owner'",
-        [workspaceId],
-      );
-      const targetRole = await roleFor(pool, targetId, workspaceId);
-      if (targetRole === 'owner' && (owners.rows[0].n as number) <= 1) {
+      if (!targetId || targetId.length > 128) {
+        return json(res, 400, { error: 'body must be {userId}' });
+      }
+      const result = await removeMember(pool, workspaceId, targetId);
+      if (result.status === 'last-owner') {
         return json(res, 400, { error: 'cannot remove the last owner' });
       }
-      await pool.query('DELETE FROM memberships WHERE workspace_id = $1 AND user_id = $2', [
-        workspaceId,
-        targetId,
-      ]);
-      return json(res, 200, { removed: targetId });
+      if (result.status === 'not-found') return notFound(res);
+      return json(res, 200, { removed: result.userId });
     }
 
     json(res, 405, { error: 'method not allowed' });
@@ -602,39 +666,38 @@ export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
       const body = await readJson(req);
       const name = typeof body?.name === 'string' ? body.name.trim() : '';
       if (!name) return json(res, 400, { error: 'name is required' });
-      // Plan gate: active (non-revoked) tokens count against the limit.
-      const info = await pool.query(
-        `SELECT w.plan,
-                (SELECT count(*)::int FROM agent_tokens t
-                 WHERE t.workspace_id = w.id AND t.revoked_at IS NULL) AS tokens
-         FROM workspaces w WHERE w.id = $1`,
-        [workspaceId],
-      );
-      const denial = tokenLimitDenial(
-        planOf(info.rows[0]?.plan),
-        (info.rows[0]?.tokens as number) ?? 0,
-      );
-      if (denial) return json(res, 429, { error: denial });
+      if (name.length > 100) {
+        return json(res, 400, { error: 'name must be at most 100 characters' });
+      }
       const scopes = body?.scopes as TokenScope[] | undefined;
       if (
         scopes !== undefined &&
-        !(Array.isArray(scopes) && scopes.length > 0 && scopes.every((s) => s === 'read' || s === 'write'))
+        !(
+          Array.isArray(scopes) &&
+          scopes.length > 0 &&
+          scopes.every((s) => s === 'read' || s === 'write')
+        )
       ) {
         return json(res, 400, { error: "scopes must be ['read'] or ['read','write']" });
       }
-      const created = await createAgentToken(pool, {
-        workspaceId,
-        name,
-        scopes,
-        createdBy: user.id,
-      });
-      // The raw token appears in this response and NOWHERE else, ever.
-      return json(res, 201, created);
+      try {
+        const created = await createAgentToken(pool, {
+          workspaceId,
+          name,
+          scopes,
+          createdBy: user.id,
+        });
+        // The raw token appears in this response and NOWHERE else, ever.
+        return json(res, 201, created);
+      } catch (err) {
+        if (err instanceof PlanLimitError) return json(res, 429, { error: err.message });
+        throw err;
+      }
     }
     if (req.method === 'DELETE') {
       const body = await readJson(req);
       const tokenId = typeof body?.tokenId === 'string' ? body.tokenId : '';
-      if (!tokenId) return json(res, 400, { error: 'body must be {tokenId}' });
+      if (!UUID_PATTERN.test(tokenId)) return json(res, 400, { error: 'invalid tokenId' });
       const revoked = await revokeAgentToken(pool, workspaceId, tokenId);
       return revoked ? json(res, 200, { revoked: tokenId }) : notFound(res);
     }
@@ -659,18 +722,27 @@ export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
     }
     if (req.method === 'GET') {
       const docId = url.searchParams.get('docId') ?? '';
-      if (!docId) return json(res, 400, { error: 'docId query parameter is required' });
+      if (!docId || docId.length > 128) {
+        return json(res, 400, { error: 'docId query parameter is required' });
+      }
       // listShareLinks is workspace-scoped — a foreign docId lists nothing.
       return json(res, 200, { shareLinks: await listShareLinks(pool, workspaceId, docId) });
     }
     if (req.method === 'POST') {
       const body = await readJson(req);
       const docId = typeof body?.docId === 'string' ? body.docId : '';
-      if (!docId) return json(res, 400, { error: 'body must be {docId, expiresInDays?}' });
+      if (!docId || docId.length > 128) {
+        return json(res, 400, { error: 'body must be {docId, expiresInDays?}' });
+      }
       const expiresInDays = body?.expiresInDays;
       if (
         expiresInDays !== undefined &&
-        !(typeof expiresInDays === 'number' && Number.isInteger(expiresInDays) && expiresInDays > 0)
+        !(
+          typeof expiresInDays === 'number' &&
+          Number.isInteger(expiresInDays) &&
+          expiresInDays > 0 &&
+          expiresInDays <= 3650
+        )
       ) {
         return json(res, 400, { error: 'expiresInDays must be a positive integer' });
       }
@@ -682,25 +754,25 @@ export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
         [docId, workspaceId],
       );
       if (owned.rowCount === 0) return notFound(res);
-      // Plan gate: ACTIVE (non-revoked, non-expired) links per doc.
-      const info = await pool.query('SELECT plan FROM workspaces WHERE id = $1', [workspaceId]);
-      const denial = shareLinkLimitDenial(
-        planOf(info.rows[0]?.plan),
-        await countActiveShareLinks(pool, workspaceId, docId),
-      );
-      if (denial) return json(res, 429, { error: denial });
-      const created = await createShareLink(pool, {
-        docId,
-        workspaceId,
-        createdBy: user.id,
-        expiresInDays: expiresInDays as number | undefined,
-      });
-      return json(res, 201, created);
+      try {
+        const created = await createShareLink(pool, {
+          docId,
+          workspaceId,
+          createdBy: user.id,
+          expiresInDays: expiresInDays as number | undefined,
+        });
+        return json(res, 201, created);
+      } catch (err) {
+        if (err instanceof PlanLimitError) return json(res, 429, { error: err.message });
+        throw err;
+      }
     }
     if (req.method === 'DELETE') {
       const body = await readJson(req);
       const token = typeof body?.token === 'string' ? body.token : '';
-      if (!token) return json(res, 400, { error: 'body must be {token}' });
+      if (!/^pshare_[A-Za-z0-9_-]{24}$/.test(token)) {
+        return json(res, 400, { error: 'invalid share token' });
+      }
       const revoked = await revokeShareLink(pool, workspaceId, token);
       return revoked ? json(res, 200, { revoked: token }) : notFound(res);
     }
@@ -748,6 +820,9 @@ export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
       const body = await readJson(req);
       const label = typeof body?.label === 'string' ? body.label.trim() : '';
       if (!label) return json(res, 400, { error: 'body must be {label}' });
+      if (label.length > 200) {
+        return json(res, 400, { error: 'label must be at most 200 characters' });
+      }
       // Snapshot the LIVE runtime state (the debounced doc row can lag it).
       const runtime = await manager.getRuntime(workspaceId);
       const entry = runtime.store.get(docId);
@@ -876,8 +951,8 @@ export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
 
     // PUBLIC static app assets (.js/.css/.woff2…): the SPA bundle is the same
     // code for every visitor, so serving it without auth leaks nothing — and
-    // share-link guests NEED it (their subresource requests can't carry the
-    // ?share= credential). Deliberately BEFORE workspace resolution: every
+    // share-link guests NEED it (their subresource requests carry only the
+    // scoped HttpOnly cookie). Deliberately BEFORE workspace resolution: every
     // slug serves identical bytes, so this path is no existence oracle. The
     // app shell (index.html / extensionless SPA routes) and every data
     // surface (/api, /assets-store, /mcp, /ws) stay authenticated below.
@@ -907,9 +982,7 @@ export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
         !req.headers.authorization &&
         (req.headers.accept ?? '').includes('text/html')
       ) {
-        const query = req.url && req.url.includes('?')
-          ? req.url.slice(req.url.indexOf('?'))
-          : '';
+        const query = req.url && req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
         const next = encodeURIComponent(`/w/${slug}${rest}${query}`);
         res.writeHead(302, { location: `/?next=${next}` });
         res.end();
@@ -919,15 +992,41 @@ export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
     }
     const ws = workspace!; // non-null: authenticateWorkspace rejected null above
     const { ctx, role } = principal;
+    if (ctx.kind === 'share' || role === 'viewer') {
+      res.setHeader('x-pitolet-read-only', 'true');
+    }
 
-    // Per-credential MCP budget, enforced BEFORE the runtime sees the
-    // request. Keyed by ctx.userId (`token:<id>` for agents, `share:<prefix>`
-    // for share links); interactive sessions don't speak MCP.
-    if (
-      rest === '/mcp' &&
-      (ctx.kind === 'agent' || ctx.kind === 'share') &&
-      !mcpLimiter.allow(ctx.userId ?? '')
-    ) {
+    if (rest.startsWith('/assets-store/')) {
+      // An uploaded SVG is active content when navigated directly. Sandbox
+      // every stored asset response so it can still render as an image but
+      // can never execute script in Pitolet's origin.
+      res.setHeader(
+        'content-security-policy',
+        "sandbox; default-src 'none'; style-src 'unsafe-inline'",
+      );
+      res.setHeader('content-disposition', 'inline');
+    }
+
+    if (ctx.kind === 'share' && rest.startsWith('/assets-store/')) {
+      let assetId: string;
+      try {
+        assetId = decodeURIComponent(rest.slice('/assets-store/'.length));
+      } catch {
+        return notFound(res);
+      }
+      const allowed = await pool.query(
+        `SELECT 1 FROM documents
+         WHERE id = $1 AND workspace_id = $2 AND deleted_at IS NULL
+           AND (doc -> 'assets') ? $3`,
+        [ctx.docId, ws.id, assetId],
+      );
+      if (allowed.rowCount === 0) return notFound(res);
+    }
+
+    // Per-principal MCP budget, enforced BEFORE the runtime sees the
+    // request. Session users are included: cookies can call MCP just as
+    // bearer/share credentials can.
+    if (rest === '/mcp' && !mcpLimiter.allow(`${ctx.kind}:${ctx.userId ?? ''}`)) {
       return json(res, 429, {
         error: `Rate limit exceeded: ${MCP_REQUESTS_PER_MINUTE} MCP requests/min per token`,
       });
@@ -964,6 +1063,10 @@ export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
   }
 
   function handleUpgrade(req: http.IncomingMessage, socket: Duplex, head: Buffer): void {
+    if (!originAllowed(req)) {
+      rejectUpgrade(socket, 403, 'Forbidden');
+      return;
+    }
     const pathname = new URL(req.url ?? '/', 'http://localhost').pathname;
     const match = /^\/w\/([^/]+)\/ws$/.exec(pathname);
     if (!match) {
@@ -976,7 +1079,11 @@ export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
       const workspace = await resolveWorkspace(match[1]!);
       const principal = await authenticateWorkspace(req, workspace);
       if (!principal.ok) {
-        rejectUpgrade(socket, principal.status, principal.status === 401 ? 'Unauthorized' : 'Not Found');
+        rejectUpgrade(
+          socket,
+          principal.status,
+          principal.status === 401 ? 'Unauthorized' : 'Not Found',
+        );
         return;
       }
       const runtime = await manager.getRuntime(workspace!.id);
@@ -991,9 +1098,66 @@ export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
 
 /** First X-Forwarded-For hop, else the socket address (webhook rate-limit key). */
 function clientIp(req: http.IncomingMessage): string {
-  const fwd = req.headers['x-forwarded-for'];
-  const first = (Array.isArray(fwd) ? fwd[0] : fwd)?.split(',')[0]?.trim();
-  return first || req.socket.remoteAddress || 'unknown';
+  if (process.env.PITOLET_TRUST_PROXY === 'true') {
+    const fwd = req.headers['x-forwarded-for'];
+    const first = (Array.isArray(fwd) ? fwd[0] : fwd)?.split(',')[0]?.trim();
+    if (first) return first;
+  }
+  return req.socket.remoteAddress || 'unknown';
+}
+
+function parseCookies(header: string | undefined): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (!header) return out;
+  for (const part of header.split(';')) {
+    const eq = part.indexOf('=');
+    if (eq <= 0) continue;
+    const name = part.slice(0, eq).trim();
+    const value = part.slice(eq + 1).trim();
+    if (name) out[name] = value;
+  }
+  return out;
+}
+
+function originAllowed(req: http.IncomingMessage): boolean {
+  if (req.headers['sec-fetch-site'] === 'cross-site') return false;
+  const origin = req.headers.origin;
+  if (!origin) return true;
+  const configured = process.env.BETTER_AUTH_URL;
+  if (configured) {
+    try {
+      return new URL(origin).origin === new URL(configured).origin;
+    } catch {
+      return false;
+    }
+  }
+  const host = req.headers.host;
+  if (!host) return false;
+  return origin === `http://${host}` || origin === `https://${host}`;
+}
+
+function setSecurityHeaders(res: http.ServerResponse): void {
+  res.setHeader('x-content-type-options', 'nosniff');
+  res.setHeader('x-frame-options', 'DENY');
+  res.setHeader('referrer-policy', 'strict-origin-when-cross-origin');
+  res.setHeader('permissions-policy', 'camera=(), microphone=(), geolocation=()');
+  res.setHeader(
+    'content-security-policy',
+    [
+      "default-src 'self'",
+      "base-uri 'self'",
+      "object-src 'none'",
+      "frame-ancestors 'none'",
+      "img-src 'self' data: blob: https:",
+      "font-src 'self' data: https://fonts.gstatic.com",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "script-src 'self'",
+      "connect-src 'self' ws: wss: https://fonts.googleapis.com",
+    ].join('; '),
+  );
+  if (process.env.BETTER_AUTH_URL?.startsWith('https://')) {
+    res.setHeader('strict-transport-security', 'max-age=31536000; includeSubDomains');
+  }
 }
 
 /** Buffer a request body verbatim (no decoding) up to `limit` bytes. */
@@ -1021,8 +1185,21 @@ function serveStatic(
   options: { indexFallback?: boolean } = {},
 ): void {
   const { indexFallback = true } = options;
-  let filePath = normalize(join(root, pathname === '/' ? 'index.html' : pathname));
-  if (!filePath.startsWith(normalize(root))) {
+  if (process.env.NODE_ENV === 'production' && pathname.endsWith('.map')) {
+    res.writeHead(404).end();
+    return;
+  }
+  const rootPath = resolve(root);
+  let filePath = resolve(
+    rootPath,
+    pathname === '/' ? 'index.html' : `.${pathname.startsWith('/') ? pathname : `/${pathname}`}`,
+  );
+  const requestedRelative = relative(rootPath, filePath);
+  if (
+    requestedRelative === '..' ||
+    requestedRelative.startsWith(`..${process.platform === 'win32' ? '\\' : '/'}`) ||
+    isAbsolute(requestedRelative)
+  ) {
     res.writeHead(403).end();
     return;
   }
@@ -1032,32 +1209,56 @@ function serveStatic(
       res.writeHead(404).end();
       return;
     }
-    filePath = join(root, 'index.html');
+    filePath = resolve(rootPath, 'index.html');
     if (!existsSync(filePath)) {
       res.writeHead(404).end('editor build not found — run `pnpm build` first');
       return;
     }
   }
-  res.writeHead(200, { 'content-type': MIME[extname(filePath)] ?? 'application/octet-stream' });
-  createReadStream(filePath).pipe(res);
+  const isHtml = extname(filePath) === '.html';
+  const isHashed = /[-.][a-f0-9]{8,}\./i.test(filePath);
+  res.writeHead(200, {
+    'content-type': MIME[extname(filePath)] ?? 'application/octet-stream',
+    'cache-control': isHtml
+      ? 'no-cache'
+      : isHashed
+        ? 'public, max-age=31536000, immutable'
+        : 'no-cache',
+  });
+  if (res.req?.method === 'HEAD') {
+    res.end();
+    return;
+  }
+  const stream = createReadStream(filePath);
+  stream.on('error', (error) => {
+    console.error(`[pitolet-cloud] failed to stream static file ${filePath}:`, error);
+    res.destroy(error);
+  });
+  stream.pipe(res);
 }
 
 async function readJson(req: http.IncomingMessage): Promise<Record<string, unknown> | null> {
+  const declared = Number(req.headers['content-length'] ?? 0);
+  if (Number.isFinite(declared) && declared > 1_000_000) {
+    throw new CloudHttpError(413, 'body too large');
+  }
   const chunks: Buffer[] = [];
   let size = 0;
   for await (const chunk of req) {
     size += (chunk as Buffer).length;
-    if (size > 1_000_000) throw new Error('body too large');
+    if (size > 1_000_000) throw new CloudHttpError(413, 'body too large');
     chunks.push(chunk as Buffer);
   }
   const raw = Buffer.concat(chunks).toString('utf8');
   if (!raw) return null;
   try {
     const parsed: unknown = JSON.parse(raw);
-    return typeof parsed === 'object' && parsed !== null
-      ? (parsed as Record<string, unknown>)
-      : null;
-  } catch {
-    return null;
+    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+      throw new CloudHttpError(400, 'JSON body must be an object');
+    }
+    return parsed as Record<string, unknown>;
+  } catch (err) {
+    if (err instanceof CloudHttpError) throw err;
+    throw new CloudHttpError(400, 'invalid JSON');
   }
 }

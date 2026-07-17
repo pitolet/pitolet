@@ -103,7 +103,9 @@ export function styleSummary(s: StyleDecl): string {
   if (s.color !== undefined) parts.push(`color=${colorStr(s.color)}`);
   if (s.fills && s.fills.length > 0) {
     const first = s.fills[0]!;
-    parts.push(first.type === 'solid' ? `bg=${colorStr(first.color)}` : `bg=${first.type}-gradient`);
+    parts.push(
+      first.type === 'solid' ? `bg=${colorStr(first.color)}` : `bg=${first.type}-gradient`,
+    );
   }
   if (s.border) parts.push(`border=${colorStr(s.border.color)}`);
   if (s.radius) parts.push(`r=${lengthStr(s.radius.tl)}`);
@@ -129,7 +131,12 @@ function sizeStr(v: StyleValue<Size>): string {
   return v.unit === 'px' ? String(v.value) : `${v.value}${v.unit}`;
 }
 
-function sidesStr(sides: { top: StyleValue<Length>; right: StyleValue<Length>; bottom: StyleValue<Length>; left: StyleValue<Length> }): string {
+function sidesStr(sides: {
+  top: StyleValue<Length>;
+  right: StyleValue<Length>;
+  bottom: StyleValue<Length>;
+  left: StyleValue<Length>;
+}): string {
   const t = lengthStr(sides.top);
   const r = lengthStr(sides.right);
   const b = lengthStr(sides.bottom);
@@ -153,9 +160,7 @@ export function confirmLine(doc: PitoletDocument, nodeId: NodeId): string {
 }
 
 export function summarizeSelectionTargets(doc: PitoletDocument, ids: NodeId[]): NodeSummary[] {
-  return ids
-    .map((id) => summarizeNode(doc, id, 1))
-    .filter((s): s is NodeSummary => s !== null);
+  return ids.map((id) => summarizeNode(doc, id, 1)).filter((s): s is NodeSummary => s !== null);
 }
 
 export type { PitoletNode };

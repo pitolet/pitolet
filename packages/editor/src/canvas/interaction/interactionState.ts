@@ -36,17 +36,25 @@ export interface DragGhost {
   label: string;
 }
 
+export type CanvasGesture = 'move' | 'resize' | 'reorder' | 'marquee' | 'draw';
+
+type InteractionCancel = () => void;
+
 export const interactionState = {
   /** Viewport-space marquee rect while drag-selecting. */
   marquee: null as MarqueeRect | null,
   /** True while a move/resize drag is in flight (overlay hides handles). */
   dragging: false,
+  /** The interaction currently owning pointer movement, if any. */
+  gesture: null as CanvasGesture | null,
   /** Active snap guides during frame drags. */
   guides: [] as SnapGuide[],
   /** Flex-insertion indicator during in-flow drags. */
   dropIndicator: null as DropIndicator | null,
   /** Cursor-following ghost chip during in-flow drags. */
   ghost: null as DragGhost | null,
+  /** Escape/blur cancellation for the active pointer gesture. */
+  cancel: null as InteractionCancel | null,
 };
 
 export function setMarquee(rect: MarqueeRect | null): void {
@@ -54,8 +62,9 @@ export function setMarquee(rect: MarqueeRect | null): void {
   overlaySync.notify();
 }
 
-export function setDragging(dragging: boolean): void {
+export function setDragging(dragging: boolean, gesture: CanvasGesture | null = null): void {
   interactionState.dragging = dragging;
+  interactionState.gesture = dragging ? gesture : null;
   overlaySync.notify();
 }
 
@@ -68,4 +77,23 @@ export function setDropIndicator(indicator: DropIndicator | null, ghost: DragGho
   interactionState.dropIndicator = indicator;
   interactionState.ghost = ghost;
   overlaySync.notify();
+}
+
+/** Register one cancellable canvas gesture. A newer gesture replaces the old owner. */
+export function setInteractionCancel(cancel: InteractionCancel): void {
+  interactionState.cancel?.();
+  interactionState.cancel = cancel;
+}
+
+export function clearInteractionCancel(cancel: InteractionCancel): void {
+  if (interactionState.cancel === cancel) interactionState.cancel = null;
+}
+
+/** Cancel the active gesture, returning whether Escape had something to cancel. */
+export function cancelActiveInteraction(): boolean {
+  const cancel = interactionState.cancel;
+  if (!cancel) return false;
+  interactionState.cancel = null;
+  cancel();
+  return true;
 }

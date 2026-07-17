@@ -7,6 +7,16 @@ const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 const MAX_LOGIN_ATTEMPTS = 10; // per IP per window
 const RATE_WINDOW_MS = 60_000;
 const MAX_LOGIN_BODY = 10_000;
+const MAX_RATE_LIMIT_KEYS = 1_000;
+const OVERFLOW_RATE_KEY = '__overflow__';
+
+export interface SharedPasswordOptions {
+  /**
+   * Trust the first X-Forwarded-For value. Leave false unless requests can
+   * only arrive through a proxy that overwrites this header.
+   */
+  trustProxy?: boolean;
+}
 
 /**
  * Shared-password auth for self-hosters. One password, full access:
@@ -18,7 +28,10 @@ const MAX_LOGIN_BODY = 10_000;
  *   (sha256('pitolet-cookie' + password)) so sessions survive server
  *   restarts but are invalidated whenever the password changes.
  */
-export function sharedPasswordAuth(password: string): AuthHooks {
+export function sharedPasswordAuth(
+  password: string,
+  options: SharedPasswordOptions = {},
+): AuthHooks {
   if (!password) throw new Error('sharedPasswordAuth requires a non-empty password');
 
   const passwordHash = sha256(password);
@@ -48,28 +61,48 @@ export function sharedPasswordAuth(password: string): AuthHooks {
     return timingSafeEqual(provided, expected);
   };
 
-  const rateLimited = (ip: string): boolean => {
-    const now = Date.now();
-    // Bound memory: drop expired windows once the map grows.
-    if (loginAttempts.size > 1000) {
-      for (const [key, entry] of loginAttempts) {
-        if (now - entry.windowStart > RATE_WINDOW_MS) loginAttempts.delete(key);
-      }
+  const rateKey = (ip: string, now: number): string => {
+    if (loginAttempts.has(ip)) return ip;
+    for (const [key, entry] of loginAttempts) {
+      if (now - entry.windowStart > RATE_WINDOW_MS) loginAttempts.delete(key);
     }
-    let entry = loginAttempts.get(ip);
+    return loginAttempts.size < MAX_RATE_LIMIT_KEYS - 1 ? ip : OVERFLOW_RATE_KEY;
+  };
+
+  const isRateLimited = (ip: string): boolean => {
+    const now = Date.now();
+    const entry = loginAttempts.get(rateKey(ip, now));
+    return Boolean(
+      entry && now - entry.windowStart <= RATE_WINDOW_MS && entry.count >= MAX_LOGIN_ATTEMPTS,
+    );
+  };
+
+  const recordFailure = (ip: string): void => {
+    const now = Date.now();
+    const key = rateKey(ip, now);
+    const entry = loginAttempts.get(key);
     if (!entry || now - entry.windowStart > RATE_WINDOW_MS) {
-      entry = { count: 0, windowStart: now };
-      loginAttempts.set(ip, entry);
+      loginAttempts.set(key, { count: 1, windowStart: now });
+      return;
     }
     entry.count += 1;
-    return entry.count > MAX_LOGIN_ATTEMPTS;
+  };
+
+  const clearFailures = (ip: string): void => {
+    loginAttempts.delete(ip);
   };
 
   return {
     authenticate: async (req) => {
       const authz = req.headers.authorization;
       if (typeof authz === 'string' && authz.startsWith('Bearer ')) {
-        if (passwordMatches(authz.slice('Bearer '.length))) return context;
+        const ip = clientIp(req, options.trustProxy);
+        if (isRateLimited(ip)) return null;
+        if (passwordMatches(authz.slice('Bearer '.length))) {
+          clearFailures(ip);
+          return context;
+        }
+        recordFailure(ip);
         return null; // an explicit wrong Bearer never falls back to cookies
       }
       const session = readCookie(req.headers.cookie, COOKIE_NAME);
@@ -86,7 +119,8 @@ export function sharedPasswordAuth(password: string): AuthHooks {
         res.end(JSON.stringify(body));
       };
 
-      if (rateLimited(clientIp(req))) {
+      const ip = clientIp(req, options.trustProxy);
+      if (isRateLimited(ip)) {
         json(429, { error: 'too many login attempts — try again in a minute' });
         return;
       }
@@ -102,9 +136,11 @@ export function sharedPasswordAuth(password: string): AuthHooks {
       }
 
       if (!passwordMatches(provided)) {
+        recordFailure(ip);
         json(401, { error: 'invalid password' });
         return;
       }
+      clearFailures(ip);
 
       const secure =
         firstForwarded(req.headers['x-forwarded-proto']) === 'https' ||
@@ -142,8 +178,12 @@ function firstForwarded(header: string | string[] | undefined): string | undefin
   return raw?.split(',')[0]?.trim();
 }
 
-function clientIp(req: http.IncomingMessage): string {
-  return firstForwarded(req.headers['x-forwarded-for']) || req.socket.remoteAddress || 'unknown';
+function clientIp(req: http.IncomingMessage, trustProxy = false): string {
+  return (
+    (trustProxy ? firstForwarded(req.headers['x-forwarded-for']) : undefined) ||
+    req.socket.remoteAddress ||
+    'unknown'
+  );
 }
 
 function readBody(req: http.IncomingMessage, limit: number): Promise<string> {

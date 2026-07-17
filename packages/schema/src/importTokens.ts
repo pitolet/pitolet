@@ -145,7 +145,10 @@ function parseLength(value: string): Length | null {
 }
 
 function parseFontFamily(value: string): string | null {
-  const first = value.split(',')[0]?.trim().replace(/^['"]|['"]$/g, '');
+  const first = value
+    .split(',')[0]
+    ?.trim()
+    .replace(/^['"]|['"]$/g, '');
   return first && first.length > 0 ? first : null;
 }
 
@@ -165,7 +168,6 @@ function parseBoxShadow(value: string): Shadow[] | null {
 
     const lengthPattern = /(-?\d*\.?\d+)(px|rem|em)?(?=\s|$)/g;
     const lengths: number[] = [];
-    let colorPart = rest;
     let lengthMatch: RegExpExecArray | null;
     let consumedUpTo = 0;
     while (lengths.length < 4 && (lengthMatch = lengthPattern.exec(rest)) !== null) {
@@ -176,7 +178,7 @@ function parseBoxShadow(value: string): Shadow[] | null {
       lengths.push(unit === 'rem' || unit === 'em' ? round(raw * 16) : round(raw));
       consumedUpTo = lengthMatch.index + lengthMatch[0].length;
     }
-    colorPart = rest.slice(consumedUpTo).trim();
+    const colorPart = rest.slice(consumedUpTo).trim();
     if (lengths.length < 2) return null;
 
     const color = colorPart ? parseColor(colorPart) : parseColor('rgba(0,0,0,0.1)');

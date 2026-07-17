@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "pitolet-vs-figma",
   "name": "Pitolet vs Figma",
   "rootOrder": [
@@ -14,11 +14,7 @@
       "children": [
         "n1",
         "n11",
-        "n18",
-        "n91",
-        "n95",
-        "n108",
-        "n113"
+        "n114"
       ],
       "tag": "div",
       "visible": true,
@@ -199,7 +195,7 @@
       "visible": true,
       "locked": false,
       "src": {
-        "url": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22oklch(0.71%200.125%20215)%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M3%2018%20L9.5%206%20L13.5%2013%20L16.5%208.5%20L21%2018%22%2F%3E%3C%2Fsvg%3E"
+        "url": "/media/pitolet-mark.svg"
       },
       "alt": "Pitolet",
       "styles": {
@@ -481,10 +477,34 @@
     "n11": {
       "id": "n11",
       "type": "element",
-      "name": "Comparison Hero Band",
+      "name": "Main",
       "parent": "n0",
       "children": [
-        "n12"
+        "n12",
+        "n19",
+        "n92",
+        "n96",
+        "n109"
+      ],
+      "tag": "main",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "alignItems": "center",
+          "width": "fill"
+        }
+      }
+    },
+    "n12": {
+      "id": "n12",
+      "type": "element",
+      "name": "Comparison Hero Band",
+      "parent": "n11",
+      "children": [
+        "n13"
       ],
       "tag": "section",
       "visible": true,
@@ -530,15 +550,15 @@
         }
       }
     },
-    "n12": {
-      "id": "n12",
+    "n13": {
+      "id": "n13",
       "type": "element",
       "name": "Comparison Hero",
-      "parent": "n11",
+      "parent": "n12",
       "children": [
-        "n13",
         "n14",
-        "n15"
+        "n15",
+        "n16"
       ],
       "tag": "div",
       "visible": true,
@@ -565,11 +585,11 @@
         }
       }
     },
-    "n13": {
-      "id": "n13",
+    "n14": {
+      "id": "n14",
       "type": "text",
       "name": "Comparison Headline",
-      "parent": "n12",
+      "parent": "n13",
       "children": [],
       "tag": "h1",
       "visible": true,
@@ -614,11 +634,11 @@
         }
       }
     },
-    "n14": {
-      "id": "n14",
+    "n15": {
+      "id": "n15",
       "type": "text",
       "name": "Comparison Intro",
-      "parent": "n12",
+      "parent": "n13",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -645,14 +665,14 @@
         }
       }
     },
-    "n15": {
-      "id": "n15",
+    "n16": {
+      "id": "n16",
       "type": "element",
       "name": "Comparison Actions",
-      "parent": "n12",
+      "parent": "n13",
       "children": [
-        "n16",
-        "n17"
+        "n17",
+        "n18"
       ],
       "tag": "div",
       "visible": true,
@@ -675,11 +695,11 @@
         }
       }
     },
-    "n16": {
-      "id": "n16",
+    "n17": {
+      "id": "n17",
       "type": "text",
       "name": "Try Pitolet",
-      "parent": "n15",
+      "parent": "n16",
       "children": [],
       "tag": "a",
       "visible": true,
@@ -753,11 +773,11 @@
         "href": "https://app.pitolet.com"
       }
     },
-    "n17": {
-      "id": "n17",
+    "n18": {
+      "id": "n18",
       "type": "text",
       "name": "Self-host",
-      "parent": "n15",
+      "parent": "n16",
       "children": [],
       "tag": "a",
       "visible": true,
@@ -841,13 +861,13 @@
         "href": "https://github.com/pitolet/pitolet#quickstart"
       }
     },
-    "n18": {
-      "id": "n18",
+    "n19": {
+      "id": "n19",
       "type": "element",
       "name": "Comparison Matrix Band",
-      "parent": "n0",
+      "parent": "n11",
       "children": [
-        "n19"
+        "n20"
       ],
       "tag": "section",
       "visible": true,
@@ -893,15 +913,15 @@
         }
       }
     },
-    "n19": {
-      "id": "n19",
+    "n20": {
+      "id": "n20",
       "type": "element",
       "name": "Comparison Matrix",
-      "parent": "n18",
+      "parent": "n19",
       "children": [
-        "n20",
         "n21",
-        "n90"
+        "n22",
+        "n91"
       ],
       "tag": "div",
       "visible": true,
@@ -927,11 +947,11 @@
         }
       }
     },
-    "n20": {
-      "id": "n20",
+    "n21": {
+      "id": "n21",
       "type": "text",
       "name": "Matrix Heading",
-      "parent": "n19",
+      "parent": "n20",
       "children": [],
       "tag": "h2",
       "visible": true,
@@ -956,21 +976,21 @@
         }
       }
     },
-    "n21": {
-      "id": "n21",
+    "n22": {
+      "id": "n22",
       "type": "element",
       "name": "Comparison Table",
-      "parent": "n19",
+      "parent": "n20",
       "children": [
-        "n22",
-        "n26",
-        "n34",
-        "n42",
-        "n50",
-        "n58",
-        "n66",
-        "n74",
-        "n82"
+        "n23",
+        "n27",
+        "n35",
+        "n43",
+        "n51",
+        "n59",
+        "n67",
+        "n75",
+        "n83"
       ],
       "tag": "div",
       "visible": true,
@@ -992,15 +1012,15 @@
         }
       }
     },
-    "n22": {
-      "id": "n22",
+    "n23": {
+      "id": "n23",
       "type": "element",
       "name": "Comparison Header",
-      "parent": "n21",
+      "parent": "n22",
       "children": [
-        "n23",
         "n24",
-        "n25"
+        "n25",
+        "n26"
       ],
       "tag": "div",
       "visible": true,
@@ -1054,11 +1074,11 @@
         }
       }
     },
-    "n23": {
-      "id": "n23",
+    "n24": {
+      "id": "n24",
       "type": "text",
       "name": "Capability Header",
-      "parent": "n22",
+      "parent": "n23",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -1080,11 +1100,11 @@
         }
       }
     },
-    "n24": {
-      "id": "n24",
+    "n25": {
+      "id": "n25",
       "type": "text",
       "name": "Figma",
-      "parent": "n22",
+      "parent": "n23",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -1106,11 +1126,11 @@
         }
       }
     },
-    "n25": {
-      "id": "n25",
+    "n26": {
+      "id": "n26",
       "type": "text",
       "name": "Pitolet",
-      "parent": "n22",
+      "parent": "n23",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -1132,15 +1152,15 @@
         }
       }
     },
-    "n26": {
-      "id": "n26",
+    "n27": {
+      "id": "n27",
       "type": "element",
       "name": "Layout Row",
-      "parent": "n21",
+      "parent": "n22",
       "children": [
-        "n27",
         "n28",
-        "n31"
+        "n29",
+        "n32"
       ],
       "tag": "article",
       "visible": true,
@@ -1231,11 +1251,11 @@
         }
       }
     },
-    "n27": {
-      "id": "n27",
+    "n28": {
+      "id": "n28",
       "type": "text",
       "name": "Capability",
-      "parent": "n26",
+      "parent": "n27",
       "children": [],
       "tag": "h3",
       "visible": true,
@@ -1257,14 +1277,14 @@
         }
       }
     },
-    "n28": {
-      "id": "n28",
+    "n29": {
+      "id": "n29",
       "type": "element",
       "name": "Figma Cell",
-      "parent": "n26",
+      "parent": "n27",
       "children": [
-        "n29",
-        "n30"
+        "n30",
+        "n31"
       ],
       "tag": "div",
       "visible": true,
@@ -1289,11 +1309,11 @@
         }
       }
     },
-    "n29": {
-      "id": "n29",
+    "n30": {
+      "id": "n30",
       "type": "text",
       "name": "Figma Mobile Label",
-      "parent": "n28",
+      "parent": "n29",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -1320,11 +1340,11 @@
         }
       }
     },
-    "n30": {
-      "id": "n30",
+    "n31": {
+      "id": "n31",
       "type": "text",
       "name": "Figma Value",
-      "parent": "n28",
+      "parent": "n29",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -1346,14 +1366,14 @@
         }
       }
     },
-    "n31": {
-      "id": "n31",
+    "n32": {
+      "id": "n32",
       "type": "element",
       "name": "Pitolet Cell",
-      "parent": "n26",
+      "parent": "n27",
       "children": [
-        "n32",
-        "n33"
+        "n33",
+        "n34"
       ],
       "tag": "div",
       "visible": true,
@@ -1378,11 +1398,11 @@
         }
       }
     },
-    "n32": {
-      "id": "n32",
+    "n33": {
+      "id": "n33",
       "type": "text",
       "name": "Pitolet Mobile Label",
-      "parent": "n31",
+      "parent": "n32",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -1409,11 +1429,11 @@
         }
       }
     },
-    "n33": {
-      "id": "n33",
+    "n34": {
+      "id": "n34",
       "type": "text",
       "name": "Pitolet Value",
-      "parent": "n31",
+      "parent": "n32",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -1435,15 +1455,15 @@
         }
       }
     },
-    "n34": {
-      "id": "n34",
+    "n35": {
+      "id": "n35",
       "type": "element",
       "name": "Responsive design Row",
-      "parent": "n21",
+      "parent": "n22",
       "children": [
-        "n35",
         "n36",
-        "n39"
+        "n37",
+        "n40"
       ],
       "tag": "article",
       "visible": true,
@@ -1534,11 +1554,11 @@
         }
       }
     },
-    "n35": {
-      "id": "n35",
+    "n36": {
+      "id": "n36",
       "type": "text",
       "name": "Capability",
-      "parent": "n34",
+      "parent": "n35",
       "children": [],
       "tag": "h3",
       "visible": true,
@@ -1560,14 +1580,14 @@
         }
       }
     },
-    "n36": {
-      "id": "n36",
+    "n37": {
+      "id": "n37",
       "type": "element",
       "name": "Figma Cell",
-      "parent": "n34",
+      "parent": "n35",
       "children": [
-        "n37",
-        "n38"
+        "n38",
+        "n39"
       ],
       "tag": "div",
       "visible": true,
@@ -1592,11 +1612,11 @@
         }
       }
     },
-    "n37": {
-      "id": "n37",
+    "n38": {
+      "id": "n38",
       "type": "text",
       "name": "Figma Mobile Label",
-      "parent": "n36",
+      "parent": "n37",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -1623,11 +1643,11 @@
         }
       }
     },
-    "n38": {
-      "id": "n38",
+    "n39": {
+      "id": "n39",
       "type": "text",
       "name": "Figma Value",
-      "parent": "n36",
+      "parent": "n37",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -1649,14 +1669,14 @@
         }
       }
     },
-    "n39": {
-      "id": "n39",
+    "n40": {
+      "id": "n40",
       "type": "element",
       "name": "Pitolet Cell",
-      "parent": "n34",
+      "parent": "n35",
       "children": [
-        "n40",
-        "n41"
+        "n41",
+        "n42"
       ],
       "tag": "div",
       "visible": true,
@@ -1681,11 +1701,11 @@
         }
       }
     },
-    "n40": {
-      "id": "n40",
+    "n41": {
+      "id": "n41",
       "type": "text",
       "name": "Pitolet Mobile Label",
-      "parent": "n39",
+      "parent": "n40",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -1712,11 +1732,11 @@
         }
       }
     },
-    "n41": {
-      "id": "n41",
+    "n42": {
+      "id": "n42",
       "type": "text",
       "name": "Pitolet Value",
-      "parent": "n39",
+      "parent": "n40",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -1738,15 +1758,15 @@
         }
       }
     },
-    "n42": {
-      "id": "n42",
+    "n43": {
+      "id": "n43",
       "type": "element",
       "name": "Interaction states Row",
-      "parent": "n21",
+      "parent": "n22",
       "children": [
-        "n43",
         "n44",
-        "n47"
+        "n45",
+        "n48"
       ],
       "tag": "article",
       "visible": true,
@@ -1837,11 +1857,11 @@
         }
       }
     },
-    "n43": {
-      "id": "n43",
+    "n44": {
+      "id": "n44",
       "type": "text",
       "name": "Capability",
-      "parent": "n42",
+      "parent": "n43",
       "children": [],
       "tag": "h3",
       "visible": true,
@@ -1863,14 +1883,14 @@
         }
       }
     },
-    "n44": {
-      "id": "n44",
+    "n45": {
+      "id": "n45",
       "type": "element",
       "name": "Figma Cell",
-      "parent": "n42",
+      "parent": "n43",
       "children": [
-        "n45",
-        "n46"
+        "n46",
+        "n47"
       ],
       "tag": "div",
       "visible": true,
@@ -1895,11 +1915,11 @@
         }
       }
     },
-    "n45": {
-      "id": "n45",
+    "n46": {
+      "id": "n46",
       "type": "text",
       "name": "Figma Mobile Label",
-      "parent": "n44",
+      "parent": "n45",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -1926,11 +1946,11 @@
         }
       }
     },
-    "n46": {
-      "id": "n46",
+    "n47": {
+      "id": "n47",
       "type": "text",
       "name": "Figma Value",
-      "parent": "n44",
+      "parent": "n45",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -1952,14 +1972,14 @@
         }
       }
     },
-    "n47": {
-      "id": "n47",
+    "n48": {
+      "id": "n48",
       "type": "element",
       "name": "Pitolet Cell",
-      "parent": "n42",
+      "parent": "n43",
       "children": [
-        "n48",
-        "n49"
+        "n49",
+        "n50"
       ],
       "tag": "div",
       "visible": true,
@@ -1984,11 +2004,11 @@
         }
       }
     },
-    "n48": {
-      "id": "n48",
+    "n49": {
+      "id": "n49",
       "type": "text",
       "name": "Pitolet Mobile Label",
-      "parent": "n47",
+      "parent": "n48",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -2015,11 +2035,11 @@
         }
       }
     },
-    "n49": {
-      "id": "n49",
+    "n50": {
+      "id": "n50",
       "type": "text",
       "name": "Pitolet Value",
-      "parent": "n47",
+      "parent": "n48",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -2041,15 +2061,15 @@
         }
       }
     },
-    "n50": {
-      "id": "n50",
+    "n51": {
+      "id": "n51",
       "type": "element",
       "name": "Code path Row",
-      "parent": "n21",
+      "parent": "n22",
       "children": [
-        "n51",
         "n52",
-        "n55"
+        "n53",
+        "n56"
       ],
       "tag": "article",
       "visible": true,
@@ -2140,11 +2160,11 @@
         }
       }
     },
-    "n51": {
-      "id": "n51",
+    "n52": {
+      "id": "n52",
       "type": "text",
       "name": "Capability",
-      "parent": "n50",
+      "parent": "n51",
       "children": [],
       "tag": "h3",
       "visible": true,
@@ -2166,14 +2186,14 @@
         }
       }
     },
-    "n52": {
-      "id": "n52",
+    "n53": {
+      "id": "n53",
       "type": "element",
       "name": "Figma Cell",
-      "parent": "n50",
+      "parent": "n51",
       "children": [
-        "n53",
-        "n54"
+        "n54",
+        "n55"
       ],
       "tag": "div",
       "visible": true,
@@ -2198,11 +2218,11 @@
         }
       }
     },
-    "n53": {
-      "id": "n53",
+    "n54": {
+      "id": "n54",
       "type": "text",
       "name": "Figma Mobile Label",
-      "parent": "n52",
+      "parent": "n53",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -2229,11 +2249,11 @@
         }
       }
     },
-    "n54": {
-      "id": "n54",
+    "n55": {
+      "id": "n55",
       "type": "text",
       "name": "Figma Value",
-      "parent": "n52",
+      "parent": "n53",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -2255,14 +2275,14 @@
         }
       }
     },
-    "n55": {
-      "id": "n55",
+    "n56": {
+      "id": "n56",
       "type": "element",
       "name": "Pitolet Cell",
-      "parent": "n50",
+      "parent": "n51",
       "children": [
-        "n56",
-        "n57"
+        "n57",
+        "n58"
       ],
       "tag": "div",
       "visible": true,
@@ -2287,11 +2307,11 @@
         }
       }
     },
-    "n56": {
-      "id": "n56",
+    "n57": {
+      "id": "n57",
       "type": "text",
       "name": "Pitolet Mobile Label",
-      "parent": "n55",
+      "parent": "n56",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -2318,11 +2338,11 @@
         }
       }
     },
-    "n57": {
-      "id": "n57",
+    "n58": {
+      "id": "n58",
       "type": "text",
       "name": "Pitolet Value",
-      "parent": "n55",
+      "parent": "n56",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -2344,15 +2364,15 @@
         }
       }
     },
-    "n58": {
-      "id": "n58",
+    "n59": {
+      "id": "n59",
       "type": "element",
       "name": "File format Row",
-      "parent": "n21",
+      "parent": "n22",
       "children": [
-        "n59",
         "n60",
-        "n63"
+        "n61",
+        "n64"
       ],
       "tag": "article",
       "visible": true,
@@ -2443,11 +2463,11 @@
         }
       }
     },
-    "n59": {
-      "id": "n59",
+    "n60": {
+      "id": "n60",
       "type": "text",
       "name": "Capability",
-      "parent": "n58",
+      "parent": "n59",
       "children": [],
       "tag": "h3",
       "visible": true,
@@ -2469,14 +2489,14 @@
         }
       }
     },
-    "n60": {
-      "id": "n60",
+    "n61": {
+      "id": "n61",
       "type": "element",
       "name": "Figma Cell",
-      "parent": "n58",
+      "parent": "n59",
       "children": [
-        "n61",
-        "n62"
+        "n62",
+        "n63"
       ],
       "tag": "div",
       "visible": true,
@@ -2501,11 +2521,11 @@
         }
       }
     },
-    "n61": {
-      "id": "n61",
+    "n62": {
+      "id": "n62",
       "type": "text",
       "name": "Figma Mobile Label",
-      "parent": "n60",
+      "parent": "n61",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -2532,11 +2552,11 @@
         }
       }
     },
-    "n62": {
-      "id": "n62",
+    "n63": {
+      "id": "n63",
       "type": "text",
       "name": "Figma Value",
-      "parent": "n60",
+      "parent": "n61",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -2558,14 +2578,14 @@
         }
       }
     },
-    "n63": {
-      "id": "n63",
+    "n64": {
+      "id": "n64",
       "type": "element",
       "name": "Pitolet Cell",
-      "parent": "n58",
+      "parent": "n59",
       "children": [
-        "n64",
-        "n65"
+        "n65",
+        "n66"
       ],
       "tag": "div",
       "visible": true,
@@ -2590,11 +2610,11 @@
         }
       }
     },
-    "n64": {
-      "id": "n64",
+    "n65": {
+      "id": "n65",
       "type": "text",
       "name": "Pitolet Mobile Label",
-      "parent": "n63",
+      "parent": "n64",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -2621,11 +2641,11 @@
         }
       }
     },
-    "n65": {
-      "id": "n65",
+    "n66": {
+      "id": "n66",
       "type": "text",
       "name": "Pitolet Value",
-      "parent": "n63",
+      "parent": "n64",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -2647,15 +2667,15 @@
         }
       }
     },
-    "n66": {
-      "id": "n66",
+    "n67": {
+      "id": "n67",
       "type": "element",
       "name": "Coding agents Row",
-      "parent": "n21",
+      "parent": "n22",
       "children": [
-        "n67",
         "n68",
-        "n71"
+        "n69",
+        "n72"
       ],
       "tag": "article",
       "visible": true,
@@ -2746,11 +2766,11 @@
         }
       }
     },
-    "n67": {
-      "id": "n67",
+    "n68": {
+      "id": "n68",
       "type": "text",
       "name": "Capability",
-      "parent": "n66",
+      "parent": "n67",
       "children": [],
       "tag": "h3",
       "visible": true,
@@ -2772,14 +2792,14 @@
         }
       }
     },
-    "n68": {
-      "id": "n68",
+    "n69": {
+      "id": "n69",
       "type": "element",
       "name": "Figma Cell",
-      "parent": "n66",
+      "parent": "n67",
       "children": [
-        "n69",
-        "n70"
+        "n70",
+        "n71"
       ],
       "tag": "div",
       "visible": true,
@@ -2804,11 +2824,11 @@
         }
       }
     },
-    "n69": {
-      "id": "n69",
+    "n70": {
+      "id": "n70",
       "type": "text",
       "name": "Figma Mobile Label",
-      "parent": "n68",
+      "parent": "n69",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -2835,11 +2855,11 @@
         }
       }
     },
-    "n70": {
-      "id": "n70",
+    "n71": {
+      "id": "n71",
       "type": "text",
       "name": "Figma Value",
-      "parent": "n68",
+      "parent": "n69",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -2861,14 +2881,14 @@
         }
       }
     },
-    "n71": {
-      "id": "n71",
+    "n72": {
+      "id": "n72",
       "type": "element",
       "name": "Pitolet Cell",
-      "parent": "n66",
+      "parent": "n67",
       "children": [
-        "n72",
-        "n73"
+        "n73",
+        "n74"
       ],
       "tag": "div",
       "visible": true,
@@ -2893,11 +2913,11 @@
         }
       }
     },
-    "n72": {
-      "id": "n72",
+    "n73": {
+      "id": "n73",
       "type": "text",
       "name": "Pitolet Mobile Label",
-      "parent": "n71",
+      "parent": "n72",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -2924,11 +2944,11 @@
         }
       }
     },
-    "n73": {
-      "id": "n73",
+    "n74": {
+      "id": "n74",
       "type": "text",
       "name": "Pitolet Value",
-      "parent": "n71",
+      "parent": "n72",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -2950,15 +2970,15 @@
         }
       }
     },
-    "n74": {
-      "id": "n74",
+    "n75": {
+      "id": "n75",
       "type": "element",
       "name": "Design tokens Row",
-      "parent": "n21",
+      "parent": "n22",
       "children": [
-        "n75",
         "n76",
-        "n79"
+        "n77",
+        "n80"
       ],
       "tag": "article",
       "visible": true,
@@ -3049,11 +3069,11 @@
         }
       }
     },
-    "n75": {
-      "id": "n75",
+    "n76": {
+      "id": "n76",
       "type": "text",
       "name": "Capability",
-      "parent": "n74",
+      "parent": "n75",
       "children": [],
       "tag": "h3",
       "visible": true,
@@ -3075,14 +3095,14 @@
         }
       }
     },
-    "n76": {
-      "id": "n76",
+    "n77": {
+      "id": "n77",
       "type": "element",
       "name": "Figma Cell",
-      "parent": "n74",
+      "parent": "n75",
       "children": [
-        "n77",
-        "n78"
+        "n78",
+        "n79"
       ],
       "tag": "div",
       "visible": true,
@@ -3107,11 +3127,11 @@
         }
       }
     },
-    "n77": {
-      "id": "n77",
+    "n78": {
+      "id": "n78",
       "type": "text",
       "name": "Figma Mobile Label",
-      "parent": "n76",
+      "parent": "n77",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -3138,11 +3158,11 @@
         }
       }
     },
-    "n78": {
-      "id": "n78",
+    "n79": {
+      "id": "n79",
       "type": "text",
       "name": "Figma Value",
-      "parent": "n76",
+      "parent": "n77",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -3164,14 +3184,14 @@
         }
       }
     },
-    "n79": {
-      "id": "n79",
+    "n80": {
+      "id": "n80",
       "type": "element",
       "name": "Pitolet Cell",
-      "parent": "n74",
+      "parent": "n75",
       "children": [
-        "n80",
-        "n81"
+        "n81",
+        "n82"
       ],
       "tag": "div",
       "visible": true,
@@ -3196,11 +3216,11 @@
         }
       }
     },
-    "n80": {
-      "id": "n80",
+    "n81": {
+      "id": "n81",
       "type": "text",
       "name": "Pitolet Mobile Label",
-      "parent": "n79",
+      "parent": "n80",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -3227,11 +3247,11 @@
         }
       }
     },
-    "n81": {
-      "id": "n81",
+    "n82": {
+      "id": "n82",
       "type": "text",
       "name": "Pitolet Value",
-      "parent": "n79",
+      "parent": "n80",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -3253,15 +3273,15 @@
         }
       }
     },
-    "n82": {
-      "id": "n82",
+    "n83": {
+      "id": "n83",
       "type": "element",
       "name": "Hosting and price Row",
-      "parent": "n21",
+      "parent": "n22",
       "children": [
-        "n83",
         "n84",
-        "n87"
+        "n85",
+        "n88"
       ],
       "tag": "article",
       "visible": true,
@@ -3352,11 +3372,11 @@
         }
       }
     },
-    "n83": {
-      "id": "n83",
+    "n84": {
+      "id": "n84",
       "type": "text",
       "name": "Capability",
-      "parent": "n82",
+      "parent": "n83",
       "children": [],
       "tag": "h3",
       "visible": true,
@@ -3378,14 +3398,14 @@
         }
       }
     },
-    "n84": {
-      "id": "n84",
+    "n85": {
+      "id": "n85",
       "type": "element",
       "name": "Figma Cell",
-      "parent": "n82",
+      "parent": "n83",
       "children": [
-        "n85",
-        "n86"
+        "n86",
+        "n87"
       ],
       "tag": "div",
       "visible": true,
@@ -3410,11 +3430,11 @@
         }
       }
     },
-    "n85": {
-      "id": "n85",
+    "n86": {
+      "id": "n86",
       "type": "text",
       "name": "Figma Mobile Label",
-      "parent": "n84",
+      "parent": "n85",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -3441,11 +3461,11 @@
         }
       }
     },
-    "n86": {
-      "id": "n86",
+    "n87": {
+      "id": "n87",
       "type": "text",
       "name": "Figma Value",
-      "parent": "n84",
+      "parent": "n85",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -3467,14 +3487,14 @@
         }
       }
     },
-    "n87": {
-      "id": "n87",
+    "n88": {
+      "id": "n88",
       "type": "element",
       "name": "Pitolet Cell",
-      "parent": "n82",
+      "parent": "n83",
       "children": [
-        "n88",
-        "n89"
+        "n89",
+        "n90"
       ],
       "tag": "div",
       "visible": true,
@@ -3499,11 +3519,11 @@
         }
       }
     },
-    "n88": {
-      "id": "n88",
+    "n89": {
+      "id": "n89",
       "type": "text",
       "name": "Pitolet Mobile Label",
-      "parent": "n87",
+      "parent": "n88",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -3530,11 +3550,11 @@
         }
       }
     },
-    "n89": {
-      "id": "n89",
+    "n90": {
+      "id": "n90",
       "type": "text",
       "name": "Pitolet Value",
-      "parent": "n87",
+      "parent": "n88",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -3556,11 +3576,11 @@
         }
       }
     },
-    "n90": {
-      "id": "n90",
+    "n91": {
+      "id": "n91",
       "type": "text",
       "name": "Comparison Sources",
-      "parent": "n19",
+      "parent": "n20",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -3601,13 +3621,13 @@
         }
       }
     },
-    "n91": {
-      "id": "n91",
+    "n92": {
+      "id": "n92",
       "type": "element",
       "name": "Figma Wins Band",
-      "parent": "n0",
+      "parent": "n11",
       "children": [
-        "n92"
+        "n93"
       ],
       "tag": "section",
       "visible": true,
@@ -3653,14 +3673,14 @@
         }
       }
     },
-    "n92": {
-      "id": "n92",
+    "n93": {
+      "id": "n93",
       "type": "element",
       "name": "Figma Wins",
-      "parent": "n91",
+      "parent": "n92",
       "children": [
-        "n93",
-        "n94"
+        "n94",
+        "n95"
       ],
       "tag": "div",
       "visible": true,
@@ -3732,11 +3752,11 @@
         }
       }
     },
-    "n93": {
-      "id": "n93",
+    "n94": {
+      "id": "n94",
       "type": "text",
       "name": "Figma Wins Heading",
-      "parent": "n92",
+      "parent": "n93",
       "children": [],
       "tag": "h2",
       "visible": true,
@@ -3759,11 +3779,11 @@
         }
       }
     },
-    "n94": {
-      "id": "n94",
+    "n95": {
+      "id": "n95",
       "type": "text",
       "name": "Figma Wins Body",
-      "parent": "n92",
+      "parent": "n93",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -3785,13 +3805,13 @@
         }
       }
     },
-    "n95": {
-      "id": "n95",
+    "n96": {
+      "id": "n96",
       "type": "element",
       "name": "Use Cases Band",
-      "parent": "n0",
+      "parent": "n11",
       "children": [
-        "n96"
+        "n97"
       ],
       "tag": "section",
       "visible": true,
@@ -3837,14 +3857,14 @@
         }
       }
     },
-    "n96": {
-      "id": "n96",
+    "n97": {
+      "id": "n97",
       "type": "element",
       "name": "Use Cases",
-      "parent": "n95",
+      "parent": "n96",
       "children": [
-        "n97",
-        "n98"
+        "n98",
+        "n99"
       ],
       "tag": "div",
       "visible": true,
@@ -3870,11 +3890,11 @@
         }
       }
     },
-    "n97": {
-      "id": "n97",
+    "n98": {
+      "id": "n98",
       "type": "text",
       "name": "Use Cases Heading",
-      "parent": "n96",
+      "parent": "n97",
       "children": [],
       "tag": "h2",
       "visible": true,
@@ -3898,15 +3918,15 @@
         }
       }
     },
-    "n98": {
-      "id": "n98",
+    "n99": {
+      "id": "n99",
       "type": "element",
       "name": "Use Case Cards",
-      "parent": "n96",
+      "parent": "n97",
       "children": [
-        "n99",
-        "n102",
-        "n105"
+        "n100",
+        "n103",
+        "n106"
       ],
       "tag": "div",
       "visible": true,
@@ -3933,14 +3953,14 @@
         }
       }
     },
-    "n99": {
-      "id": "n99",
+    "n100": {
+      "id": "n100",
       "type": "element",
       "name": "Design engineers",
-      "parent": "n98",
+      "parent": "n99",
       "children": [
-        "n100",
-        "n101"
+        "n101",
+        "n102"
       ],
       "tag": "article",
       "visible": true,
@@ -4008,11 +4028,11 @@
         }
       }
     },
-    "n100": {
-      "id": "n100",
+    "n101": {
+      "id": "n101",
       "type": "text",
       "name": "Use Case Title",
-      "parent": "n99",
+      "parent": "n100",
       "children": [],
       "tag": "h3",
       "visible": true,
@@ -4031,11 +4051,11 @@
         }
       }
     },
-    "n101": {
-      "id": "n101",
+    "n102": {
+      "id": "n102",
       "type": "text",
       "name": "Use Case Body",
-      "parent": "n99",
+      "parent": "n100",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -4057,14 +4077,14 @@
         }
       }
     },
-    "n102": {
-      "id": "n102",
+    "n103": {
+      "id": "n103",
       "type": "element",
       "name": "AI-assisted teams",
-      "parent": "n98",
+      "parent": "n99",
       "children": [
-        "n103",
-        "n104"
+        "n104",
+        "n105"
       ],
       "tag": "article",
       "visible": true,
@@ -4132,11 +4152,11 @@
         }
       }
     },
-    "n103": {
-      "id": "n103",
+    "n104": {
+      "id": "n104",
       "type": "text",
       "name": "Use Case Title",
-      "parent": "n102",
+      "parent": "n103",
       "children": [],
       "tag": "h3",
       "visible": true,
@@ -4155,11 +4175,11 @@
         }
       }
     },
-    "n104": {
-      "id": "n104",
+    "n105": {
+      "id": "n105",
       "type": "text",
       "name": "Use Case Body",
-      "parent": "n102",
+      "parent": "n103",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -4181,14 +4201,14 @@
         }
       }
     },
-    "n105": {
-      "id": "n105",
+    "n106": {
+      "id": "n106",
       "type": "element",
       "name": "Design in code review",
-      "parent": "n98",
+      "parent": "n99",
       "children": [
-        "n106",
-        "n107"
+        "n107",
+        "n108"
       ],
       "tag": "article",
       "visible": true,
@@ -4256,11 +4276,11 @@
         }
       }
     },
-    "n106": {
-      "id": "n106",
+    "n107": {
+      "id": "n107",
       "type": "text",
       "name": "Use Case Title",
-      "parent": "n105",
+      "parent": "n106",
       "children": [],
       "tag": "h3",
       "visible": true,
@@ -4279,11 +4299,11 @@
         }
       }
     },
-    "n107": {
-      "id": "n107",
+    "n108": {
+      "id": "n108",
       "type": "text",
       "name": "Use Case Body",
-      "parent": "n105",
+      "parent": "n106",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -4305,13 +4325,13 @@
         }
       }
     },
-    "n108": {
-      "id": "n108",
+    "n109": {
+      "id": "n109",
       "type": "element",
       "name": "Comparison CTA Band",
-      "parent": "n0",
+      "parent": "n11",
       "children": [
-        "n109"
+        "n110"
       ],
       "tag": "section",
       "visible": true,
@@ -4357,15 +4377,15 @@
         }
       }
     },
-    "n109": {
-      "id": "n109",
+    "n110": {
+      "id": "n110",
       "type": "element",
       "name": "Comparison CTA",
-      "parent": "n108",
+      "parent": "n109",
       "children": [
-        "n110",
         "n111",
-        "n112"
+        "n112",
+        "n113"
       ],
       "tag": "div",
       "visible": true,
@@ -4455,11 +4475,11 @@
         }
       }
     },
-    "n110": {
-      "id": "n110",
+    "n111": {
+      "id": "n111",
       "type": "text",
       "name": "CTA Heading",
-      "parent": "n109",
+      "parent": "n110",
       "children": [],
       "tag": "h2",
       "visible": true,
@@ -4483,11 +4503,11 @@
         }
       }
     },
-    "n111": {
-      "id": "n111",
+    "n112": {
+      "id": "n112",
       "type": "text",
       "name": "CTA Body",
-      "parent": "n109",
+      "parent": "n110",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -4514,11 +4534,11 @@
         }
       }
     },
-    "n112": {
-      "id": "n112",
+    "n113": {
+      "id": "n113",
       "type": "text",
       "name": "CTA Action",
-      "parent": "n109",
+      "parent": "n110",
       "children": [],
       "tag": "a",
       "visible": true,
@@ -4592,13 +4612,13 @@
         "href": "https://app.pitolet.com"
       }
     },
-    "n113": {
-      "id": "n113",
+    "n114": {
+      "id": "n114",
       "type": "element",
       "name": "Footer Band",
       "parent": "n0",
       "children": [
-        "n114"
+        "n115"
       ],
       "tag": "section",
       "visible": true,
@@ -4644,14 +4664,14 @@
         }
       }
     },
-    "n114": {
-      "id": "n114",
+    "n115": {
+      "id": "n115",
       "type": "element",
       "name": "Footer",
-      "parent": "n113",
+      "parent": "n114",
       "children": [
-        "n115",
-        "n116"
+        "n116",
+        "n117"
       ],
       "tag": "footer",
       "visible": true,
@@ -4679,11 +4699,11 @@
         }
       }
     },
-    "n115": {
-      "id": "n115",
+    "n116": {
+      "id": "n116",
       "type": "text",
       "name": "Copyright",
-      "parent": "n114",
+      "parent": "n115",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -4704,15 +4724,15 @@
         }
       }
     },
-    "n116": {
-      "id": "n116",
+    "n117": {
+      "id": "n117",
       "type": "element",
       "name": "Footer Links",
-      "parent": "n114",
+      "parent": "n115",
       "children": [
-        "n117",
         "n118",
-        "n119"
+        "n119",
+        "n120"
       ],
       "tag": "div",
       "visible": true,
@@ -4734,11 +4754,11 @@
         }
       }
     },
-    "n117": {
-      "id": "n117",
+    "n118": {
+      "id": "n118",
       "type": "text",
       "name": "Terms",
-      "parent": "n116",
+      "parent": "n117",
       "children": [],
       "tag": "a",
       "visible": true,
@@ -4769,11 +4789,11 @@
         "href": "/terms.html"
       }
     },
-    "n118": {
-      "id": "n118",
+    "n119": {
+      "id": "n119",
       "type": "text",
       "name": "Privacy",
-      "parent": "n116",
+      "parent": "n117",
       "children": [],
       "tag": "a",
       "visible": true,
@@ -4804,11 +4824,11 @@
         "href": "/privacy.html"
       }
     },
-    "n119": {
-      "id": "n119",
+    "n120": {
+      "id": "n120",
       "type": "text",
       "name": "GitHub",
-      "parent": "n116",
+      "parent": "n117",
       "children": [],
       "tag": "a",
       "visible": true,
@@ -4891,7 +4911,7 @@
       "subtle-foreground": {
         "$value": {
           "space": "oklch",
-          "l": 0.55,
+          "l": 0.62,
           "c": 0.014,
           "h": 250
         },
@@ -5133,10 +5153,10 @@
     "typography": {
       "fontFamily": {
         "sans": {
-          "$value": "Inter"
+          "$value": "-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif"
         },
         "mono": {
-          "$value": "JetBrains Mono"
+          "$value": "ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace"
         }
       },
       "fontSize": {

@@ -15,7 +15,7 @@
 }
 
 .ptl-nodebox--dragging .ptl-handle,
-.ptl-nodebox--dragging .ptl-size-badge {
+.ptl-nodebox--dragging:not(.ptl-nodebox--resizing) .ptl-size-badge {
   display: none;
 }
 
@@ -29,16 +29,55 @@
   pointer-events: auto;
 }
 
-.ptl-handle--nw { top: -4px; left: -4px; cursor: nwse-resize; }
-.ptl-handle--n  { top: -4px; left: calc(50% - 4px); cursor: ns-resize; }
-.ptl-handle--ne { top: -4px; right: -4px; cursor: nesw-resize; }
-.ptl-handle--e  { top: calc(50% - 4px); right: -4px; cursor: ew-resize; }
-.ptl-handle--se { bottom: -4px; right: -4px; cursor: nwse-resize; }
-.ptl-handle--s  { bottom: -4px; left: calc(50% - 4px); cursor: ns-resize; }
-.ptl-handle--sw { bottom: -4px; left: -4px; cursor: nesw-resize; }
-.ptl-handle--w  { top: calc(50% - 4px); left: -4px; cursor: ew-resize; }
+.ptl-handle::before {
+  content: '';
+  position: absolute;
+  inset: -5px;
+}
+
+.ptl-handle--nw {
+  top: -4px;
+  left: -4px;
+  cursor: nwse-resize;
+}
+.ptl-handle--n {
+  top: -4px;
+  left: calc(50% - 4px);
+  cursor: ns-resize;
+}
+.ptl-handle--ne {
+  top: -4px;
+  right: -4px;
+  cursor: nesw-resize;
+}
+.ptl-handle--e {
+  top: calc(50% - 4px);
+  right: -4px;
+  cursor: ew-resize;
+}
+.ptl-handle--se {
+  bottom: -4px;
+  right: -4px;
+  cursor: nwse-resize;
+}
+.ptl-handle--s {
+  bottom: -4px;
+  left: calc(50% - 4px);
+  cursor: ns-resize;
+}
+.ptl-handle--sw {
+  bottom: -4px;
+  left: -4px;
+  cursor: nesw-resize;
+}
+.ptl-handle--w {
+  top: calc(50% - 4px);
+  left: -4px;
+  cursor: ew-resize;
+}
 
 .ptl-size-badge {
+  display: none;
   position: absolute;
   top: calc(100% + 6px);
   left: 50%;
@@ -51,6 +90,26 @@
   border-radius: 4px;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
+}
+
+.ptl-nodebox--resizing .ptl-size-badge {
+  display: block;
+}
+
+.ptl-lock-badge {
+  position: absolute;
+  top: -9px;
+  left: -9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--ptl-accent);
+  border-radius: var(--ptl-radius-full);
+  background: var(--ptl-bg-0);
+  color: var(--ptl-accent);
+  box-shadow: 0 1px 4px oklch(0 0 0 / 0.25);
 }
 
 .ptl-marquee {

@@ -1,4 +1,4 @@
-import { IconButton, Popover, Tooltip } from '@pitolet/ui';
+import { IconButton, Popover } from '@pitolet/ui';
 import { History, Sparkles, User, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useEditor, type ActivityEntry } from '../store/index.js';
@@ -14,13 +14,9 @@ export function ActivityButton() {
     <Popover
       className="ptl-activity-popover"
       trigger={
-        <span>
-          <Tooltip content="Activity">
-            <IconButton label="Activity">
-              <History size={15} />
-            </IconButton>
-          </Tooltip>
-        </span>
+        <IconButton label="Activity" title="Activity">
+          <History size={15} />
+        </IconButton>
       }
       align="end"
     >
@@ -31,21 +27,27 @@ export function ActivityButton() {
 
 function ActivityList() {
   const activity = useEditor((s) => s.activity);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 15_000);
+    return () => clearInterval(interval);
+  }, []);
 
   if (activity.length === 0) {
-    return <div className="ptl-activity-empty">No changes yet this session.</div>;
+    return <div className="ptl-activity-empty">No activity yet</div>;
   }
 
   return (
     <div className="ptl-activity-list">
       {activity.map((entry) => (
-        <ActivityRow key={entry.id} entry={entry} />
+        <ActivityRow key={entry.id} entry={entry} now={now} />
       ))}
     </div>
   );
 }
 
-function ActivityRow({ entry }: { entry: ActivityEntry }) {
+function ActivityRow({ entry, now }: { entry: ActivityEntry; now: number }) {
   const Icon = entry.kind === 'agent' ? Sparkles : entry.kind === 'peer' ? Users : User;
   const kindLabel = entry.kind === 'agent' ? 'Agent' : entry.kind === 'peer' ? 'Peer' : 'You';
 
@@ -67,32 +69,25 @@ function ActivityRow({ entry }: { entry: ActivityEntry }) {
         <span className="ptl-activity-label">
           {entry.actorName ? (
             <>
-              <span className="ptl-activity-actor">{entry.actorName}</span> · {entry.label}
+              <span className="ptl-activity-actor">{entry.actorName}</span>
+              <span>{entry.label}</span>
             </>
           ) : (
             entry.label
           )}
         </span>
         <span className="ptl-activity-meta">
-          {kindLabel} · <RelativeTime time={entry.time} />
-          {entry.nodeIds.length > 1 ? ` · ${entry.nodeIds.length} nodes` : ''}
+          <span>{kindLabel}</span>
+          <span>{formatRelative(entry.time, now)}</span>
+          {entry.nodeIds.length > 1 && <span>{entry.nodeIds.length} nodes</span>}
         </span>
       </span>
     </button>
   );
 }
 
-function RelativeTime({ time }: { time: number }) {
-  const [, tick] = useState(0);
-  useEffect(() => {
-    const interval = setInterval(() => tick((n) => n + 1), 15_000);
-    return () => clearInterval(interval);
-  }, []);
-  return <>{formatRelative(time)}</>;
-}
-
-function formatRelative(time: number): string {
-  const seconds = Math.max(0, Math.round((Date.now() - time) / 1000));
+function formatRelative(time: number, now = Date.now()): string {
+  const seconds = Math.max(0, Math.round((now - time) / 1000));
   if (seconds < 5) return 'just now';
   if (seconds < 60) return `${seconds}s ago`;
   const minutes = Math.round(seconds / 60);
@@ -107,9 +102,14 @@ export function AgentBadge() {
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
-    if (activeUntil <= Date.now()) return;
-    const interval = setInterval(() => setNow(Date.now()), 500);
-    return () => clearInterval(interval);
+    const remaining = activeUntil - Date.now();
+    if (remaining <= 0) {
+      setNow(Date.now());
+      return;
+    }
+    setNow(Date.now());
+    const timeout = setTimeout(() => setNow(Date.now()), remaining + 10);
+    return () => clearTimeout(timeout);
   }, [activeUntil]);
 
   if (now >= activeUntil) return null;

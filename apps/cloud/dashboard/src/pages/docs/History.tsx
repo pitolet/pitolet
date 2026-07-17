@@ -1,7 +1,13 @@
 import { Button } from '@pitolet/ui';
 import { RotateCcw } from 'lucide-react';
 import { type FormEvent, useEffect, useState } from 'react';
-import { ApiError, api, type Snapshot, type SnapshotKind, type WorkspaceSummary } from '../../api.js';
+import {
+  ApiError,
+  api,
+  type Snapshot,
+  type SnapshotKind,
+  type WorkspaceSummary,
+} from '../../api.js';
 import { relativeTime } from '../../time.js';
 
 /**
@@ -64,8 +70,7 @@ export function History({ ws, docId }: { ws: WorkspaceSummary; docId: string }) 
         />
       ) : (
         <div className="ptl-dash-notice">
-          Your role is read-only. You can browse version history, but not save or
-          restore versions.
+          Your role is read-only. You can browse version history, but not save or restore versions.
         </div>
       )}
 
@@ -195,8 +200,7 @@ function RestoreButton({ snap, onConfirm }: { snap: Snapshot; onConfirm: () => v
   return (
     <div className="ptl-dash-restore-confirm">
       <span className="ptl-dash-row-meta">
-        Restore to rev {snap.rev}? The current state is saved as a snapshot
-        first.
+        Restore to rev {snap.rev}? The current state is saved as a snapshot first.
       </span>
       <div className="ptl-dash-row-actions">
         <Button

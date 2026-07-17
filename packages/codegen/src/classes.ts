@@ -30,6 +30,8 @@ export interface ClassContext {
   maps: TokenMaps;
   parentDisplay?: Display;
   parentDirection?: FlexDirection;
+  previousParentDisplay?: Display;
+  previousParentDirection?: FlexDirection;
   /**
    * Breakpoint/state override layer. Zero padding/margin is kept (it may reset
    * a base value); on the base layer such zeros are dropped as Tailwind defaults.
@@ -55,8 +57,13 @@ export function styleDeclToClasses(s: StyleDecl, ctx: ClassContext): string[] {
   else if (s.display === 'block') c.push('block');
 
   const isFlex = s.display === 'flex';
+  if (isFlex && s.flexDirection === 'row' && ctx.isOverrideLayer) c.push('flex-row');
   if (isFlex && s.flexDirection === 'column') c.push('flex-col');
+  if (isFlex && s.flexDirection === 'row-reverse') c.push('flex-row-reverse');
+  if (isFlex && s.flexDirection === 'column-reverse') c.push('flex-col-reverse');
+  if (isFlex && s.flexWrap === 'nowrap' && ctx.isOverrideLayer) c.push('flex-nowrap');
   if (isFlex && s.flexWrap === 'wrap') c.push('flex-wrap');
+  if (isFlex && s.flexWrap === 'wrap-reverse') c.push('flex-wrap-reverse');
   if (s.alignItems) c.push(`items-${s.alignItems}`);
   if (s.justifyContent) c.push(`justify-${s.justifyContent}`);
 
@@ -97,10 +104,11 @@ export function styleDeclToClasses(s: StyleDecl, ctx: ClassContext): string[] {
   // --- position ---
   if (s.position) c.push(s.position);
   if (s.inset) {
-    if (s.inset.top !== undefined) c.push(spacingClass('top', s.inset.top, maps, true));
-    if (s.inset.right !== undefined) c.push(spacingClass('right', s.inset.right, maps, true));
-    if (s.inset.bottom !== undefined) c.push(spacingClass('bottom', s.inset.bottom, maps, true));
-    if (s.inset.left !== undefined) c.push(spacingClass('left', s.inset.left, maps, true));
+    for (const side of ['top', 'right', 'bottom', 'left'] as const) {
+      const value = s.inset[side];
+      if (value !== undefined) c.push(spacingClass(side, value, maps, true));
+      else if (ctx.isOverrideLayer) c.push(`${side}-auto`);
+    }
   }
   if (s.zIndex !== undefined) {
     c.push([0, 10, 20, 30, 40, 50].includes(s.zIndex) ? `z-${s.zIndex}` : `z-[${s.zIndex}]`);
@@ -124,18 +132,18 @@ export function styleDeclToClasses(s: StyleDecl, ctx: ClassContext): string[] {
     // override any base-layer fill when layers merge.
     c.push(...(s.fills.length > 0 ? fillClasses(s.fills, maps) : ['bg-transparent']));
   }
-  if (s.border) c.push(...borderClasses(s.border, maps));
-  if (s.radius) c.push(...radiusClasses(s.radius, maps));
-  if (s.shadows && s.shadows.length > 0) c.push(shadowClass(s.shadows, maps));
+  if (s.border) c.push(...borderClasses(s.border, maps, ctx.isOverrideLayer));
+  if (s.radius) c.push(...radiusClasses(s.radius, maps, ctx.isOverrideLayer));
+  if (s.shadows) c.push(s.shadows.length > 0 ? shadowClass(s.shadows, maps) : 'shadow-none');
 
   // --- effects ---
   if (s.opacity !== undefined) {
     const pct = Math.round(s.opacity * 100);
     c.push(pct % OPACITY_STEP === 0 ? `opacity-${pct}` : `opacity-[${s.opacity}]`);
   }
-  if (s.blendMode) c.push(`mix-blend-${s.blendMode}`);
+  if (s.blendMode && safeKeyword(s.blendMode)) c.push(`mix-blend-${s.blendMode}`);
   if (s.overflow) c.push(`overflow-${s.overflow}`);
-  if (s.cursor) c.push(`cursor-${s.cursor}`);
+  if (s.cursor && safeKeyword(s.cursor)) c.push(`cursor-${s.cursor}`);
   if (s.objectFit) c.push(`object-${s.objectFit}`);
 
   return c.filter(Boolean);
@@ -234,13 +242,21 @@ function sizeClasses(
   if (isTokenRef(size)) return [`${prefix}-${ctx.maps.nameForPath(size.$token)}`];
   if (size === 'auto') return [`${prefix}-auto`];
   if (size === 'fill') {
-    if (ctx.parentDisplay === 'flex') {
-      const mainAxis = (ctx.parentDirection ?? 'row') === 'row' ? 'horizontal' : 'vertical';
-      return axis === mainAxis
-        ? ['flex-1', prefix === 'w' ? 'min-w-0' : 'min-h-0']
-        : [`${prefix}-full`];
+    const currentMain = flexMainAxis(ctx.parentDisplay, ctx.parentDirection);
+    const previousMain = flexMainAxis(ctx.previousParentDisplay, ctx.previousParentDirection);
+    const fillsMainAxis = axis === currentMain;
+    const filledPreviousMainAxis = axis === previousMain;
+    const classes = fillsMainAxis
+      ? ['flex-1', prefix === 'w' ? 'min-w-0' : 'min-h-0']
+      : [`${prefix}-full`];
+    if (ctx.isOverrideLayer && currentMain !== previousMain) {
+      if (fillsMainAxis && !filledPreviousMainAxis) {
+        classes.push(`${prefix}-auto`);
+      } else if (!fillsMainAxis && filledPreviousMainAxis) {
+        classes.push('flex-initial', prefix === 'w' ? 'min-w-[auto]' : 'min-h-[auto]');
+      }
     }
-    return [`${prefix}-full`];
+    return classes;
   }
   if (size.unit === '%') {
     for (const [pct, name] of FRACTIONS) {
@@ -254,6 +270,14 @@ function sizeClasses(
   return [`${prefix}-[${len(size)}]`];
 }
 
+function flexMainAxis(
+  display: Display | undefined,
+  direction: FlexDirection | undefined,
+): 'horizontal' | 'vertical' | undefined {
+  if (display !== 'flex') return undefined;
+  return direction === 'column' || direction === 'column-reverse' ? 'vertical' : 'horizontal';
+}
+
 function minMaxClass(prefix: string, size: StyleValue<Size>, maps: TokenMaps): string {
   if (isTokenRef(size)) return `${prefix}-${maps.nameForPath(size.$token)}`;
   if (size === 'auto') return `${prefix}-auto`;
@@ -263,6 +287,7 @@ function minMaxClass(prefix: string, size: StyleValue<Size>, maps: TokenMaps): s
 }
 
 function gridTemplateClass(prefix: string, tracks: Track[]): string {
+  if (tracks.length === 0) return `${prefix}-none`;
   const allEqualFr = tracks.every((t) => t.kind === 'fr' && t.value === 1);
   if (allEqualFr) return `${prefix}-${tracks.length}`;
   const parts = tracks
@@ -285,14 +310,18 @@ function gridTemplateClass(prefix: string, tracks: Track[]): string {
 function spanClass(axis: 'col' | 'row', value: string): string {
   const m = value.match(/^span (\d+)$/);
   if (m) return `${axis}-span-${m[1]}`;
-  return `${axis}-[${value.replace(/\s+/g, '_')}]`;
+  if (!/^(?:auto|-?\d+)(?:\s*\/\s*(?:auto|-?\d+|span\s+\d+))?$/.test(value.trim())) {
+    return `${axis}-auto`;
+  }
+  return `${axis}-[${value.trim().replace(/\s+/g, '_')}]`;
 }
 
 function fontFamilyClass(family: StyleValue<string>, maps: TokenMaps): string {
   if (isTokenRef(family)) return `font-${maps.nameForPath(family.$token)}`;
   const tokenName = maps.fontFamilyTokenFor(family);
   if (tokenName) return `font-${tokenName}`;
-  return `font-['${family.replace(/\s+/g, '_')}']`;
+  const safeFamily = family.replace(/[^a-zA-Z0-9 ,_-]/g, '').trim() || 'sans-serif';
+  return `font-['${safeFamily.replace(/\s+/g, '_')}']`;
 }
 
 function fontSizeClass(size: StyleValue<Length>, maps: TokenMaps): string {
@@ -306,7 +335,7 @@ function fontSizeClass(size: StyleValue<Length>, maps: TokenMaps): string {
   return `text-[${len(size)}]`;
 }
 
-function fontWeightClass(weight: StyleValue<number>, ): string {
+function fontWeightClass(weight: StyleValue<number>): string {
   const w = isTokenRef(weight) ? null : weight;
   if (w !== null) {
     const named = FONT_WEIGHTS.get(w);
@@ -360,7 +389,11 @@ function fillLayerCss(fill: Fill, maps: TokenMaps): string {
   }
 }
 
-function borderClasses(border: NonNullable<StyleDecl['border']>, maps: TokenMaps): string[] {
+function borderClasses(
+  border: NonNullable<StyleDecl['border']>,
+  maps: TokenMaps,
+  isOverrideLayer = false,
+): string[] {
   const out: string[] = [];
   const width = isTokenRef(border.width) ? null : border.width;
   const widthSuffix =
@@ -378,17 +411,26 @@ function borderClasses(border: NonNullable<StyleDecl['border']>, maps: TokenMaps
   if (!sides) {
     out.push(`border${widthSuffix}`);
   } else {
-    if (sides.top) out.push(`border-t${widthSuffix}`);
-    if (sides.right) out.push(`border-r${widthSuffix}`);
-    if (sides.bottom) out.push(`border-b${widthSuffix}`);
-    if (sides.left) out.push(`border-l${widthSuffix}`);
+    for (const [side, short] of [
+      ['top', 't'],
+      ['right', 'r'],
+      ['bottom', 'b'],
+      ['left', 'l'],
+    ] as const) {
+      if (sides[side]) out.push(`border-${short}${widthSuffix}`);
+      else if (isOverrideLayer) out.push(`border-${short}-0`);
+    }
   }
-  if (border.style !== 'solid') out.push(`border-${border.style}`);
+  if (border.style !== 'solid' || isOverrideLayer) out.push(`border-${border.style}`);
   out.push(colorClass('border', border.color, maps));
   return out;
 }
 
-function radiusClasses(radius: NonNullable<StyleDecl['radius']>, maps: TokenMaps): string[] {
+function radiusClasses(
+  radius: NonNullable<StyleDecl['radius']>,
+  maps: TokenMaps,
+  isOverrideLayer = false,
+): string[] {
   const corner = (v: StyleValue<Length>): string => {
     if (isTokenRef(v)) return maps.nameForPath(v.$token);
     if (v.unit === 'px') {
@@ -405,14 +447,22 @@ function radiusClasses(radius: NonNullable<StyleDecl['radius']>, maps: TokenMaps
   const bl = corner(radius.bl);
   const cls = (name: string) => (name === 'none' ? '' : name.startsWith('[') ? name : `-${name}`);
   if (tl === tr && tr === br && br === bl) {
-    if (tl === 'none') return [];
+    if (tl === 'none') return isOverrideLayer ? ['rounded-none'] : [];
     return [tl.startsWith('[') ? `rounded-${tl}` : `rounded${cls(tl)}`];
   }
   const out: string[] = [];
-  if (tl !== 'none') out.push(tl.startsWith('[') ? `rounded-tl-${tl}` : `rounded-tl${cls(tl)}`);
-  if (tr !== 'none') out.push(tr.startsWith('[') ? `rounded-tr-${tr}` : `rounded-tr${cls(tr)}`);
-  if (br !== 'none') out.push(br.startsWith('[') ? `rounded-br-${br}` : `rounded-br${cls(br)}`);
-  if (bl !== 'none') out.push(bl.startsWith('[') ? `rounded-bl-${bl}` : `rounded-bl${cls(bl)}`);
+  for (const [name, value] of [
+    ['tl', tl],
+    ['tr', tr],
+    ['br', br],
+    ['bl', bl],
+  ] as const) {
+    if (value === 'none') {
+      if (isOverrideLayer) out.push(`rounded-${name}-none`);
+    } else {
+      out.push(value.startsWith('[') ? `rounded-${name}-${value}` : `rounded-${name}${cls(value)}`);
+    }
+  }
   return out;
 }
 
@@ -432,4 +482,8 @@ function shadowClass(shadows: Shadow[], maps: TokenMaps): string {
 
 function round(n: number): number {
   return Math.round(n * 100) / 100;
+}
+
+function safeKeyword(value: string): boolean {
+  return /^[a-z][a-z0-9-]*$/.test(value);
 }

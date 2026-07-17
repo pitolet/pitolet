@@ -1,18 +1,17 @@
-import {
-  migrateDocument,
-  validateDocument,
-  type PitoletDocument,
-} from '@pitolet/schema';
+import { migrateDocument, validateDocument, type PitoletDocument } from '@pitolet/schema';
 import { applyPatches, enablePatches, type Patch } from 'immer';
+import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import type { Pool } from 'pg';
 import {
+  ASSET_EXT_BY_MIME,
   FileStorageAdapter,
   type AssetStorage,
   type LoadedDoc,
   type StorageAdapter,
 } from 'pitolet';
 import type { AppliedPatch } from 'pitolet';
+import { docCreateDenial, planOf, PlanLimitError } from '../cloud/plans.js';
 
 // applyPatches needs the patches plugin; the OSS DocumentStore enables it in
 // its own module scope, which this file does not import at runtime.
@@ -27,6 +26,10 @@ export interface PgStorageAdapterOptions {
   snapshotEveryRevs?: number;
   /** … or after this much time (if the rev advanced). */
   snapshotEveryMs?: number;
+  /** Orphans younger than this are never collected (default 1 hour). */
+  assetGcGraceMs?: number;
+  /** Online orphan-collection cadence (default 6 hours; 0 disables). */
+  assetGcIntervalMs?: number;
   /** Error sink (tests); defaults to console.error. */
   logError?: (message: string, err?: unknown) => void;
   /**
@@ -51,6 +54,10 @@ export interface PgStorageQuota {
 interface DocState {
   latestDoc: PitoletDocument;
   latestRev: number;
+  /** Latest revision known to be present in the full documents row. */
+  durableDocRev: number;
+  /** Last persistence failure, cleared only once latestRev is durable. */
+  persistenceError: Error | null;
   /** Serialized per-doc revision INSERT chain — ordering guaranteed. */
   revQueue: Promise<void>;
   /** Serialized per-doc full-doc UPDATE chain. */
@@ -89,6 +96,9 @@ export class PgStorageAdapter implements StorageAdapter {
   private readonly opts: Required<Omit<PgStorageAdapterOptions, 'logError' | 'quota'>>;
   private readonly quota: PgStorageQuota | null;
   private readonly logError: (message: string, err?: unknown) => void;
+  private readonly fileAssets: AssetStorage;
+  private assetGcTimer: NodeJS.Timeout | null = null;
+  private assetGcPromise: Promise<{ removed: number; reclaimedBytes: number }> | null = null;
 
   constructor(
     private readonly pool: Pool,
@@ -101,50 +111,81 @@ export class PgStorageAdapter implements StorageAdapter {
       maxWaitMs: options.maxWaitMs ?? 10_000,
       snapshotEveryRevs: options.snapshotEveryRevs ?? 200,
       snapshotEveryMs: options.snapshotEveryMs ?? 10 * 60_000,
+      assetGcGraceMs: options.assetGcGraceMs ?? 60 * 60_000,
+      assetGcIntervalMs: options.assetGcIntervalMs ?? 6 * 60 * 60_000,
     };
     this.quota = options.quota ?? null;
     this.logError =
-      options.logError ?? ((message, err) => console.error(`[pitolet-cloud] ${message}`, err ?? ''));
-    // Reuse the OSS content-addressed file asset storage (sha256-16 ids,
+      options.logError ??
+      ((message, err) => console.error(`[pitolet-cloud] ${message}`, err ?? ''));
+    // Reuse the OSS content-addressed file asset storage (full SHA-256 ids,
     // traversal-proof) rooted per workspace. FileAssetStorage itself isn't
     // exported, but FileStorageAdapter exposes it; we only borrow `.assets`
     // (the constructor just mkdirs — no watcher, no timers).
-    const fileAssets = new FileStorageAdapter(
-      join(dataRoot, 'workspaces', workspaceId),
-    ).assets;
-    this.assets = this.quota ? this.quotaCheckedAssets(fileAssets, this.quota) : fileAssets;
+    this.fileAssets = new FileStorageAdapter(join(dataRoot, 'workspaces', workspaceId)).assets;
+    this.assets = this.quota
+      ? this.quotaCheckedAssets(this.fileAssets, this.quota)
+      : this.fileAssets;
   }
 
   /**
    * Byte-quota wrapper around asset storage. The running total lives in
-   * workspaces.asset_bytes (migration 003): checked before the write,
-   * incremented after. Slightly approximate on purpose — concurrent uploads
-   * can race the check and content-addressed duplicates still count — this
-   * is an abuse ceiling, not accounting.
+   * workspaces.asset_bytes and workspace_assets. The candidate id is derived
+   * before writing, then a workspace row lock serializes quota checking,
+   * content storage and unique accounting. Quota rejection therefore leaves
+   * no file behind; a later database failure is repaired by orphan GC.
    */
   private quotaCheckedAssets(inner: AssetStorage, quota: PgStorageQuota): AssetStorage {
     return {
       get: (assetId) => inner.get(assetId),
       put: async (data, mime) => {
-        const limit = quota.maxAssetBytes();
-        if (Number.isFinite(limit)) {
-          const res = await this.pool.query(
-            'SELECT asset_bytes FROM workspaces WHERE id = $1',
+        const extension = ASSET_EXT_BY_MIME[mime];
+        if (!extension) throw new Error(`unsupported asset type ${mime}`);
+        const candidateId = `${createHash('sha256').update(data).digest('hex')}.${extension}`;
+        const client = await this.pool.connect();
+        try {
+          await client.query('BEGIN');
+          const workspace = await client.query(
+            'SELECT asset_bytes FROM workspaces WHERE id = $1 FOR UPDATE',
             [this.workspaceId],
           );
-          const used = Number(res.rows[0]?.asset_bytes ?? 0);
-          if (used + data.length > limit) {
-            throw new Error(quota.assetLimitMessage());
+          const prior = await client.query(
+            `SELECT 1 FROM workspace_assets
+             WHERE workspace_id = $1 AND asset_id = $2`,
+            [this.workspaceId, candidateId],
+          );
+          if (prior.rowCount === 0) {
+            const limit = quota.maxAssetBytes();
+            const used = Number(workspace.rows[0]?.asset_bytes ?? 0);
+            if (Number.isFinite(limit) && used + data.length > limit) {
+              throw new PlanLimitError(quota.assetLimitMessage());
+            }
           }
+          const result = await inner.put(data, mime);
+          if (result.assetId !== candidateId) {
+            throw new Error('asset storage returned a non-deterministic content id');
+          }
+          if (prior.rowCount === 0) {
+            await client.query(
+              `INSERT INTO workspace_assets (workspace_id, asset_id, size_bytes)
+               VALUES ($1, $2, $3)`,
+              [this.workspaceId, result.assetId, data.length],
+            );
+            await client.query(
+              `UPDATE workspaces
+               SET asset_bytes = asset_bytes + $2
+               WHERE id = $1`,
+              [this.workspaceId, data.length],
+            );
+          }
+          await client.query('COMMIT');
+          return result;
+        } catch (err) {
+          await client.query('ROLLBACK').catch(() => {});
+          throw err;
+        } finally {
+          client.release();
         }
-        const result = await inner.put(data, mime);
-        await this.pool
-          .query('UPDATE workspaces SET asset_bytes = asset_bytes + $2 WHERE id = $1', [
-            this.workspaceId,
-            data.length,
-          ])
-          .catch((err) => this.logError('asset byte counter update failed', err));
-        return result;
       },
     };
   }
@@ -161,7 +202,16 @@ export class PgStorageAdapter implements StorageAdapter {
     );
     const out: LoadedDoc[] = [];
     for (const row of res.rows) {
-      let doc = migrateDocument(row.doc);
+      let doc: PitoletDocument;
+      try {
+        doc = migrateDocument(row.doc);
+      } catch (err) {
+        // One corrupt row must not make every document in the workspace
+        // unavailable. Keep the bytes untouched for operator recovery and
+        // omit only the invalid document from the live runtime.
+        this.logError(`document ${row.id} is invalid and was quarantined from the runtime`, err);
+        continue;
+      }
       let rev = Number(row.rev);
       try {
         const healed = await this.healFromRevisionLog(row.id as string, doc, rev);
@@ -178,6 +228,11 @@ export class PgStorageAdapter implements StorageAdapter {
       this.docs.set(doc.id, this.freshState(doc, rev));
       out.push({ doc, rev });
     }
+    await this.collectOrphanedAssets().catch((error) => {
+      this.logError(`asset cleanup failed for workspace ${this.workspaceId}`, error);
+      return { removed: 0, reclaimedBytes: 0 };
+    });
+    this.startAssetGc();
     return out;
   }
 
@@ -237,7 +292,13 @@ export class PgStorageAdapter implements StorageAdapter {
         .then(() => this.insertRevision(patch))
         .catch((err) => {
           this.logError(`revision insert failed for ${patch.docId} rev ${patch.rev}`, err);
+          st.persistenceError = asError(err);
           st.forceWrite = true;
+          st.pendingWrite = true;
+          // The journal append is the normal immediate durability path. If it
+          // fails, persist the complete latest document now rather than
+          // waiting for the debounce window.
+          void this.fireWrite(st);
         });
       this.scheduleWrite(st);
     } catch (err) {
@@ -255,16 +316,58 @@ export class PgStorageAdapter implements StorageAdapter {
     // An unknown doc id = document creation (loadAll seeded this.docs with
     // every live doc) → run the plan gate. Throws surface to the caller
     // (MCP create_document returns the message as a tool error).
-    if (!this.docs.has(doc.id)) this.beforeDocCreate?.();
-    const res = await this.pool.query(
-      `INSERT INTO documents (id, workspace_id, name, doc, rev)
-       VALUES ($1, $2, $3, $4::jsonb, $5)
-       ON CONFLICT (id) DO UPDATE
-         SET name = EXCLUDED.name, doc = EXCLUDED.doc, rev = EXCLUDED.rev,
-             updated_at = now(), deleted_at = NULL
-         WHERE documents.workspace_id = EXCLUDED.workspace_id`,
-      [doc.id, this.workspaceId, doc.name, JSON.stringify(doc), rev],
-    );
+    const isUnknown = !this.docs.has(doc.id);
+    if (isUnknown) this.beforeDocCreate?.();
+    const client = await this.pool.connect();
+    let res;
+    try {
+      await client.query('BEGIN');
+      if (isUnknown) {
+        const workspace = await client.query(
+          'SELECT plan FROM workspaces WHERE id = $1 FOR UPDATE',
+          [this.workspaceId],
+        );
+        const existing = await client.query(
+          `SELECT workspace_id, deleted_at FROM documents
+           WHERE id = $1 FOR UPDATE`,
+          [doc.id],
+        );
+        const existingRow = existing.rows[0] as
+          { workspace_id: string; deleted_at: Date | null } | undefined;
+        if (existingRow && existingRow.workspace_id !== this.workspaceId) {
+          throw new Error(
+            `saveNow refused: document ${doc.id} belongs to another workspace (cross-tenant write blocked)`,
+          );
+        }
+        if (!existingRow || existingRow.deleted_at !== null) {
+          const count = await client.query(
+            `SELECT count(*)::int AS n FROM documents
+             WHERE workspace_id = $1 AND deleted_at IS NULL`,
+            [this.workspaceId],
+          );
+          const denial = docCreateDenial(
+            planOf(workspace.rows[0]?.plan),
+            Number(count.rows[0]?.n ?? 0),
+          );
+          if (denial) throw new PlanLimitError(denial);
+        }
+      }
+      res = await client.query(
+        `INSERT INTO documents (id, workspace_id, name, doc, rev)
+         VALUES ($1, $2, $3, $4::jsonb, $5)
+         ON CONFLICT (id) DO UPDATE
+           SET name = EXCLUDED.name, doc = EXCLUDED.doc, rev = EXCLUDED.rev,
+               updated_at = now(), deleted_at = NULL
+           WHERE documents.workspace_id = EXCLUDED.workspace_id`,
+        [doc.id, this.workspaceId, doc.name, JSON.stringify(doc), rev],
+      );
+      await client.query('COMMIT');
+    } catch (err) {
+      await client.query('ROLLBACK').catch(() => {});
+      throw err;
+    } finally {
+      client.release();
+    }
     if (res.rowCount === 0) {
       throw new Error(
         `saveNow refused: document ${doc.id} belongs to another workspace (cross-tenant write blocked)`,
@@ -274,6 +377,8 @@ export class PgStorageAdapter implements StorageAdapter {
     if (st) {
       st.latestDoc = doc;
       st.latestRev = rev;
+      st.durableDocRev = rev;
+      st.persistenceError = null;
     } else {
       this.docs.set(doc.id, this.freshState(doc, rev));
     }
@@ -292,31 +397,192 @@ export class PgStorageAdapter implements StorageAdapter {
       'UPDATE documents SET deleted_at = now(), updated_at = now() WHERE id = $1 AND workspace_id = $2',
       [docId, this.workspaceId],
     );
+    // The grace period keeps a just-deleted document recoverable while the
+    // periodic collector eventually releases its unreferenced assets.
+    void this.collectOrphanedAssets().catch((error) =>
+      this.logError(`asset cleanup failed for workspace ${this.workspaceId}`, error),
+    );
+  }
+
+  /**
+   * Remove old content-addressed files that no live document declares and
+   * reconcile workspace_assets / workspaces.asset_bytes.
+   */
+  collectOrphanedAssets(): Promise<{ removed: number; reclaimedBytes: number }> {
+    if (this.assetGcPromise) return this.assetGcPromise;
+    const operation = this.runAssetGc().finally(() => {
+      if (this.assetGcPromise === operation) this.assetGcPromise = null;
+    });
+    this.assetGcPromise = operation;
+    return operation;
   }
 
   /** Drain every pending revision INSERT and debounced doc UPDATE. */
   async flush(): Promise<void> {
+    const failures: Error[] = [];
     await Promise.all(
       [...this.docs.values()].map(async (st) => {
         await st.revQueue; // never rejects (catch attached at chain time)
         if (st.pendingWrite) await this.fireWrite(st);
         else await st.writeChain;
+        // A failed timer write remains latched and pending. Give shutdown one
+        // final synchronous retry, then fail loudly if the latest acknowledged
+        // revision still is not present in the documents row.
+        if (st.durableDocRev < st.latestRev) {
+          st.pendingWrite = true;
+          await this.fireWrite(st);
+        }
+        if (st.durableDocRev < st.latestRev) {
+          failures.push(
+            st.persistenceError ??
+              new Error(`document ${st.latestDoc.id} rev ${st.latestRev} was not durably stored`),
+          );
+        }
       }),
     );
+    if (failures.length > 0) {
+      throw new AggregateError(failures, `failed to durably store ${failures.length} document(s)`);
+    }
   }
 
   /** Flush; the pool is owned by the app and is NOT closed here. */
   async close(): Promise<void> {
-    await this.flush();
-    for (const st of this.docs.values()) this.clearTimers(st);
+    if (this.assetGcTimer) clearInterval(this.assetGcTimer);
+    this.assetGcTimer = null;
+    await this.assetGcPromise?.catch((error) =>
+      this.logError(`asset cleanup failed during close for workspace ${this.workspaceId}`, error),
+    );
+    try {
+      await this.flush();
+    } finally {
+      for (const st of this.docs.values()) this.clearTimers(st);
+    }
   }
 
   // --- internals ---
+
+  private startAssetGc(): void {
+    if (this.assetGcTimer || this.opts.assetGcIntervalMs <= 0) return;
+    this.assetGcTimer = setInterval(() => {
+      void this.collectOrphanedAssets().catch((error) =>
+        this.logError(`asset cleanup failed for workspace ${this.workspaceId}`, error),
+      );
+    }, this.opts.assetGcIntervalMs);
+    this.assetGcTimer.unref?.();
+  }
+
+  private async runAssetGc(): Promise<{ removed: number; reclaimedBytes: number }> {
+    if (!this.fileAssets.list || !this.fileAssets.remove) {
+      return { removed: 0, reclaimedBytes: 0 };
+    }
+    const cutoff = Date.now() - this.opts.assetGcGraceMs;
+    const client = await this.pool.connect();
+    let removed = 0;
+    let reclaimedBytes = 0;
+    try {
+      await client.query('BEGIN');
+      const workspace = await client.query('SELECT id FROM workspaces WHERE id = $1 FOR UPDATE', [
+        this.workspaceId,
+      ]);
+      if (workspace.rowCount === 0) {
+        await client.query('ROLLBACK');
+        return { removed: 0, reclaimedBytes: 0 };
+      }
+      // Existing-document writes lock these rows. Taking the same locks after
+      // the workspace lock prevents a reference from appearing during a scan.
+      await client.query(
+        `SELECT id FROM documents
+         WHERE workspace_id = $1 AND deleted_at IS NULL
+         FOR UPDATE`,
+        [this.workspaceId],
+      );
+      const references = await client.query<{ asset_id: string }>(
+        `SELECT DISTINCT asset.asset_id
+         FROM documents d
+         CROSS JOIN LATERAL jsonb_object_keys(
+           CASE
+             WHEN jsonb_typeof(d.doc->'assets') = 'object' THEN d.doc->'assets'
+             ELSE '{}'::jsonb
+           END
+         ) AS asset(asset_id)
+         WHERE d.workspace_id = $1 AND d.deleted_at IS NULL`,
+        [this.workspaceId],
+      );
+      const referenced = new Set(references.rows.map((row) => row.asset_id));
+      const accounted = await client.query<{
+        asset_id: string;
+        size_bytes: string | number;
+        created_at: Date | string;
+      }>(
+        `SELECT asset_id, size_bytes, created_at
+         FROM workspace_assets
+         WHERE workspace_id = $1`,
+        [this.workspaceId],
+      );
+      const files = await this.fileAssets.list();
+      const fileById = new Map(files.map((file) => [file.assetId, file]));
+      const accountedIds = new Set(accounted.rows.map((row) => row.asset_id));
+
+      for (const row of accounted.rows) {
+        if (referenced.has(row.asset_id)) continue;
+        if (new Date(row.created_at).getTime() > cutoff) continue;
+        const file = fileById.get(row.asset_id);
+        if (file) {
+          const didRemove = await this.fileAssets.remove(row.asset_id);
+          if (!didRemove) {
+            const stillPresent = await this.fileAssets.get(row.asset_id);
+            if (stillPresent) {
+              stillPresent.stream.destroy();
+              continue;
+            }
+          }
+        }
+        const deletion = await client.query(
+          `DELETE FROM workspace_assets
+           WHERE workspace_id = $1 AND asset_id = $2`,
+          [this.workspaceId, row.asset_id],
+        );
+        if (deletion.rowCount === 0) continue;
+        removed += 1;
+        reclaimedBytes += Number(row.size_bytes);
+      }
+
+      // Files left by a failed upload transaction have no accounting row.
+      for (const file of files) {
+        if (
+          accountedIds.has(file.assetId) ||
+          referenced.has(file.assetId) ||
+          file.modifiedAt > cutoff
+        ) {
+          continue;
+        }
+        if (await this.fileAssets.remove(file.assetId)) removed += 1;
+      }
+
+      if (reclaimedBytes > 0) {
+        await client.query(
+          `UPDATE workspaces
+           SET asset_bytes = greatest(0, asset_bytes - $2)
+           WHERE id = $1`,
+          [this.workspaceId, reclaimedBytes],
+        );
+      }
+      await client.query('COMMIT');
+      return { removed, reclaimedBytes };
+    } catch (error) {
+      await client.query('ROLLBACK').catch(() => {});
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
 
   private freshState(doc: PitoletDocument, rev: number): DocState {
     return {
       latestDoc: doc,
       latestRev: rev,
+      durableDocRev: rev,
+      persistenceError: null,
       revQueue: Promise.resolve(),
       writeChain: Promise.resolve(),
       pendingWrite: false,
@@ -376,7 +642,22 @@ export class PgStorageAdapter implements StorageAdapter {
     const rev = st.latestRev;
     st.writeChain = st.writeChain
       .then(() => this.writeDoc(st, doc, rev))
-      .catch((err) => this.logError(`doc update failed for ${doc.id} rev ${rev}`, err));
+      .catch((err) => {
+        const failure = asError(err);
+        st.persistenceError = failure;
+        st.pendingWrite = true;
+        this.logError(`doc update failed for ${doc.id} rev ${rev}`, failure);
+        // A transient database failure should self-heal while the process is
+        // still running. The latch remains set and flush/close still fail if
+        // retries cannot reach latestRev.
+        if (!st.debounceTimer) {
+          st.debounceTimer = setTimeout(
+            () => void this.fireWrite(st),
+            Math.max(250, this.opts.debounceMs),
+          );
+          st.debounceTimer.unref?.();
+        }
+      });
     return st.writeChain;
   }
 
@@ -389,31 +670,39 @@ export class PgStorageAdapter implements StorageAdapter {
     if (res.rowCount === 0) {
       throw new Error(`document ${doc.id} not found in workspace ${this.workspaceId}`);
     }
+    st.durableDocRev = Math.max(st.durableDocRev, rev);
+    if (st.durableDocRev >= st.latestRev) st.persistenceError = null;
     const now = Date.now();
     const snapshotDue =
       rev - st.lastSnapshotRev >= this.opts.snapshotEveryRevs ||
       (now - st.lastSnapshotAt >= this.opts.snapshotEveryMs && rev > st.lastSnapshotRev);
     if (snapshotDue) {
-      await this.pool.query(
-        `INSERT INTO doc_snapshots (doc_id, rev, doc, kind)
-         SELECT d.id, $2, $3::jsonb, 'auto'
-         FROM documents d
-         WHERE d.id = $1 AND d.workspace_id = $4`,
-        [doc.id, rev, JSON.stringify(doc), this.workspaceId],
-      );
-      st.lastSnapshotRev = rev;
-      st.lastSnapshotAt = now;
-      // History retention rides the snapshot cadence (no separate timer):
-      // prune AUTO snapshots past the plan window; named & pre-restore
-      // snapshots are kept forever.
-      const days = this.quota?.historyDays();
-      if (days !== undefined && Number.isFinite(days)) {
+      try {
         await this.pool.query(
-          `DELETE FROM doc_snapshots
-           WHERE doc_id = $1 AND kind = 'auto'
-             AND created_at < now() - make_interval(days => $2)`,
-          [doc.id, Math.floor(days)],
+          `INSERT INTO doc_snapshots (doc_id, rev, doc, kind)
+           SELECT d.id, $2, $3::jsonb, 'auto'
+           FROM documents d
+           WHERE d.id = $1 AND d.workspace_id = $4`,
+          [doc.id, rev, JSON.stringify(doc), this.workspaceId],
         );
+        st.lastSnapshotRev = rev;
+        st.lastSnapshotAt = now;
+        // History retention rides the snapshot cadence (no separate timer):
+        // prune AUTO snapshots past the plan window; named & pre-restore
+        // snapshots are kept forever.
+        const days = this.quota?.historyDays();
+        if (days !== undefined && Number.isFinite(days)) {
+          await this.pool.query(
+            `DELETE FROM doc_snapshots
+             WHERE doc_id = $1 AND kind = 'auto'
+               AND created_at < now() - make_interval(days => $2)`,
+            [doc.id, Math.floor(days)],
+          );
+        }
+      } catch (error) {
+        // Snapshot history is secondary to the full document row. Do not
+        // report an acknowledged edit as lost after that row is durable.
+        this.logError(`snapshot write failed for ${doc.id} rev ${rev}`, error);
       }
     }
   }
@@ -428,4 +717,8 @@ export class PgStorageAdapter implements StorageAdapter {
       st.maxWaitTimer = null;
     }
   }
+}
+
+function asError(error: unknown): Error {
+  return error instanceof Error ? error : new Error(String(error));
 }

@@ -12,14 +12,14 @@ shows that it can bring the right users. The two clearest product stories are:
 
 ## Positioning
 
-Core message: *the design tool your coding agent can use — real DOM and CSS on
-the canvas, the file lives in your repo, no handoff.*
+Core message: _the design tool your coding agent can use — real DOM and CSS on
+the canvas, the file lives in your repo, no handoff._
 
-| Audience | Lead with | Where they are |
-|---|---|---|
-| AI-coding early adopters | 20 MCP tools; agent edits live, undoable | r/ClaudeAI, r/mcp, X, MCP directories |
-| Figma-frustrated devs | real flexbox, real `:hover`, codegen that isn't px soup | HN, r/webdev, dev newsletters |
-| Self-hosters / OSS | AGPL, `npx pitolet`, one Docker command, designs are JSON in git | HN, r/selfhosted, awesome lists |
+| Audience                 | Lead with                                                        | Where they are                        |
+| ------------------------ | ---------------------------------------------------------------- | ------------------------------------- |
+| AI-coding early adopters | 20 MCP tools; agent edits live, undoable                         | r/ClaudeAI, r/mcp, X, MCP directories |
+| Figma-frustrated devs    | real flexbox, real `:hover`, codegen that isn't px soup          | HN, r/webdev, dev newsletters         |
+| Self-hosters / OSS       | AGPL, `npx pitolet`, one Docker command, designs are JSON in git | HN, r/selfhosted, awesome lists       |
 
 Proof points to repeat everywhere: landing page is a Pitolet export ·
 `npx pitolet` works cold · designs diff cleanly in git · agent edits are
@@ -27,15 +27,15 @@ undoable in-editor.
 
 ## Assets (ready in `marketing/assets/`)
 
-| File | Channel | When |
-|---|---|---|
-| `show-hn.md` | Hacker News launch post + prepped answers | Launch day 1 |
-| `product-hunt.md` | PH listing + maker comment | Launch day ~7 |
-| `reddit.md` | r/webdev, r/ClaudeAI, r/selfhosted posts | Launch week, staggered |
-| `launch-thread.md` | X/Bluesky thread | Launch day 1, after HN is up |
-| `newsletters.md` | Console.dev submission + 25/50/100-word blurbs | Week 1–2 submissions |
-| `vs-figma.md` | pitolet.com/vs-figma page copy (build as a Pitolet doc) | Before launch |
-| `v1.0-release.md` | GitHub v1.0 release notes | Release day |
+| File               | Channel                                                 | When                         |
+| ------------------ | ------------------------------------------------------- | ---------------------------- |
+| `show-hn.md`       | Hacker News launch post + prepped answers               | Launch day 1                 |
+| `product-hunt.md`  | PH listing + maker comment                              | Launch day ~7                |
+| `reddit.md`        | r/webdev, r/ClaudeAI, r/selfhosted posts                | Launch week, staggered       |
+| `launch-thread.md` | X/Bluesky thread                                        | Launch day 1, after HN is up |
+| `newsletters.md`   | Console.dev submission + 25/50/100-word blurbs          | Week 1–2 submissions         |
+| `vs-figma.md`      | pitolet.com/vs-figma page copy (build as a Pitolet doc) | Before launch                |
+| `v1.0-release.md`  | GitHub v1.0 release notes                               | Release day                  |
 
 Existing media:
 
@@ -58,7 +58,7 @@ Existing media:
 - [x] Demo video with voiceover; 3 GIFs; hero GIF at the top of the README
 - [ ] `/vs-figma` page live (copy in `assets/vs-figma.md`)
 - [ ] Public read-only demo doc via a share link (dogfoods the share feature)
-- [ ] Deploy: Hetzner VPS, DNS, Paddle live keys, Resend, npm Trusted
+- [ ] Deploy: Virtarix VPS, DNS, Paddle live keys, Resend, npm Trusted
       Publisher, deprecate 0.1.0 (see deploy/README.md)
 - [ ] Repo public + v1.0 tagged a few days before the HN post
 
@@ -97,14 +97,14 @@ Existing media:
 
 ## Paid (spend only where it multiplies)
 
-| Tactic | Cost | Note |
-|---|---|---|
-| Screen Studio | ~$90 once | For narrated/polished video cuts |
+| Tactic                                             | Cost            | Note                                                  |
+| -------------------------------------------------- | --------------- | ----------------------------------------------------- |
+| Screen Studio                                      | ~$90 once       | For narrated/polished video cuts                      |
 | Mid-tier dev YouTubers (50k–300k, AI-coding niche) | $200–1.5k/video | Best $/attention; the agent demo is inherently visual |
-| Console.dev sponsorship | ~$400 | Post-launch, point at /vs-figma |
-| React Status / JS Weekly slot | $1–2k | Only after organic launch data |
-| EthicalAds / Carbon | $50–300/mo | Cheap always-on, low ceiling |
-| Reddit promoted post tests | $100–300 | Only channel where paid looks native |
+| Console.dev sponsorship                            | ~$400           | Post-launch, point at /vs-figma                       |
+| React Status / JS Weekly slot                      | $1–2k           | Only after organic launch data                        |
+| EthicalAds / Carbon                                | $50–300/mo      | Cheap always-on, low ceiling                          |
+| Reddit promoted post tests                         | $100–300        | Only channel where paid looks native                  |
 
 Skip Google/Meta ads: contested CPCs, dev ad-blindness.
 

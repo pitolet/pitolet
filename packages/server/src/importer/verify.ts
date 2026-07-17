@@ -1,5 +1,5 @@
 import { buildPreviewHtml } from '@pitolet/codegen';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { chromium } from 'playwright-core';
 import { assetIdFor } from './convert.js';
@@ -10,7 +10,7 @@ export async function verifyImport(
   conversion: ImportConversion,
   reportDir: string,
 ): Promise<SimilarityResult[]> {
-  mkdirSync(reportDir, { recursive: true });
+  mkdirSync(reportDir, { recursive: true, mode: 0o700 });
   const frameId = conversion.document.rootOrder[0];
   if (!frameId) return [];
   let html = buildPreviewHtml(conversion.document, frameId);
@@ -39,9 +39,9 @@ export async function verifyImport(
       const sourcePath = join(reportDir, `source-${snapshot.width}.png`);
       const importedPath = join(reportDir, `imported-${snapshot.width}.png`);
       const differencePath = join(reportDir, `difference-${snapshot.width}.png`);
-      writeFileSync(sourcePath, snapshot.screenshot);
-      writeFileSync(importedPath, imported);
-      writeFileSync(differencePath, comparison.difference);
+      writePrivateFile(sourcePath, snapshot.screenshot);
+      writePrivateFile(importedPath, imported);
+      writePrivateFile(differencePath, comparison.difference);
       results.push({
         width: snapshot.width,
         score: comparison.score,
@@ -62,8 +62,9 @@ async function compareImages(
   source: Buffer,
   imported: Buffer,
 ): Promise<{ score: number; difference: Buffer }> {
+  const maximumComparisonPixels = 12_000_000;
   const result = await page.evaluate(
-    async ({ sourceUrl, importedUrl }) => {
+    async ({ sourceUrl, importedUrl, maximumPixels }) => {
       const g = globalThis as unknown as {
         document: any;
         Image: new () => any;
@@ -76,8 +77,14 @@ async function compareImages(
           image.src = url;
         });
       const [a, b] = await Promise.all([load(sourceUrl), load(importedUrl)]);
-      const width = Math.max(a.width, b.width);
-      const height = Math.max(a.height, b.height);
+      const originalWidth = Math.max(a.width, b.width);
+      const originalHeight = Math.max(a.height, b.height);
+      const scale = Math.min(
+        1,
+        Math.sqrt(maximumPixels / Math.max(1, originalWidth * originalHeight)),
+      );
+      const width = Math.max(1, Math.round(originalWidth * scale));
+      const height = Math.max(1, Math.round(originalHeight * scale));
       const makeCanvas = () => {
         const canvas = g.document.createElement('canvas');
         canvas.width = width;
@@ -90,8 +97,20 @@ async function compareImages(
       const ca = makeCanvas();
       const cb = makeCanvas();
       const cd = makeCanvas();
-      ca.context.drawImage(a, 0, 0);
-      cb.context.drawImage(b, 0, 0);
+      ca.context.drawImage(
+        a,
+        0,
+        0,
+        Math.max(1, Math.round(a.width * scale)),
+        Math.max(1, Math.round(a.height * scale)),
+      );
+      cb.context.drawImage(
+        b,
+        0,
+        0,
+        Math.max(1, Math.round(b.width * scale)),
+        Math.max(1, Math.round(b.height * scale)),
+      );
       const ad = ca.context.getImageData(0, 0, width, height);
       const bd = cb.context.getImageData(0, 0, width, height);
       const dd = cd.context.createImageData(width, height);
@@ -116,10 +135,17 @@ async function compareImages(
     {
       sourceUrl: `data:image/png;base64,${source.toString('base64')}`,
       importedUrl: `data:image/png;base64,${imported.toString('base64')}`,
+      maximumPixels: maximumComparisonPixels,
     },
   );
   return {
     score: Math.round(result.score * 10_000) / 10_000,
     difference: Buffer.from(result.differenceUrl.split(',')[1]!, 'base64'),
   };
+}
+
+function writePrivateFile(path: string, data: Buffer): void {
+  writeFileSync(path, data, { mode: 0o600 });
+  // Preserve private permissions when overwriting a report from an earlier run.
+  chmodSync(path, 0o600);
 }

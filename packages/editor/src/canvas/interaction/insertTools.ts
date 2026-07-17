@@ -4,12 +4,20 @@ import {
   createText,
   px,
   type PitoletDocument,
-  type NodeId,
 } from '@pitolet/schema';
 import { useEditor, type Tool } from '../../store/index.js';
+import { closestUnlockedAncestor } from '../../store/locks.js';
+import { nearestChildContainer } from '../../store/nodeSafety.js';
 import type { CameraController } from '../CameraController.js';
-import { setMarquee } from './interactionState.js';
+import {
+  clearInteractionCancel,
+  setDragging,
+  setInteractionCancel,
+  setMarquee,
+} from './interactionState.js';
 import { hitNodeId } from './selectTool.js';
+
+const DRAW_SLOP_PX = 4;
 
 /**
  * Insert tools:
@@ -24,9 +32,14 @@ export function onInsertPointerDown(
   camera: CameraController,
   viewport: HTMLElement,
 ): void {
+  camera.cancelAnimation();
   // Read-only: insertion is fully inert (dispatchEdit no-ops anyway, and the
   // insert tools are hidden in the TopBar — this guards any stray entry).
-  if (useEditor.getState().readOnly) return;
+  const session = useEditor.getState();
+  if (session.readOnly || !session.connected || session.switchingDocument) {
+    if (!session.readOnly) session.setSyncIssue('Editing is paused until Pitolet reconnects.');
+    return;
+  }
   if (tool === 'frame') {
     drawFrame(e, camera, viewport);
     return;
@@ -43,6 +56,10 @@ function drawFrame(e: PointerEvent, camera: CameraController, viewport: HTMLElem
 
   const onMove = (ev: PointerEvent) => {
     const screen = { x: ev.clientX - viewportRect.left, y: ev.clientY - viewportRect.top };
+    if (!moved && Math.hypot(screen.x - startScreen.x, screen.y - startScreen.y) <= DRAW_SLOP_PX) {
+      return;
+    }
+    if (!moved) setDragging(true, 'draw');
     endWorld = camera.toWorld(screen);
     moved = true;
     setMarquee({
@@ -53,11 +70,21 @@ function drawFrame(e: PointerEvent, camera: CameraController, viewport: HTMLElem
     });
   };
 
-  const onUp = () => {
+  const finish = (cancelled: boolean, ev?: PointerEvent) => {
     window.removeEventListener('pointermove', onMove);
     window.removeEventListener('pointerup', onUp);
+    window.removeEventListener('pointercancel', cancel);
+    window.removeEventListener('blur', cancel);
+    clearInteractionCancel(cancel);
+    if (moved && ev) {
+      const screen = { x: ev.clientX - viewportRect.left, y: ev.clientY - viewportRect.top };
+      endWorld = camera.toWorld(screen);
+    }
     setMarquee(null);
+    if (moved) setDragging(false);
+    if (cancelled) return;
     const store = useEditor.getState();
+    if (store.readOnly || !store.connected || store.switchingDocument) return;
 
     const width = moved ? Math.max(16, Math.abs(endWorld.x - startWorld.x)) : 1280;
     const height = moved ? Math.max(16, Math.abs(endWorld.y - startWorld.y)) : 800;
@@ -79,14 +106,20 @@ function drawFrame(e: PointerEvent, camera: CameraController, viewport: HTMLElem
     store.setTool('select');
   };
 
+  const onUp = (ev: PointerEvent) => finish(false, ev);
+  const cancel = () => finish(true);
+
+  setInteractionCancel(cancel);
   window.addEventListener('pointermove', onMove);
   window.addEventListener('pointerup', onUp);
+  window.addEventListener('pointercancel', cancel);
+  window.addEventListener('blur', cancel);
 }
 
 function insertLeaf(e: PointerEvent, tool: Tool, camera: CameraController): void {
   const store = useEditor.getState();
   const doc = store.doc;
-  if (!doc) return;
+  if (!doc || store.readOnly || !store.connected || store.switchingDocument) return;
 
   const newNode =
     tool === 'text'
@@ -107,7 +140,9 @@ function insertLeaf(e: PointerEvent, tool: Tool, camera: CameraController): void
         });
 
   const hit = hitNodeId(e);
-  const containerId = hit ? nearestContainer(doc, hit) : null;
+  const unlockedHit = hit ? closestUnlockedAncestor(doc, hit) : null;
+  if (hit && !unlockedHit) return;
+  const containerId = unlockedHit ? nearestChildContainer(doc, unlockedHit) : null;
 
   if (containerId) {
     store.dispatchEdit(tool === 'text' ? 'Insert text' : 'Insert box', (draft) => {
@@ -118,8 +153,12 @@ function insertLeaf(e: PointerEvent, tool: Tool, camera: CameraController): void
   } else {
     // Empty canvas: wrap in a fresh auto-height frame at the click point.
     const world = camera.toWorld({
-      x: e.clientX - (e.target as Element).closest('[data-canvas-viewport]')!.getBoundingClientRect().left,
-      y: e.clientY - (e.target as Element).closest('[data-canvas-viewport]')!.getBoundingClientRect().top,
+      x:
+        e.clientX -
+        (e.target as Element).closest('[data-canvas-viewport]')!.getBoundingClientRect().left,
+      y:
+        e.clientY -
+        (e.target as Element).closest('[data-canvas-viewport]')!.getBoundingClientRect().top,
     });
     const frame = createFrame({
       name: nextFrameName(doc),
@@ -138,20 +177,10 @@ function insertLeaf(e: PointerEvent, tool: Tool, camera: CameraController): void
     });
   }
 
+  if (!useEditor.getState().doc?.nodes[newNode.id]) return;
   store.select([newNode.id]);
   store.setTool('select');
   if (tool === 'text') store.setEditingText(newNode.id);
-}
-
-function nearestContainer(doc: PitoletDocument, hitId: NodeId): NodeId | null {
-  let current: NodeId | null = hitId;
-  while (current !== null) {
-    const node: PitoletDocument['nodes'][string] | undefined = doc.nodes[current];
-    if (!node) return null;
-    if (node.type === 'frame' || node.type === 'element') return current;
-    current = node.parent;
-  }
-  return null;
 }
 
 function nextFrameName(doc: PitoletDocument | null): string {

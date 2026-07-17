@@ -86,6 +86,13 @@ describe('dashboard SPA serving', () => {
     expect(await res.text()).toContain('dash');
   });
 
+  it('answers HEAD without streaming the asset body', async () => {
+    const res = await fetch(`${base}/app.js`, { method: 'HEAD' });
+    expect(res.status).toBe(200);
+    expect(res.headers.get('content-type')).toContain('javascript');
+    expect(await res.text()).toBe('');
+  });
+
   it('falls back to index.html for client routes like /settings/:id', async () => {
     const res = await fetch(`${base}/settings/some-workspace-id`);
     expect(res.status).toBe(200);

@@ -1,14 +1,10 @@
+import { constants as fsConstants } from 'node:fs';
+import { access, mkdir } from 'node:fs/promises';
 import type { Pool } from 'pg';
 import { createRuntime, type PitoletRuntime } from 'pitolet';
 import { PgStorageAdapter, type PgStorageAdapterOptions } from '../storage/PgStorageAdapter.js';
 import { makeWorkspaceAuthHooks } from './authHooks.js';
-import {
-  assetLimitMessage,
-  docCreateDenial,
-  PLAN_LIMITS,
-  planOf,
-  type Plan,
-} from './plans.js';
+import { assetLimitMessage, docCreateDenial, PLAN_LIMITS, planOf, type Plan } from './plans.js';
 
 /**
  * Lazy per-workspace runtime cache. Each workspace gets its own
@@ -37,7 +33,12 @@ export interface WorkspaceManagerOptions {
    */
   storage?: Pick<
     PgStorageAdapterOptions,
-    'debounceMs' | 'maxWaitMs' | 'snapshotEveryRevs' | 'snapshotEveryMs'
+    | 'debounceMs'
+    | 'maxWaitMs'
+    | 'snapshotEveryRevs'
+    | 'snapshotEveryMs'
+    | 'assetGcGraceMs'
+    | 'assetGcIntervalMs'
   >;
 }
 
@@ -76,7 +77,8 @@ export class WorkspaceManager {
     this.clock = options.clock;
     this.storageOptions = options.storage;
     this.logError =
-      options.logError ?? ((message, err) => console.error(`[pitolet-cloud] ${message}`, err ?? ''));
+      options.logError ??
+      ((message, err) => console.error(`[pitolet-cloud] ${message}`, err ?? ''));
     this.sweepTimer = setInterval(
       () => void this.sweep().catch((err) => this.logError('workspace sweep failed', err)),
       options.sweepMs ?? 60_000,
@@ -105,6 +107,12 @@ export class WorkspaceManager {
 
   loadedCount(): number {
     return this.loaded.size;
+  }
+
+  /** Readiness includes the writable content-addressed asset root. */
+  async assertStorageReady(): Promise<void> {
+    await mkdir(this.dataRoot, { recursive: true });
+    await access(this.dataRoot, fsConstants.R_OK | fsConstants.W_OK);
   }
 
   /**
@@ -146,16 +154,36 @@ export class WorkspaceManager {
     // Let racing loads settle so their adapters get closed too.
     await Promise.allSettled([...this.loading.values()]);
     const entries = [...this.loaded.entries()];
+    const failures: Error[] = [];
+
+    // Stop every ingress path before flushing acknowledged writes. Otherwise
+    // a socket can race a final patch into an adapter that is already closing,
+    // and active WebSockets can keep http.Server.close() pending forever.
+    for (const [id, entry] of entries) {
+      try {
+        entry.runtime.hub.close();
+      } catch (error) {
+        const failure = asError(error);
+        failures.push(failure);
+        this.logError(`WebSocket shutdown failed for workspace ${id}`, failure);
+      }
+    }
     this.loaded.clear();
-    await Promise.allSettled(
-      entries.map(async ([id, entry]) => {
-        try {
-          await entry.adapter.close(); // close() flushes
-        } catch (err) {
-          this.logError(`shutdown flush failed for workspace ${id}`, err);
-        }
-      }),
-    );
+
+    const results = await Promise.allSettled(entries.map(([, entry]) => entry.adapter.close()));
+    for (const [index, result] of results.entries()) {
+      if (result.status === 'fulfilled') continue;
+      const id = entries[index]![0];
+      const failure = asError(result.reason);
+      failures.push(failure);
+      this.logError(`shutdown flush failed for workspace ${id}`, failure);
+    }
+    if (failures.length > 0) {
+      throw new AggregateError(
+        failures,
+        `failed to close ${failures.length} workspace runtime operation(s)`,
+      );
+    }
   }
 
   private touch(entry: Entry): void {
@@ -237,6 +265,15 @@ export class WorkspaceManager {
     // connected) cancels the eviction — the entry stays.
     if (entry.gen !== genAtStart || entry.runtime.hub.clientCount() > 0) return;
     if (this.loaded.get(id) !== entry) return;
+    // No await between the final activity check and closing the hub: a new
+    // request cannot touch this runtime in the middle. Closing ingress before
+    // adapter.close() also makes the final flush race-free.
+    try {
+      entry.runtime.hub.close();
+    } catch (err) {
+      this.logError(`WebSocket close failed for workspace ${id} — keeping it loaded`, err);
+      return;
+    }
     this.loaded.delete(id);
     try {
       await entry.adapter.close();
@@ -244,4 +281,8 @@ export class WorkspaceManager {
       this.logError(`adapter close failed for workspace ${id}`, err);
     }
   }
+}
+
+function asError(error: unknown): Error {
+  return error instanceof Error ? error : new Error(String(error));
 }

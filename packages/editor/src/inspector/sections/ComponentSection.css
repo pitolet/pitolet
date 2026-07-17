@@ -1,0 +1,127 @@
+.ptl-component-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ptl-space-1);
+}
+
+.ptl-component-master-summary {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.ptl-component-master-summary > span {
+  padding: 2px 6px;
+  border-radius: var(--ptl-radius-full);
+  background: var(--ptl-bg-3);
+  color: var(--ptl-text-2);
+  font-size: var(--ptl-text-xs);
+}
+
+.ptl-instance-edit-target {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 7px;
+  border-radius: var(--ptl-radius-md);
+  background: var(--ptl-accent-muted);
+  color: var(--ptl-text-2);
+  font-size: var(--ptl-text-xs);
+}
+
+.ptl-instance-edit-target > span {
+  color: var(--ptl-accent);
+}
+
+.ptl-instance-edit-target strong {
+  overflow: hidden;
+  color: var(--ptl-text-1);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ptl-variant-props {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ptl-space-1);
+}
+
+.ptl-variant-prop {
+  border-radius: var(--ptl-radius-md);
+  background: var(--ptl-bg-2);
+  box-shadow: inset 0 0 0 1px var(--ptl-border);
+}
+
+.ptl-variant-prop-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 34px;
+  padding: var(--ptl-space-1) var(--ptl-space-2);
+}
+
+.ptl-variant-prop-summary > span {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.ptl-variant-prop-summary strong {
+  color: var(--ptl-text-1);
+  font-size: var(--ptl-text-sm);
+  font-weight: 500;
+}
+
+.ptl-variant-prop-summary small {
+  color: var(--ptl-text-3);
+  font-size: var(--ptl-text-xs);
+}
+
+.ptl-variant-prop-editor,
+.ptl-variant-add-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ptl-space-2);
+}
+
+.ptl-variant-prop-editor {
+  padding: var(--ptl-space-2);
+  border-top: 1px solid var(--ptl-border);
+}
+
+.ptl-variant-values {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ptl-space-1);
+}
+
+.ptl-variant-value,
+.ptl-variant-value-add {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--ptl-space-1);
+}
+
+.ptl-component-form-error {
+  color: var(--ptl-danger);
+  font-size: var(--ptl-text-xs);
+  line-height: 1.4;
+}
+
+.ptl-component-danger-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ptl-space-1);
+  padding: var(--ptl-space-2);
+  border-radius: var(--ptl-radius-md);
+  background: var(--ptl-danger-muted);
+}
+
+.ptl-component-danger-confirm > span {
+  width: 100%;
+  color: var(--ptl-text-2);
+  font-size: var(--ptl-text-xs);
+  line-height: 1.4;
+}

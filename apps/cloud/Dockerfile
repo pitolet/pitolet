@@ -69,16 +69,17 @@ RUN test -f /app/dashboard/index.html \
     && test -d /app/dashboard/assets \
     && test ! -d /app/dashboard/src \
     && ! grep -q '/src/main.tsx' /app/dashboard/index.html \
-    && grep -qE 'src="/assets/[^" ]+\.js"' /app/dashboard/index.html
+    && grep -qE 'src="/assets/[^" ]+\.js"' /app/dashboard/index.html \
+    && node -e "Promise.all([import('@sentry/node'), import('playwright-core')])"
 
 RUN mkdir -p /data && chown node:node /data
 USER node
 VOLUME /data
 EXPOSE 8080
 
-# GET / is served unauthenticated with 200 (dashboard/placeholder), so it is
-# the cheapest liveness probe — no DB round-trip, no auth.
+# Readiness includes a database round-trip; a static dashboard response must
+# not keep a container marked healthy while Postgres is unavailable.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-  CMD node -e "fetch('http://127.0.0.1:'+(process.env.PITOLET_CLOUD_PORT||8080)+'/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+  CMD node -e "fetch('http://127.0.0.1:'+(process.env.PITOLET_CLOUD_PORT||8080)+'/readyz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
 CMD ["node", "dist/server.js"]

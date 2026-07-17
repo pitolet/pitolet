@@ -8,10 +8,7 @@ import { Settings } from './pages/Settings.js';
 import { SignIn } from './pages/SignIn.js';
 import { Workspaces } from './pages/Workspaces.js';
 
-type State =
-  | { kind: 'loading' }
-  | { kind: 'signed-out' }
-  | { kind: 'signed-in'; me: Me };
+type State = { kind: 'loading' } | { kind: 'signed-out' } | { kind: 'signed-in'; me: Me };
 
 export function App() {
   const [state, setState] = useState<State>({ kind: 'loading' });

@@ -1,4 +1,5 @@
 import type { PitoletDocument, NodeId } from '@pitolet/schema';
+import { importedFontFaceCss } from './fontFaces.js';
 import { nodeToHtml } from './html.js';
 
 /**
@@ -21,6 +22,7 @@ ul, ol { list-style: none; }
 img, video, svg { display: block; max-width: 100%; }
 a { text-decoration: inherit; }
 button, input, select, textarea { background: transparent; appearance: none; }
+${importedFontFaceCss(doc.assets)}
 ${css}
 </style>
 </head>

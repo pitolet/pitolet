@@ -54,7 +54,11 @@ export function snapFrameDelta(
   let bestY: { snap: number; delta: number; target: WorldRect } | null = null;
 
   const movingXs = [movingNow.x, movingNow.x + movingNow.width / 2, movingNow.x + movingNow.width];
-  const movingYs = [movingNow.y, movingNow.y + movingNow.height / 2, movingNow.y + movingNow.height];
+  const movingYs = [
+    movingNow.y,
+    movingNow.y + movingNow.height / 2,
+    movingNow.y + movingNow.height,
+  ];
 
   for (const target of targets) {
     const targetXs = [target.x, target.x + target.width / 2, target.x + target.width];

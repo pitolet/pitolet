@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -22,20 +23,44 @@ export async function runMigrations(pool: pg.Pool): Promise<string[]> {
     await client.query(
       `CREATE TABLE IF NOT EXISTS schema_migrations (
          name text PRIMARY KEY,
+         checksum text,
          applied_at timestamptz NOT NULL DEFAULT now()
        )`,
     );
+    // Databases created by the original runner have no checksum column.
+    await client.query('ALTER TABLE schema_migrations ADD COLUMN IF NOT EXISTS checksum text');
     const files = readdirSync(MIGRATIONS_DIR)
       .filter((f) => f.endsWith('.sql'))
       .sort();
     for (const file of files) {
-      const seen = await client.query('SELECT 1 FROM schema_migrations WHERE name = $1', [file]);
-      if (seen.rowCount) continue;
       const sql = readFileSync(join(MIGRATIONS_DIR, file), 'utf8');
+      const checksum = createHash('sha256').update(sql).digest('hex');
+      const seen = await client.query<{ checksum: string | null }>(
+        'SELECT checksum FROM schema_migrations WHERE name = $1',
+        [file],
+      );
+      if (seen.rowCount) {
+        const recorded = seen.rows[0]!.checksum;
+        // One-time upgrade for databases whose migrations predate checksums.
+        if (recorded === null) {
+          await client.query(
+            'UPDATE schema_migrations SET checksum = $2 WHERE name = $1 AND checksum IS NULL',
+            [file, checksum],
+          );
+          continue;
+        }
+        if (recorded !== checksum) {
+          throw new Error(`migration ${file} checksum mismatch: an applied migration was modified`);
+        }
+        continue;
+      }
       try {
         await client.query('BEGIN');
         await client.query(sql);
-        await client.query('INSERT INTO schema_migrations (name) VALUES ($1)', [file]);
+        await client.query('INSERT INTO schema_migrations (name, checksum) VALUES ($1, $2)', [
+          file,
+          checksum,
+        ]);
         await client.query('COMMIT');
         applied.push(file);
       } catch (err) {
@@ -55,9 +80,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const { getPool, closePool } = await import('./pool.js');
   try {
     const applied = await runMigrations(getPool());
-    console.log(
-      applied.length ? `applied: ${applied.join(', ')}` : 'no pending migrations',
-    );
+    console.log(applied.length ? `applied: ${applied.join(', ')}` : 'no pending migrations');
   } finally {
     await closePool();
   }

@@ -72,6 +72,19 @@ describe('POST /api/import', () => {
     expect(instance.store.get(document.id)?.doc.name).toBe('Imported site');
   });
 
+  it('serializes simultaneous retries and collisions for the same document id', async () => {
+    const { app: instance, base } = await app();
+    const first = importedDocument('imp_concurrent');
+    const second = structuredClone(first);
+    second.name = 'Different concurrent import';
+
+    const responses = await Promise.all([post(base, first), post(base, second)]);
+    expect(responses.map((response) => response.status).sort()).toEqual([201, 409]);
+    expect(['Imported site', 'Different concurrent import']).toContain(
+      instance.store.get(first.id)?.doc.name,
+    );
+  });
+
   it('rejects incoherent, too-deep, and oversized-node documents', async () => {
     const { base } = await app();
     const incoherent = importedDocument('imp_bad');
@@ -118,6 +131,26 @@ describe('POST /api/import', () => {
     );
     expect((await post(base, document)).status).toBe(400);
     expect(instance.store.get(document.id)).toBeUndefined();
+  });
+
+  it('rejects unsafe ids, oversized names, and undeclared stored-asset metadata', async () => {
+    const { app: instance, base } = await app();
+    const unsafeId = importedDocument('../outside');
+    expect((await post(base, unsafeId)).status).toBe(400);
+
+    const longName = importedDocument('imp_long_name');
+    longName.name = 'x'.repeat(121);
+    expect((await post(base, longName)).status).toBe(400);
+
+    const unusedAsset = importedDocument('imp_unused_asset');
+    unusedAsset.assets['not-a-content-id.png'] = {
+      fileName: 'unused.png',
+      width: 10,
+      height: 10,
+      mime: 'image/png',
+    };
+    expect((await post(base, unusedAsset)).status).toBe(400);
+    expect(instance.store.get(unusedAsset.id)).toBeUndefined();
   });
 
   it('rejects import bodies larger than 25 MB without crashing the server', async () => {

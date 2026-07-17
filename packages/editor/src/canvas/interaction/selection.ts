@@ -39,6 +39,12 @@ export function resolveClickTarget(
   return chain[Math.min(focusDepth, chain.length - 1)]!;
 }
 
+/** Command/control-click bypasses focus depth and targets the deepest hit layer. */
+export function resolveDirectClickTarget(doc: PitoletDocument, hitId: NodeId): NodeId {
+  const chain = chainTo(doc, hitId);
+  return chain.at(-1) ?? hitId;
+}
+
 /** Double-click descends one level below the current click target. */
 export function resolveDoubleClickTarget(
   doc: PitoletDocument,
@@ -59,11 +65,7 @@ export function parentOfSelection(doc: PitoletDocument, selection: NodeId[]): No
   return doc.nodes[first]?.parent ?? null;
 }
 
-function selectionFocusDepth(
-  doc: PitoletDocument,
-  chain: NodeId[],
-  selection: NodeId[],
-): number {
+function selectionFocusDepth(doc: PitoletDocument, chain: NodeId[], selection: NodeId[]): number {
   if (selection.length === 0) return 0;
   // The container whose children are currently being edited.
   const container = doc.nodes[selection[0]!]?.parent ?? null;

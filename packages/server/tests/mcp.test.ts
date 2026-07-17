@@ -66,7 +66,9 @@ describe('MCP end-to-end (real client over streamable HTTP)', () => {
   });
 
   it('reads frames and nodes as compact summaries', async () => {
-    const frames = JSON.parse(textOf(await client.callTool({ name: 'list_frames', arguments: {} })));
+    const frames = JSON.parse(
+      textOf(await client.callTool({ name: 'list_frames', arguments: {} })),
+    );
     expect(frames.frames[0].name).toBe('Landing');
     const frameId = frames.frames[0].id;
 
@@ -82,7 +84,9 @@ describe('MCP end-to-end (real client over streamable HTTP)', () => {
   });
 
   it('get_design_as_code returns compact production code', async () => {
-    const frames = JSON.parse(textOf(await client.callTool({ name: 'list_frames', arguments: {} })));
+    const frames = JSON.parse(
+      textOf(await client.callTool({ name: 'list_frames', arguments: {} })),
+    );
     const code = textOf(
       await client.callTool({
         name: 'get_design_as_code',
@@ -96,7 +100,9 @@ describe('MCP end-to-end (real client over streamable HTTP)', () => {
   });
 
   it('insert_nodes creates validated nodes and broadcasts a labeled patch', async () => {
-    const frames = JSON.parse(textOf(await client.callTool({ name: 'list_frames', arguments: {} })));
+    const frames = JSON.parse(
+      textOf(await client.callTool({ name: 'list_frames', arguments: {} })),
+    );
     const frameId = frames.frames[0].id;
 
     const patches: string[] = [];
@@ -155,7 +161,9 @@ describe('MCP end-to-end (real client over streamable HTTP)', () => {
   });
 
   it('update_node merges styles and confirms compactly', async () => {
-    const frames = JSON.parse(textOf(await client.callTool({ name: 'list_frames', arguments: {} })));
+    const frames = JSON.parse(
+      textOf(await client.callTool({ name: 'list_frames', arguments: {} })),
+    );
     const frameId = frames.frames[0].id;
     const result = await client.callTool({
       name: 'update_node',
@@ -187,19 +195,27 @@ describe('MCP end-to-end (real client over streamable HTTP)', () => {
     expect(tokens.color.primary).toBeDefined(); // merge kept existing
   });
 
-  it('get_screenshot fails helpfully with no editor connected', async () => {
-    const frames = JSON.parse(textOf(await client.callTool({ name: 'list_frames', arguments: {} })));
+  it('get_screenshot renders headlessly when Chromium is present and otherwise fails helpfully', async () => {
+    const frames = JSON.parse(
+      textOf(await client.callTool({ name: 'list_frames', arguments: {} })),
+    );
     const result = await client.callTool({
       name: 'get_screenshot',
       arguments: { frameId: frames.frames[0].id },
     });
-    expect(result.isError).toBe(true);
-    // No editor and no Playwright → guidance covering both paths.
-    expect(textOf(result)).toContain('Playwright');
+    if (result.isError) {
+      expect(textOf(result)).toContain('Playwright Chromium is not installed');
+    } else {
+      expect(result.content).toEqual([
+        expect.objectContaining({ type: 'image', mimeType: 'image/jpeg' }),
+      ]);
+    }
   });
 
   it('comment lifecycle: add (agent) → get → resolve', async () => {
-    const frames = JSON.parse(textOf(await client.callTool({ name: 'list_frames', arguments: {} })));
+    const frames = JSON.parse(
+      textOf(await client.callTool({ name: 'list_frames', arguments: {} })),
+    );
     const frameId = frames.frames[0].id;
 
     const added = JSON.parse(
@@ -262,6 +278,73 @@ describe('MCP end-to-end (real client over streamable HTTP)', () => {
     expect(entry?.doc.rootOrder).toHaveLength(0);
   });
 
+  it('protects component roots and prunes variant patches when deleting component children', async () => {
+    const created = JSON.parse(
+      textOf(
+        await client.callTool({
+          name: 'create_document',
+          arguments: { name: 'Component deletion' },
+        }),
+      ),
+    ) as { docId: string };
+    const frame = JSON.parse(
+      textOf(
+        await client.callTool({
+          name: 'create_frame',
+          arguments: { docId: created.docId, name: 'Card master' },
+        }),
+      ),
+    ) as { frameId: string };
+    const inserted = JSON.parse(
+      textOf(
+        await client.callTool({
+          name: 'insert_nodes',
+          arguments: {
+            docId: created.docId,
+            parentId: frame.frameId,
+            nodes: [
+              {
+                name: 'Card root',
+                children: [{ name: 'Optional detail', text: 'Detail' }],
+              },
+            ],
+          },
+        }),
+      ),
+    ) as { created: string[] };
+    const contentRootId = inserted.created[0]!;
+    const optionalId = app.store.get(created.docId)!.doc.nodes[contentRootId]!.children[0]!;
+    app.store.applyRecipe(created.docId, 'mcp', 'Test: define component', (draft) => {
+      const master = draft.nodes[frame.frameId];
+      if (master?.type !== 'frame') throw new Error('expected frame');
+      master.isComponentMaster = 'card';
+      draft.components.card = {
+        id: 'card',
+        name: 'Card',
+        rootId: frame.frameId,
+        contentRootId,
+        variantProps: [{ name: 'mode', values: ['full', 'compact'], default: 'full' }],
+        variants: { 'mode=compact': { [optionalId]: { visible: false } } },
+      };
+    });
+
+    const protectedDelete = await client.callTool({
+      name: 'delete_nodes',
+      arguments: { docId: created.docId, nodeIds: [contentRootId] },
+    });
+    expect(protectedDelete.isError).toBe(true);
+    expect(app.store.get(created.docId)!.doc.nodes[contentRootId]).toBeDefined();
+
+    const childDelete = await client.callTool({
+      name: 'delete_nodes',
+      arguments: { docId: created.docId, nodeIds: [optionalId] },
+    });
+    expect(childDelete.isError).not.toBe(true);
+    const after = app.store.get(created.docId)!.doc;
+    expect(after.nodes[optionalId]).toBeUndefined();
+    expect(after.components.card!.variants['mode=compact']).toBeUndefined();
+  });
+
   it('export_project writes a manifest; check_drift detects file + design changes', async () => {
     const exportResult = JSON.parse(
       textOf(await client.callTool({ name: 'export_project', arguments: { annotate: true } })),
@@ -283,7 +366,9 @@ describe('MCP end-to-end (real client over streamable HTTP)', () => {
 
     // Also mutate the design of that same frame → now file-edited AND
     // design-updated ⇒ status 'both', with reconcile guidance.
-    const frames = JSON.parse(textOf(await client.callTool({ name: 'list_frames', arguments: {} })));
+    const frames = JSON.parse(
+      textOf(await client.callTool({ name: 'list_frames', arguments: {} })),
+    );
     await client.callTool({
       name: 'update_node',
       arguments: { nodeId: frames.frames[0].id, set: { styles: { base: { opacity: 0.5 } } } },

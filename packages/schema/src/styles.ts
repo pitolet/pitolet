@@ -54,7 +54,7 @@ export interface Sides<T> {
   left: T;
 }
 
-export const sides = <T,>(all: T): Sides<T> => ({ top: all, right: all, bottom: all, left: all });
+export const sides = <T>(all: T): Sides<T> => ({ top: all, right: all, bottom: all, left: all });
 
 export type GradientStop = { color: StyleValue<Color>; position: number /* 0..1 */ };
 
@@ -84,10 +84,12 @@ export type Track =
 // ---------------------------------------------------------------------------
 
 export type Display = 'flex' | 'grid' | 'block' | 'inline' | 'none';
-export type FlexDirection = 'row' | 'column';
+export type FlexDirection = 'row' | 'row-reverse' | 'column' | 'column-reverse';
+export type FlexWrap = 'wrap' | 'nowrap' | 'wrap-reverse';
 export type AlignValue = 'start' | 'center' | 'end' | 'stretch' | 'baseline';
+export type AlignSelfValue = AlignValue | 'auto';
 export type JustifyValue = 'start' | 'center' | 'end' | 'between' | 'around' | 'evenly';
-export type Position = 'relative' | 'absolute' | 'sticky';
+export type Position = 'static' | 'relative' | 'absolute' | 'sticky';
 export type TextAlign = 'left' | 'center' | 'right' | 'justify';
 export type Overflow = 'visible' | 'hidden' | 'auto' | 'scroll';
 export type ObjectFit = 'cover' | 'contain' | 'fill' | 'none';
@@ -96,7 +98,7 @@ export interface StyleDecl {
   // Layout (container)
   display?: Display;
   flexDirection?: FlexDirection;
-  flexWrap?: 'wrap' | 'nowrap';
+  flexWrap?: FlexWrap;
   alignItems?: AlignValue;
   justifyContent?: JustifyValue;
   gap?: { row: StyleValue<Length>; column: StyleValue<Length> };
@@ -104,7 +106,7 @@ export interface StyleDecl {
   gridTemplateRows?: Track[];
 
   // Layout (child)
-  alignSelf?: AlignValue;
+  alignSelf?: AlignSelfValue;
   flexGrow?: number;
   gridColumn?: string;
   gridRow?: string;

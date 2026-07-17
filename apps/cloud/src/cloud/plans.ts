@@ -14,6 +14,9 @@
 
 export type Plan = 'free' | 'pro';
 
+/** Raised by transactional quota gates and mapped to HTTP 429 by the router. */
+export class PlanLimitError extends Error {}
+
 export interface PlanLimits {
   /** Max workspaces a user may OWN (see the ownership rule above). */
   workspacesPerUser: number;
@@ -94,9 +97,7 @@ export function shareLinkLimitDenial(plan: Plan, activeLinkCount: number): strin
  */
 export function workspaceCreateDenial(ownedPlans: readonly string[]): string | null {
   const ownsPro = ownedPlans.some((p) => planOf(p) === 'pro');
-  const maxOwned = ownsPro
-    ? PLAN_LIMITS.pro.workspacesPerUser
-    : PLAN_LIMITS.free.workspacesPerUser;
+  const maxOwned = ownsPro ? PLAN_LIMITS.pro.workspacesPerUser : PLAN_LIMITS.free.workspacesPerUser;
   if (ownedPlans.length < maxOwned) return null;
   return ownsPro
     ? `You may own at most ${maxOwned} workspaces`

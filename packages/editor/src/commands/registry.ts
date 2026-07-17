@@ -1,11 +1,14 @@
 import { useEditor } from '../store/index.js';
-import { defineComponent } from '../store/componentMutations.js';
+import { canDefineComponent, defineComponent } from '../store/componentMutations.js';
 import { deleteNodes, duplicateNodes, groupNodes } from '../store/mutations.js';
 import { copySelection, pasteFromClipboard } from './clipboard.js';
 import { alignFrames, distributeFrames } from './align.js';
+import { isEffectivelyLocked } from '../store/locks.js';
+import { getSelectionActionState } from './selectionActions.js';
 
 export interface CommandContext {
   zoomToFit: () => void;
+  zoomToSelection: () => void;
   zoomIn: () => void;
   zoomOut: () => void;
   zoomTo100: () => void;
@@ -24,9 +27,45 @@ export interface Command {
 }
 
 const hasSelection = () => useEditor.getState().selection.length > 0;
+const canMutate = () => {
+  const state = useEditor.getState();
+  return Boolean(state.doc && state.connected && !state.readOnly && !state.switchingDocument);
+};
+const canUndo = () => canMutate() && useEditor.getState().historyStatus.canUndo;
+const canRedo = () => canMutate() && useEditor.getState().historyStatus.canRedo;
+const canDuplicateSelection = () => {
+  const state = useEditor.getState();
+  return canMutate() && getSelectionActionState(state.doc, state.selection).canDuplicate;
+};
+const canDeleteSelection = () => {
+  const state = useEditor.getState();
+  return canMutate() && getSelectionActionState(state.doc, state.selection).canDelete;
+};
+const canCreateComponent = () => {
+  const state = useEditor.getState();
+  const id = state.selection[0];
+  return Boolean(
+    canMutate() &&
+    state.doc &&
+    state.selection.length === 1 &&
+    id &&
+    !isEffectivelyLocked(state.doc, id) &&
+    canDefineComponent(state.doc, id),
+  );
+};
 const hasMultiFrames = () => {
   const s = useEditor.getState();
-  return s.selection.filter((id) => s.doc?.nodes[id]?.parent === null).length >= 2;
+  return (
+    canMutate() &&
+    s.doc !== null &&
+    s.selection.filter(
+      (id) => s.doc?.nodes[id]?.parent === null && !isEffectivelyLocked(s.doc!, id),
+    ).length >= 2
+  );
+};
+const canGroupSelection = () => {
+  const state = useEditor.getState();
+  return canMutate() && getSelectionActionState(state.doc, state.selection).canGroup;
 };
 
 /**
@@ -40,6 +79,7 @@ export const COMMANDS: Command[] = [
     title: 'Undo',
     shortcut: '$mod+z',
     group: 'edit',
+    when: canUndo,
     run: () => useEditor.getState().undo(),
   },
   {
@@ -47,6 +87,7 @@ export const COMMANDS: Command[] = [
     title: 'Redo',
     shortcut: '$mod+Shift+z',
     group: 'edit',
+    when: canRedo,
     run: () => useEditor.getState().redo(),
   },
   {
@@ -62,6 +103,7 @@ export const COMMANDS: Command[] = [
     title: 'Paste',
     shortcut: '$mod+v',
     group: 'edit',
+    when: canMutate,
     run: () => void pasteFromClipboard(),
   },
   {
@@ -69,7 +111,7 @@ export const COMMANDS: Command[] = [
     title: 'Duplicate',
     shortcut: '$mod+d',
     group: 'edit',
-    when: hasSelection,
+    when: canDuplicateSelection,
     run: () => {
       const store = useEditor.getState();
       const ids = [...store.selection];
@@ -85,7 +127,7 @@ export const COMMANDS: Command[] = [
     title: 'Delete',
     shortcut: 'Backspace',
     group: 'edit',
-    when: hasSelection,
+    when: canDeleteSelection,
     run: () => {
       const store = useEditor.getState();
       const ids = [...store.selection];
@@ -99,7 +141,7 @@ export const COMMANDS: Command[] = [
     title: 'Group selection',
     shortcut: '$mod+g',
     group: 'edit',
-    when: hasSelection,
+    when: canGroupSelection,
     run: () => {
       const store = useEditor.getState();
       const ids = [...store.selection];
@@ -116,7 +158,7 @@ export const COMMANDS: Command[] = [
     title: 'Create component',
     shortcut: '$mod+Alt+k',
     group: 'component',
-    when: () => useEditor.getState().selection.length === 1,
+    when: canCreateComponent,
     run: () => {
       const store = useEditor.getState();
       const id = store.selection[0]!;
@@ -140,6 +182,7 @@ export const COMMANDS: Command[] = [
     title: 'Frame tool',
     shortcut: 'f',
     group: 'create',
+    when: canMutate,
     run: () => useEditor.getState().setTool('frame'),
   },
   {
@@ -147,6 +190,7 @@ export const COMMANDS: Command[] = [
     title: 'Box tool',
     shortcut: 'r',
     group: 'create',
+    when: canMutate,
     run: () => useEditor.getState().setTool('element'),
   },
   {
@@ -154,18 +198,17 @@ export const COMMANDS: Command[] = [
     title: 'Text tool',
     shortcut: 't',
     group: 'create',
+    when: canMutate,
     run: () => useEditor.getState().setTool('text'),
   },
   // --- arrange ---
-  ...(['left', 'center', 'right', 'top', 'middle', 'bottom'] as const).map(
-    (edge): Command => ({
-      id: `align-${edge}`,
-      title: `Align ${edge}`,
-      group: 'arrange',
-      when: hasMultiFrames,
-      run: () => alignFrames(edge),
-    }),
-  ),
+  ...(['left', 'center', 'right', 'top', 'middle', 'bottom'] as const).map((edge): Command => ({
+    id: `align-${edge}`,
+    title: `Align ${edge}`,
+    group: 'arrange',
+    when: hasMultiFrames,
+    run: () => alignFrames(edge),
+  })),
   {
     id: 'distribute-horizontal',
     title: 'Distribute horizontally',
@@ -193,7 +236,7 @@ export const COMMANDS: Command[] = [
   },
   {
     id: 'preview',
-    title: 'Preview frame (real CSS)',
+    title: 'Preview frame',
     shortcut: '$mod+Enter',
     group: 'view',
     run: (ctx) => ctx.openPreview(),
@@ -204,6 +247,14 @@ export const COMMANDS: Command[] = [
     shortcut: 'Shift+1',
     group: 'view',
     run: (ctx) => ctx.zoomToFit(),
+  },
+  {
+    id: 'zoom-selection',
+    title: 'Focus selection',
+    shortcut: 'Shift+2',
+    group: 'view',
+    when: hasSelection,
+    run: (ctx) => ctx.zoomToSelection(),
   },
   {
     id: 'zoom-100',

@@ -23,18 +23,24 @@
   "bin": {
     "pitolet": "dist/cli.js"
   },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
   "engines": {
     "node": ">=22"
   },
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
   },
   "scripts": {
     "dev": "NODE_ENV=development tsx watch src/cli.ts --data ../../pitolet",
-    "build": "tsup && node scripts/bundle-editor.mjs",
+    "build": "tsup && node scripts/bundle-declarations.mjs && node scripts/bundle-editor.mjs",
     "typecheck": "tsc --noEmit"
   },
   "publishConfig": {
@@ -42,6 +48,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
+    "@types/ws": "^8.18.0",
     "immer": "^10.2.0",
     "nanoid": "^5.1.16",
     "playwright-core": "^1.61.1",
@@ -51,7 +58,6 @@
   "devDependencies": {
     "@pitolet/codegen": "workspace:*",
     "@pitolet/schema": "workspace:*",
-    "@types/ws": "^8.18.0",
     "tsup": "^8.5.0",
     "tsx": "^4.20.0"
   }

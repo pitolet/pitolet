@@ -1,5 +1,7 @@
 import { createImage, newId, px, type PitoletDocument, type NodeId } from '@pitolet/schema';
 import { useEditor } from '../../store/index.js';
+import { closestUnlockedAncestor } from '../../store/locks.js';
+import { nearestChildContainer } from '../../store/nodeSafety.js';
 import { apiUrl } from '../../sync/serverBase.js';
 import type { CameraController } from '../CameraController.js';
 import { hitNodeId } from './selectTool.js';
@@ -14,12 +16,31 @@ export async function handleImageDrop(
   camera: CameraController,
   viewport: HTMLElement,
 ): Promise<void> {
-  if (useEditor.getState().readOnly) return;
+  const initialStore = useEditor.getState();
+  if (
+    initialStore.readOnly ||
+    !initialStore.connected ||
+    initialStore.switchingDocument ||
+    !initialStore.doc
+  ) {
+    if (!initialStore.readOnly) {
+      initialStore.setSyncIssue('Editing is paused until Pitolet reconnects.');
+    }
+    return;
+  }
+  const documentId = initialStore.doc.id;
   const files = [...(e.dataTransfer?.files ?? [])].filter((f) => f.type.startsWith('image/'));
   if (files.length === 0) return;
   e.preventDefault();
+  camera.cancelAnimation();
+  const viewportRect = viewport.getBoundingClientRect();
+  const dropWorld = camera.toWorld({
+    x: e.clientX - viewportRect.left,
+    y: e.clientY - viewportRect.top,
+  });
+  const dropHitId = hitNodeId(e);
 
-  for (const file of files) {
+  for (const [fileIndex, file] of files.entries()) {
     try {
       const res = await fetch(apiUrl('/api/assets'), {
         method: 'POST',
@@ -32,7 +53,15 @@ export async function handleImageDrop(
 
       const store = useEditor.getState();
       const doc = store.doc;
-      if (!doc) return;
+      if (
+        !doc ||
+        doc.id !== documentId ||
+        store.readOnly ||
+        !store.connected ||
+        store.switchingDocument
+      ) {
+        return;
+      }
 
       const maxSide = 480;
       const scale = Math.min(1, maxSide / Math.max(width, height, 1));
@@ -46,8 +75,10 @@ export async function handleImageDrop(
         styles: { width: px(w), height: px(h), objectFit: 'cover' },
       });
 
-      const hit = hitNodeId(e);
-      const containerId = hit ? nearestContainer(doc, hit) : null;
+      const hit = dropHitId && doc.nodes[dropHitId] ? dropHitId : null;
+      const unlockedHit = hit ? closestUnlockedAncestor(doc, hit) : null;
+      if (hit && !unlockedHit) continue;
+      const containerId = unlockedHit ? nearestChildContainer(doc, unlockedHit) : null;
 
       store.dispatchEdit('Insert image', (draft) => {
         draft.nodes[node.id] = node;
@@ -57,25 +88,20 @@ export async function handleImageDrop(
           // Register asset metadata on the document.
           draft.assets[assetId] = { fileName: file.name, width, height, mime: file.type };
         } else {
-          const viewportRect = viewport.getBoundingClientRect();
-          const world = camera.toWorld({
-            x: e.clientX - viewportRect.left,
-            y: e.clientY - viewportRect.top,
-          });
-          const frame = {
-            ...node,
-          };
-          void frame;
           // Wrap in an auto frame at the drop point.
-          const wrapper = createImageFrame(draft, world.x, world.y, w, h);
+          const offset = fileIndex * 24;
+          const wrapper = createImageFrame(draft, dropWorld.x + offset, dropWorld.y + offset, w, h);
           node.parent = wrapper;
           draft.nodes[wrapper]!.children.push(node.id);
           draft.assets[assetId] = { fileName: file.name, width, height, mime: file.type };
         }
       });
-      store.select([node.id]);
+      if (useEditor.getState().doc?.nodes[node.id]) store.select([node.id]);
     } catch (err) {
       console.error('[pitolet] image drop failed:', err);
+      useEditor
+        .getState()
+        .setSyncIssue(`Couldn’t add ${file.name || 'that image'}. Check the file and try again.`);
     }
   }
 }
@@ -104,17 +130,6 @@ function createImageFrame(
   return id;
 }
 
-function nearestContainer(doc: PitoletDocument, hitId: NodeId): NodeId | null {
-  let current: NodeId | null = hitId;
-  while (current !== null) {
-    const node: PitoletDocument['nodes'][string] | undefined = doc.nodes[current];
-    if (!node) return null;
-    if (node.type === 'frame' || node.type === 'element') return current;
-    current = node.parent;
-  }
-  return null;
-}
-
 function imageSize(file: File): Promise<{ width: number; height: number }> {
   return new Promise((resolve) => {
     const url = URL.createObjectURL(file);
@@ -123,7 +138,10 @@ function imageSize(file: File): Promise<{ width: number; height: number }> {
       resolve({ width: img.naturalWidth, height: img.naturalHeight });
       URL.revokeObjectURL(url);
     };
-    img.onerror = () => resolve({ width: 320, height: 240 });
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve({ width: 320, height: 240 });
+    };
     img.src = url;
   });
 }

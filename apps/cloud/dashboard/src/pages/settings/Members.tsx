@@ -56,7 +56,11 @@ export function Members({ ws, me }: { ws: WorkspaceSummary; me: Me }) {
         <h2 className="ptl-dash-section-title">Members</h2>
       </div>
 
-      {error && <div className="ptl-dash-error" style={{ marginBottom: 12 }}>{error}</div>}
+      {error && (
+        <div className="ptl-dash-error" style={{ marginBottom: 12 }}>
+          {error}
+        </div>
+      )}
 
       {members === null ? (
         <div className="ptl-dash-empty">Loading members…</div>
@@ -117,7 +121,7 @@ function AddMemberForm({ ws, onAdded }: { ws: WorkspaceSummary; onAdded: () => v
       setEmail('');
       onAdded();
     } catch (err) {
-      // 404 → 'no account with that email' (invitee must already have an account in I5).
+      // Memberships can only attach to an account that owns the address.
       setError(err instanceof ApiError ? err.message : 'Could not add member');
     } finally {
       setBusy(false);
@@ -146,7 +150,7 @@ function AddMemberForm({ ws, onAdded }: { ws: WorkspaceSummary; onAdded: () => v
         </div>
       </div>
       <p className="ptl-dash-subtitle" style={{ marginTop: 8 }}>
-        The person must already have a Pitolet account.
+        They need a verified Pitolet account with this address.
       </p>
       {error && <div className="ptl-dash-error">{error}</div>}
       <div className="ptl-dash-form-actions">

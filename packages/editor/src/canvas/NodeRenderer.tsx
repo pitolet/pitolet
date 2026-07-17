@@ -1,4 +1,6 @@
 import {
+  parseVariantKey,
+  resolveVariantPatch,
   resolveStyles,
   styleToCssProps,
   type Breakpoint,
@@ -12,6 +14,7 @@ import {
 } from '@pitolet/schema';
 import { createElement, memo, type CSSProperties, type ReactNode } from 'react';
 import { useEditor } from '../store/index.js';
+import { isVoidElementTag } from '../store/nodeSafety.js';
 import { assetUrl } from '../sync/serverBase.js';
 import { InstanceRenderer } from './InstanceRenderer.js';
 import { TextEditable } from './TextEditable.js';
@@ -41,16 +44,24 @@ export const NodeRenderer = memo(function NodeRenderer({
   const node = useEditor((s) => s.doc?.nodes[id]);
   const isEditingText = useEditor((s) => s.editingTextId === id);
   // While a variant is being edited, master content previews its patch.
-  const variantPatch = useEditor((s) =>
-    ctx.masterComponentId && s.editingVariant
-      ? s.doc?.components[ctx.masterComponentId]?.variants[s.editingVariant]?.[id]
-      : undefined,
+  const editingVariant = useEditor((s) => s.editingVariant);
+  const masterComponent = useEditor((s) =>
+    ctx.masterComponentId ? s.doc?.components[ctx.masterComponentId] : undefined,
   );
+  const editingVariantKey =
+    editingVariant && editingVariant.componentId === ctx.masterComponentId
+      ? editingVariant.key
+      : null;
+  const editingValues = editingVariantKey ? parseVariantKey(editingVariantKey) : null;
+  const variantPatch =
+    masterComponent && editingValues
+      ? resolveVariantPatch(masterComponent, editingValues, id)
+      : undefined;
   // While an interaction state is being edited, selected nodes preview it.
   const previewState = useEditor((s) =>
     s.editingContext.state && s.selection.includes(id) ? s.editingContext.state : null,
   );
-  if (!node || !node.visible || variantPatch?.visible === false) return null;
+  if (!node || !(variantPatch?.visible ?? node.visible)) return null;
 
   const styles = variantPatch?.styles
     ? { ...node.styles, base: { ...node.styles.base, ...variantPatch.styles } }
@@ -69,13 +80,15 @@ export const NodeRenderer = memo(function NodeRenderer({
   const common = {
     'data-node-id': id,
     style: css,
+    tabIndex: isCanvasFocusableTag(node.tag) ? -1 : undefined,
+    draggable: false,
     ...sanitizeAttrs(node.attrs),
   };
 
   switch (node.type) {
     case 'text':
       if (isEditingText) return <TextEditable node={node} css={css} />;
-      return createElement(safeTag(node.tag), common, renderSpans(node.content));
+      return createElement(safeTextTag(node.tag), common, renderSpans(node.content));
     case 'image': {
       const src = 'url' in node.src ? node.src.url : assetUrl(node.src.asset);
       return createElement('img', {
@@ -88,11 +101,12 @@ export const NodeRenderer = memo(function NodeRenderer({
     case 'instance':
       return <InstanceRenderer instance={node} ctx={ctx} />;
     case 'frame':
-    case 'element':
+    case 'element': {
+      const tag = safeTag(node.tag);
       return createElement(
-        safeTag(node.tag),
+        tag,
         common,
-        node.children.length > 0
+        !isVoidElementTag(tag) && node.children.length > 0
           ? node.children.map((childId) => (
               <NodeRenderer
                 key={childId}
@@ -106,6 +120,7 @@ export const NodeRenderer = memo(function NodeRenderer({
             ))
           : undefined,
       );
+    }
   }
 });
 
@@ -116,7 +131,14 @@ export function renderSpans(content: TextSpan[]): ReactNode {
     if (span.marks?.italic) node = <em key={i}>{node}</em>;
     if (span.marks?.link !== undefined)
       node = (
-        <a key={i} href={span.marks.link} onClick={(e) => e.preventDefault()}>
+        <a
+          key={i}
+          href={span.marks.link}
+          tabIndex={-1}
+          draggable={false}
+          onClick={(e) => e.preventDefault()}
+          onAuxClick={(e) => e.preventDefault()}
+        >
           {node}
         </a>
       );
@@ -126,38 +148,134 @@ export function renderSpans(content: TextSpan[]): ReactNode {
 }
 
 const ALLOWED_TAGS = new Set([
-  'div', 'section', 'header', 'footer', 'main', 'nav', 'aside', 'article', 'figure',
-  'figcaption', 'form', 'ul', 'ol', 'li', 'button', 'a', 'label', 'span', 'p',
-  'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'code', 'strong', 'em', 'img', 'input',
-  'textarea', 'select', 'option', 'fieldset', 'legend', 'table', 'caption', 'thead',
-  'tbody', 'tfoot', 'tr', 'td', 'th', 'details', 'summary',
-  'br', 'hr',
+  'div',
+  'section',
+  'header',
+  'footer',
+  'main',
+  'nav',
+  'aside',
+  'article',
+  'figure',
+  'figcaption',
+  'form',
+  'ul',
+  'ol',
+  'li',
+  'button',
+  'a',
+  'label',
+  'span',
+  'p',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'blockquote',
+  'code',
+  'strong',
+  'em',
+  'img',
+  'input',
+  'textarea',
+  'select',
+  'option',
+  'fieldset',
+  'legend',
+  'table',
+  'caption',
+  'thead',
+  'tbody',
+  'tfoot',
+  'tr',
+  'td',
+  'th',
+  'details',
+  'summary',
+  'br',
+  'hr',
 ]);
 
-function safeTag(tag: string): string {
-  return ALLOWED_TAGS.has(tag) ? tag : 'div';
+export function safeTag(tag: string): string {
+  const normalized = tag.toLowerCase();
+  return ALLOWED_TAGS.has(normalized) ? normalized : 'div';
+}
+
+/** Text nodes must always render through an element that accepts children. */
+export function safeTextTag(tag: string): string {
+  const safe = safeTag(tag);
+  return isVoidElementTag(safe) ? 'span' : safe;
 }
 
 /** Only carry through inert attributes; navigation/interactivity stays dead in-editor. */
-function sanitizeAttrs(attrs?: Record<string, string>): Record<string, string | boolean> {
+export function sanitizeAttrs(attrs?: Record<string, string>): Record<string, string | boolean> {
   if (!attrs) return {};
   const out: Record<string, string | boolean> = {};
   for (const [key, value] of Object.entries(attrs)) {
-    if (key === 'href') continue; // links stay inert on canvas
-    if (key.startsWith('on')) continue;
-    const reactKey = REACT_ATTRS[key] ?? key;
-    out[reactKey] = ['checked', 'disabled', 'selected'].includes(key) ? true : value;
+    const normalized = key.toLowerCase();
+    if (normalized.startsWith('on') || BLOCKED_CANVAS_ATTRS.has(normalized)) continue;
+    if (normalized === 'data-node-id') continue;
+    const reactKey = REACT_ATTRS[normalized] ?? key;
+    out[reactKey] = BOOLEAN_ATTRS.has(normalized) ? value !== 'false' && value !== '0' : value;
   }
   return out;
 }
 
 const REACT_ATTRS: Record<string, string> = {
+  class: 'className',
   for: 'htmlFor',
   colspan: 'colSpan',
   rowspan: 'rowSpan',
   autocomplete: 'autoComplete',
   inputmode: 'inputMode',
+  readonly: 'readOnly',
 };
+
+const BOOLEAN_ATTRS = new Set([
+  'checked',
+  'disabled',
+  'multiple',
+  'readonly',
+  'required',
+  'selected',
+]);
+
+const BLOCKED_CANVAS_ATTRS = new Set([
+  'action',
+  'accesskey',
+  'autofocus',
+  'children',
+  'contenteditable',
+  'dangerouslysetinnerhtml',
+  'defaultchecked',
+  'defaultvalue',
+  'download',
+  'draggable',
+  'formaction',
+  'form',
+  'href',
+  'id',
+  'key',
+  'method',
+  'name',
+  'popover',
+  'popovertarget',
+  'popovertargetaction',
+  'ref',
+  'src',
+  'style',
+  'suppresscontenteditablewarning',
+  'suppresshydrationwarning',
+  'tabindex',
+  'target',
+  'for',
+]);
+
+function isCanvasFocusableTag(tag: string): boolean {
+  return ['a', 'button', 'input', 'select', 'textarea', 'summary'].includes(tag.toLowerCase());
+}
 
 const TRANSPARENT_PIXEL =
   'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';

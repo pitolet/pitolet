@@ -166,7 +166,8 @@ function applySize(
     return;
   }
   if (ctx.parentDisplay === 'flex') {
-    const mainAxis = (ctx.parentDirection ?? 'row') === 'row' ? 'horizontal' : 'vertical';
+    const direction = ctx.parentDirection ?? 'row';
+    const mainAxis = direction === 'row' || direction === 'row-reverse' ? 'horizontal' : 'vertical';
     if (axis === mainAxis) {
       css.flexGrow = 1;
       css.flexShrink = 1;
@@ -205,6 +206,7 @@ function justifyValue(v: string, isFlex: boolean): string {
 }
 
 function tracks(list: Track[]): string {
+  if (list.length === 0) return 'none';
   return list
     .map((t) => {
       switch (t.kind) {
@@ -249,9 +251,7 @@ function fillLayer(fill: Fill): string {
 }
 
 function gradientStops(stops: { color: unknown; position: number }[]): string {
-  return stops
-    .map((s) => `${colorToCss(s.color as Color)} ${trim(s.position * 100)}%`)
-    .join(', ');
+  return stops.map((s) => `${colorToCss(s.color as Color)} ${trim(s.position * 100)}%`).join(', ');
 }
 
 function shadowValue(sh: Shadow): string {

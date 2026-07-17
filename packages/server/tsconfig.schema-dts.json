@@ -1,0 +1,12 @@
+{
+  "extends": "../schema/tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "rootDir": "../schema/src",
+    "outDir": "./dist/schema"
+  },
+  "include": ["../schema/src"],
+  "exclude": ["../schema/tests"]
+}

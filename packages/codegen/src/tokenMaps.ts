@@ -6,6 +6,7 @@ import {
   type TokenSet,
 } from '@pitolet/schema';
 import { COLOR_TOLERANCE } from './scales.js';
+import { allocateNames, sanitizeCssName } from './safety.js';
 
 /**
  * Reverse lookups from raw values to document-token names, used both to
@@ -14,6 +15,7 @@ import { COLOR_TOLERANCE } from './scales.js';
  */
 export class TokenMaps {
   readonly colorEntries: Array<{ name: string; value: Color }>;
+  private pathNames = new Map<string, string>();
   private spacingByPx = new Map<number, string>();
   private radiusByPx = new Map<number, string>();
   private fontSizeByPx = new Map<number, string>();
@@ -21,31 +23,44 @@ export class TokenMaps {
   private fontFamilyByValue = new Map<string, string>();
 
   constructor(readonly tokens: TokenSet) {
+    for (const [category, names] of [
+      ['color', Object.keys(tokens.color)],
+      ['spacing', Object.keys(tokens.spacing)],
+      ['radius', Object.keys(tokens.radius)],
+      ['shadow', Object.keys(tokens.shadow)],
+      ['typography.fontFamily', Object.keys(tokens.typography.fontFamily)],
+      ['typography.fontSize', Object.keys(tokens.typography.fontSize)],
+    ] as const) {
+      const allocated = allocateNames(names, 'token');
+      for (const name of names) this.pathNames.set(`${category}.${name}`, allocated.get(name)!);
+    }
     this.colorEntries = Object.entries(tokens.color).map(([name, t]) => ({
-      name: sanitizeTokenName(name),
+      name: this.nameForPath(`color.${name}`),
       value: t.$value,
     }));
     for (const [name, t] of Object.entries(tokens.spacing)) {
-      if (t.$value.unit === 'px') this.spacingByPx.set(t.$value.value, sanitizeTokenName(name));
+      if (t.$value.unit === 'px')
+        this.spacingByPx.set(t.$value.value, this.nameForPath(`spacing.${name}`));
     }
     for (const [name, t] of Object.entries(tokens.radius)) {
-      if (t.$value.unit === 'px') this.radiusByPx.set(t.$value.value, sanitizeTokenName(name));
+      if (t.$value.unit === 'px')
+        this.radiusByPx.set(t.$value.value, this.nameForPath(`radius.${name}`));
     }
     for (const [name, t] of Object.entries(tokens.typography.fontSize)) {
-      if (t.$value.unit === 'px') this.fontSizeByPx.set(t.$value.value, sanitizeTokenName(name));
+      if (t.$value.unit === 'px')
+        this.fontSizeByPx.set(t.$value.value, this.nameForPath(`typography.fontSize.${name}`));
     }
     for (const [name, t] of Object.entries(tokens.shadow)) {
-      this.shadowByJson.set(JSON.stringify(t.$value), sanitizeTokenName(name));
+      this.shadowByJson.set(JSON.stringify(t.$value), this.nameForPath(`shadow.${name}`));
     }
     for (const [name, t] of Object.entries(tokens.typography.fontFamily)) {
-      this.fontFamilyByValue.set(t.$value, sanitizeTokenName(name));
+      this.fontFamilyByValue.set(t.$value, this.nameForPath(`typography.fontFamily.${name}`));
     }
   }
 
   /** Token name for a token path like "color.primary" → "primary". */
   nameForPath(path: string): string {
-    const parts = path.split('.');
-    return sanitizeTokenName(parts[parts.length - 1] ?? path);
+    return this.pathNames.get(path) ?? (sanitizeCssName(path.replace(/^[^.]+\./, '')) || 'token');
   }
 
   colorTokenFor(color: Color): string | null {
@@ -79,5 +94,5 @@ export class TokenMaps {
 }
 
 export function sanitizeTokenName(name: string): string {
-  return name.toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/(^-|-$)/g, '');
+  return sanitizeCssName(name);
 }

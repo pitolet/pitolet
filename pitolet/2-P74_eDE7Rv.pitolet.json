@@ -1,0 +1,503 @@
+{
+  "schemaVersion": 2,
+  "id": "P74_eDE7Rv",
+  "name": "2",
+  "rootOrder": [
+    "c6iKOiS8cf",
+    "H5aOIvgesi"
+  ],
+  "nodes": {
+    "c6iKOiS8cf": {
+      "id": "c6iKOiS8cf",
+      "name": "Frame",
+      "parent": null,
+      "children": [],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "gridTemplateColumns": [
+            {
+              "kind": "fr",
+              "value": 1
+            },
+            {
+              "kind": "fr",
+              "value": 1
+            }
+          ],
+          "padding": {
+            "top": {
+              "value": 0,
+              "unit": "px"
+            },
+            "right": {
+              "value": 0,
+              "unit": "px"
+            },
+            "bottom": {
+              "value": 0,
+              "unit": "px"
+            },
+            "left": {
+              "value": 0,
+              "unit": "px"
+            }
+          },
+          "fills": [
+            {
+              "type": "linear",
+              "angle": 135,
+              "stops": [
+                {
+                  "color": {
+                    "space": "oklch",
+                    "l": 0.6,
+                    "c": 0.15,
+                    "h": 260
+                  },
+                  "position": 0
+                },
+                {
+                  "color": {
+                    "space": "oklch",
+                    "l": 0.6410111412023523,
+                    "c": 0.10389155284477153,
+                    "h": 246.5733718444169
+                  },
+                  "position": 1
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "type": "frame",
+      "canvas": {
+        "x": 156,
+        "y": 144,
+        "width": 1280,
+        "height": 800
+      },
+      "isComponentMaster": "bvN_x8I4Bp"
+    },
+    "H5aOIvgesi": {
+      "id": "H5aOIvgesi",
+      "name": "Frame 2",
+      "parent": null,
+      "children": [
+        "UojKsdfXdg"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "fills": [
+            {
+              "type": "solid",
+              "color": {
+                "$token": "color.background"
+              }
+            }
+          ]
+        }
+      },
+      "type": "frame",
+      "canvas": {
+        "x": 156,
+        "y": 2536,
+        "width": 1632,
+        "height": 1082
+      }
+    },
+    "UojKsdfXdg": {
+      "id": "UojKsdfXdg",
+      "name": "Frame",
+      "parent": "H5aOIvgesi",
+      "children": [],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {}
+      },
+      "type": "instance",
+      "componentId": "bvN_x8I4Bp",
+      "variant": {},
+      "overrides": {}
+    }
+  },
+  "components": {
+    "bvN_x8I4Bp": {
+      "id": "bvN_x8I4Bp",
+      "name": "Frame",
+      "rootId": "c6iKOiS8cf",
+      "contentRootId": "c6iKOiS8cf",
+      "variantProps": [],
+      "variants": {}
+    }
+  },
+  "tokens": {
+    "color": {
+      "background": {
+        "$value": {
+          "space": "oklch",
+          "l": 0.9851036517304731,
+          "c": 0,
+          "h": 0
+        },
+        "$description": "Page background"
+      },
+      "foreground": {
+        "$value": {
+          "space": "oklch",
+          "l": 0.21,
+          "c": 0.02,
+          "h": 250
+        },
+        "$description": "Primary text"
+      },
+      "muted": {
+        "$value": {
+          "space": "oklch",
+          "l": 0.96,
+          "c": 0.005,
+          "h": 250
+        },
+        "$description": "Muted surface"
+      },
+      "muted-foreground": {
+        "$value": {
+          "space": "oklch",
+          "l": 0.52,
+          "c": 0.02,
+          "h": 250
+        },
+        "$description": "Secondary text"
+      },
+      "primary": {
+        "$value": {
+          "space": "oklch",
+          "l": 0.55,
+          "c": 0.16,
+          "h": 235
+        },
+        "$description": "Brand / actions"
+      },
+      "primary-foreground": {
+        "$value": {
+          "space": "oklch",
+          "l": 0.99,
+          "c": 0.003,
+          "h": 235
+        },
+        "$description": "Text on primary"
+      },
+      "accent": {
+        "$value": {
+          "space": "oklch",
+          "l": 0.72,
+          "c": 0.12,
+          "h": 195
+        },
+        "$description": "Accent highlights"
+      },
+      "border": {
+        "$value": {
+          "space": "oklch",
+          "l": 0.91,
+          "c": 0.008,
+          "h": 250
+        },
+        "$description": "Hairlines & borders"
+      }
+    },
+    "spacing": {
+      "1": {
+        "$value": {
+          "value": 4,
+          "unit": "px"
+        }
+      },
+      "2": {
+        "$value": {
+          "value": 8,
+          "unit": "px"
+        }
+      },
+      "3": {
+        "$value": {
+          "value": 12,
+          "unit": "px"
+        }
+      },
+      "4": {
+        "$value": {
+          "value": 16,
+          "unit": "px"
+        }
+      },
+      "5": {
+        "$value": {
+          "value": 20,
+          "unit": "px"
+        }
+      },
+      "6": {
+        "$value": {
+          "value": 24,
+          "unit": "px"
+        }
+      },
+      "8": {
+        "$value": {
+          "value": 32,
+          "unit": "px"
+        }
+      },
+      "10": {
+        "$value": {
+          "value": 40,
+          "unit": "px"
+        }
+      },
+      "12": {
+        "$value": {
+          "value": 48,
+          "unit": "px"
+        }
+      },
+      "16": {
+        "$value": {
+          "value": 64,
+          "unit": "px"
+        }
+      },
+      "20": {
+        "$value": {
+          "value": 80,
+          "unit": "px"
+        }
+      },
+      "24": {
+        "$value": {
+          "value": 96,
+          "unit": "px"
+        }
+      }
+    },
+    "radius": {
+      "sm": {
+        "$value": {
+          "value": 4,
+          "unit": "px"
+        }
+      },
+      "md": {
+        "$value": {
+          "value": 8,
+          "unit": "px"
+        }
+      },
+      "lg": {
+        "$value": {
+          "value": 12,
+          "unit": "px"
+        }
+      },
+      "xl": {
+        "$value": {
+          "value": 16,
+          "unit": "px"
+        }
+      },
+      "full": {
+        "$value": {
+          "value": 9999,
+          "unit": "px"
+        }
+      }
+    },
+    "shadow": {
+      "sm": {
+        "$value": [
+          {
+            "x": 0,
+            "y": 1,
+            "blur": 2,
+            "spread": 0,
+            "color": {
+              "space": "oklch",
+              "l": 0.2,
+              "c": 0.02,
+              "h": 250,
+              "alpha": 0.08
+            }
+          }
+        ]
+      },
+      "md": {
+        "$value": [
+          {
+            "x": 0,
+            "y": 2,
+            "blur": 8,
+            "spread": -1,
+            "color": {
+              "space": "oklch",
+              "l": 0.2,
+              "c": 0.02,
+              "h": 250,
+              "alpha": 0.1
+            }
+          },
+          {
+            "x": 0,
+            "y": 1,
+            "blur": 2,
+            "spread": 0,
+            "color": {
+              "space": "oklch",
+              "l": 0.2,
+              "c": 0.02,
+              "h": 250,
+              "alpha": 0.06
+            }
+          }
+        ]
+      },
+      "lg": {
+        "$value": [
+          {
+            "x": 0,
+            "y": 12,
+            "blur": 32,
+            "spread": -4,
+            "color": {
+              "space": "oklch",
+              "l": 0.2,
+              "c": 0.02,
+              "h": 250,
+              "alpha": 0.14
+            }
+          },
+          {
+            "x": 0,
+            "y": 2,
+            "blur": 6,
+            "spread": -1,
+            "color": {
+              "space": "oklch",
+              "l": 0.2,
+              "c": 0.02,
+              "h": 250,
+              "alpha": 0.08
+            }
+          }
+        ]
+      }
+    },
+    "typography": {
+      "fontFamily": {
+        "sans": {
+          "$value": "Inter"
+        },
+        "mono": {
+          "$value": "JetBrains Mono"
+        }
+      },
+      "fontSize": {
+        "xs": {
+          "$value": {
+            "value": 12,
+            "unit": "px"
+          }
+        },
+        "sm": {
+          "$value": {
+            "value": 14,
+            "unit": "px"
+          }
+        },
+        "base": {
+          "$value": {
+            "value": 16,
+            "unit": "px"
+          }
+        },
+        "lg": {
+          "$value": {
+            "value": 18,
+            "unit": "px"
+          }
+        },
+        "xl": {
+          "$value": {
+            "value": 20,
+            "unit": "px"
+          }
+        },
+        "2xl": {
+          "$value": {
+            "value": 24,
+            "unit": "px"
+          }
+        },
+        "3xl": {
+          "$value": {
+            "value": 30,
+            "unit": "px"
+          }
+        },
+        "4xl": {
+          "$value": {
+            "value": 36,
+            "unit": "px"
+          }
+        },
+        "5xl": {
+          "$value": {
+            "value": 48,
+            "unit": "px"
+          }
+        },
+        "6xl": {
+          "$value": {
+            "value": 60,
+            "unit": "px"
+          }
+        }
+      }
+    }
+  },
+  "breakpoints": [
+    {
+      "id": "sm",
+      "name": "Small",
+      "minWidth": 640
+    },
+    {
+      "id": "md",
+      "name": "Medium",
+      "minWidth": 768
+    },
+    {
+      "id": "lg",
+      "name": "Large",
+      "minWidth": 1024
+    },
+    {
+      "id": "xl",
+      "name": "X-Large",
+      "minWidth": 1280
+    }
+  ],
+  "assets": {},
+  "comments": {}
+}

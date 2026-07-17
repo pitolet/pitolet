@@ -1,0 +1,42 @@
+.ptl-sync-banner {
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ptl-space-2);
+  min-height: 32px;
+  padding: 6px var(--ptl-space-3);
+  border-bottom: 1px solid transparent;
+  font-size: var(--ptl-text-sm);
+  font-weight: 550;
+  flex-shrink: 0;
+}
+
+.ptl-sync-banner--offline {
+  color: var(--ptl-warning);
+  background: oklch(0.78 0.14 80 / 0.1);
+  border-color: oklch(0.78 0.14 80 / 0.24);
+}
+
+.ptl-sync-banner--error {
+  color: var(--ptl-danger);
+  background: var(--ptl-danger-muted);
+  border-color: oklch(0.64 0.19 25 / 0.24);
+}
+
+.ptl-sync-banner button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin-left: var(--ptl-space-1);
+  border: none;
+  border-radius: var(--ptl-radius-md);
+  background: transparent;
+  color: currentColor;
+}
+
+.ptl-sync-banner button:hover {
+  background: oklch(1 0 0 / 0.08);
+}

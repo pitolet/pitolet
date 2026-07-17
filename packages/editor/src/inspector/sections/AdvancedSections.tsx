@@ -11,7 +11,8 @@ import {
 import { IconButton, NumberScrubInput, Select, Tooltip } from '@pitolet/ui';
 import { Plus, X } from 'lucide-react';
 import { ColorField, LengthField, Row, Section } from '../fields.js';
-import { setStyle, useCoalesceKey, useStyleValue } from '../useStyle.js';
+import { removeStyleShadow } from '../compoundControls.js';
+import { setStyle, styleContextFor, useCoalesceKey, useStyleValue } from '../useStyle.js';
 
 /** Shadows, gradient fills, grid template, and absolute positioning. */
 
@@ -40,7 +41,13 @@ export function ShadowSection() {
             onClick={() =>
               setStyle('Add shadow', (d) => {
                 d.shadows = d.shadows ?? [];
-                d.shadows.push({ x: 0, y: 2, blur: 8, spread: -1, color: oklch(0.2, 0.02, 250, 0.15) });
+                d.shadows.push({
+                  x: 0,
+                  y: 2,
+                  blur: 8,
+                  spread: -1,
+                  color: oklch(0.2, 0.02, 250, 0.15),
+                });
               })
             }
           >
@@ -57,9 +64,13 @@ export function ShadowSection() {
               value={shadow.color}
               mixed={shadows.mixed}
               onWrite={(c, key) =>
-                setStyle('Set shadow color', (d) => {
-                  if (d.shadows?.[i]) d.shadows[i]!.color = c;
-                }, key)
+                setStyle(
+                  'Set shadow color',
+                  (d) => {
+                    if (d.shadows?.[i]) d.shadows[i]!.color = c;
+                  },
+                  key,
+                )
               }
             />
             <Tooltip content="Remove shadow">
@@ -68,8 +79,7 @@ export function ShadowSection() {
                 size="sm"
                 onClick={() =>
                   setStyle('Remove shadow', (d) => {
-                    d.shadows?.splice(i, 1);
-                    if (d.shadows?.length === 0) delete d.shadows;
+                    removeStyleShadow(d, i, shadows.contextual);
                   })
                 }
               >
@@ -110,15 +120,17 @@ export function ShadowSection() {
 
 export function GradientControls() {
   const fills = useStyleValue('fills');
-  const gradient = fills.value?.find((f): f is Extract<Fill, { type: 'linear' }> => f.type === 'linear');
+  const gradient = fills.value?.find(
+    (f): f is Extract<Fill, { type: 'linear' }> => f.type === 'linear',
+  );
   const keys = useCoalesceKey();
 
   if (!gradient) {
     return (
-      <Row>
+      <Row label="Gradient">
         <button
           type="button"
-          className="ptl-auto-height"
+          className="ptl-inspector-action-button"
           onClick={() =>
             setStyle('Add gradient', (d) => {
               d.fills = [
@@ -191,36 +203,65 @@ export function GradientControls() {
 export function GridControls() {
   const display = useStyleValue('display');
   const columns = useStyleValue('gridTemplateColumns');
+  const rows = useStyleValue('gridTemplateRows');
   const keys = useCoalesceKey();
   if (display.value !== 'grid') return null;
 
-  const count = columns.value?.length ?? 2;
-  const allFr = columns.value?.every((t: Track) => t.kind === 'fr') ?? true;
+  const columnCount = columns.value?.length ?? 2;
+  const rowCount = rows.value?.length ?? 1;
+  const allColumnsFr = columns.value?.every((t: Track) => t.kind === 'fr') ?? true;
+  const allRowsFr = rows.value?.every((t: Track) => t.kind === 'fr') ?? true;
 
   return (
     <Section title="Grid">
-      <Row label="Columns">
-      <NumberScrubInput
-        value={count}
-        min={1}
-        max={12}
-        onChange={(v, o) => {
-          if (!o.transient) keys.begin();
-          setStyle(
-            'Set grid columns',
-            (d) => {
-              d.gridTemplateColumns = Array.from({ length: Math.round(v) }, (_, i) => {
-                const existing = d.gridTemplateColumns?.[i];
-                return existing ?? { kind: 'fr' as const, value: 1 };
-              });
-            },
-            keys.current(),
-          );
-        }}
-        onCommit={() => keys.begin()}
-        className="ptl-field-scrub"
-      />
-        {!allFr && <span className="ptl-insp-hint">custom tracks</span>}
+      <Row
+        label="Columns"
+        styleContext={styleContextFor(columns, 'gridTemplateColumns', 'grid columns')}
+      >
+        <NumberScrubInput
+          value={columnCount}
+          min={1}
+          max={12}
+          onChange={(v, o) => {
+            if (!o.transient) keys.begin();
+            setStyle(
+              'Set grid columns',
+              (d) => {
+                d.gridTemplateColumns = Array.from({ length: Math.round(v) }, (_, i) => {
+                  const existing = d.gridTemplateColumns?.[i];
+                  return existing ?? { kind: 'fr' as const, value: 1 };
+                });
+              },
+              keys.current(),
+            );
+          }}
+          onCommit={() => keys.begin()}
+          className="ptl-field-scrub"
+        />
+        {!allColumnsFr && <span className="ptl-insp-hint">custom</span>}
+      </Row>
+      <Row label="Rows" styleContext={styleContextFor(rows, 'gridTemplateRows', 'grid rows')}>
+        <NumberScrubInput
+          value={rowCount}
+          min={1}
+          max={12}
+          onChange={(v, o) => {
+            if (!o.transient) keys.begin();
+            setStyle(
+              'Set grid rows',
+              (d) => {
+                d.gridTemplateRows = Array.from({ length: Math.round(v) }, (_, i) => {
+                  const existing = d.gridTemplateRows?.[i];
+                  return existing ?? { kind: 'fr' as const, value: 1 };
+                });
+              },
+              keys.current(),
+            );
+          }}
+          onCommit={() => keys.begin()}
+          className="ptl-field-scrub"
+        />
+        {!allRowsFr && <span className="ptl-insp-hint">custom</span>}
       </Row>
     </Section>
   );
@@ -238,18 +279,18 @@ const POSITIONS = [
 export function PositionSection() {
   const position = useStyleValue('position');
   const inset = useStyleValue('inset');
-  const isPositioned = position.value === 'absolute' || position.value === 'sticky';
+  const isPositioned = position.value != null && position.value !== 'static';
 
   return (
     <Section title="Position">
-      <Row label="Type">
+      <Row label="Type" styleContext={styleContextFor(position, 'position', 'position')}>
         <Select
           value={(position.value as string) ?? 'static'}
           options={POSITIONS}
           onValueChange={(v) =>
             setStyle('Set position', (d) => {
               if (v === 'static') {
-                delete d.position;
+                d.position = 'static';
                 delete d.inset;
               } else {
                 d.position = v as Position;
@@ -264,7 +305,7 @@ export function PositionSection() {
       </Row>
       {isPositioned && (
         <>
-          <Row label="Inset">
+          <Row label="Inset" styleContext={styleContextFor(inset, 'inset', 'inset')}>
             <LengthField
               value={inset.value?.top}
               mixed={inset.mixed}

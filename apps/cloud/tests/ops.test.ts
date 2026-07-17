@@ -7,11 +7,7 @@ import { createAuth, ensureAuthSchema, type CloudAuth } from '../src/auth/auth.j
 import { runMigrations } from '../src/db/migrate.js';
 import { collectMetrics } from '../src/ops/metrics.js';
 import { startGaugeLogger } from '../src/ops/gaugeLog.js';
-import {
-  createCloudServer,
-  installProcessErrorHandlers,
-  type CloudServer,
-} from '../src/server.js';
+import { createCloudServer, installProcessErrorHandlers, type CloudServer } from '../src/server.js';
 import { startEphemeralPg, type EphemeralPg } from './harness/ephemeralPg.js';
 
 /**
@@ -107,6 +103,8 @@ describe('GET /internal/metrics auth', () => {
     });
     expect(res.status).toBe(200);
     expect(res.headers.get('content-type')).toContain('application/json');
+    expect(res.headers.get('cache-control')).toBe('no-store');
+    expect(res.headers.get('x-content-type-options')).toBe('nosniff');
     const body = (await res.json()) as Record<string, number>;
     expect(typeof body.loadedWorkspaces).toBe('number');
     expect(typeof body.wsClients).toBe('number');
@@ -117,6 +115,20 @@ describe('GET /internal/metrics auth', () => {
     expect(typeof body.pgPoolIdle).toBe('number');
     expect(typeof body.pgPoolWaiting).toBe('number');
     delete process.env.PITOLET_METRICS_TOKEN;
+  });
+});
+
+describe('liveness and readiness', () => {
+  it('reports process liveness without operational details', async () => {
+    const res = await fetch(`${base}/healthz`);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ ok: true });
+  });
+
+  it('reports ready only after a successful database round-trip', async () => {
+    const res = await fetch(`${base}/readyz`);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ ok: true });
   });
 });
 
@@ -155,7 +167,7 @@ describe('periodic gauge logger', () => {
 });
 
 describe('process-level error handlers', () => {
-  it('registers uncaughtException + unhandledRejection listeners (server.ts wiring)', () => {
+  it('registers fatal uncaughtException + unhandledRejection listeners', async () => {
     // Use the real server.ts wiring, but against a fake process object so the
     // test process is never actually crashed. installProcessErrorHandlers is
     // what main() calls at boot.
@@ -167,13 +179,15 @@ describe('process-level error handlers', () => {
       },
     } as unknown as NodeJS.Process;
 
-    const { onUncaught, onRejection } = installProcessErrorHandlers(fakeProc, () => {});
+    const exit = vi.fn();
+    const { onUncaught, onRejection } = installProcessErrorHandlers(fakeProc, exit);
 
     expect(listeners.uncaughtException).toContain(onUncaught);
     expect(listeners.unhandledRejection).toContain(onRejection);
-    // Calling the rejection handler must not throw or exit (silence its log).
+    // The callback itself never throws; it flushes tracking and then exits.
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     expect(() => onRejection(new Error('boom'))).not.toThrow();
+    await vi.waitFor(() => expect(exit).toHaveBeenCalledWith(1));
     errSpy.mockRestore();
   });
 
@@ -186,5 +200,66 @@ describe('process-level error handlers', () => {
     expect(process.listeners('uncaughtException').length).toBe(before + 1);
     process.off('uncaughtException', onUncaught);
     process.off('unhandledRejection', onRejection);
+  });
+});
+
+describe('graceful shutdown ordering', () => {
+  it('stops ingress and drains an active request before closing workspace storage', async () => {
+    const shutdownPort = await freePort();
+    const shutdownBase = `http://127.0.0.1:${shutdownPort}`;
+    const originalQuery = pgi.pool.query.bind(pgi.pool) as (
+      text: string,
+      values?: unknown[],
+    ) => ReturnType<typeof pgi.pool.query>;
+    const delayedPool = Object.create(pgi.pool) as typeof pgi.pool;
+    let releaseQuery!: () => void;
+    let queryStarted!: () => void;
+    const queryGate = new Promise<void>((resolve) => {
+      releaseQuery = resolve;
+    });
+    const started = new Promise<void>((resolve) => {
+      queryStarted = resolve;
+    });
+    let delayReadiness = true;
+    delayedPool.query = ((text: string, values?: unknown[]) => {
+      if (delayReadiness && text.includes('schema_migrations')) {
+        delayReadiness = false;
+        queryStarted();
+        return queryGate.then(() => originalQuery(text, values));
+      }
+      return originalQuery(text, values);
+    }) as typeof pgi.pool.query;
+
+    const shuttingDownCloud = createCloudServer({
+      pool: delayedPool,
+      auth,
+      dataRoot: join(dataRoot, 'shutdown-order'),
+      editorDist: null,
+      dashboardDist: null,
+      billing: null,
+    });
+    await new Promise<void>((resolve) =>
+      shuttingDownCloud.server.listen(shutdownPort, '127.0.0.1', resolve),
+    );
+    const shutdownSpy = vi.spyOn(shuttingDownCloud.manager, 'shutdown');
+
+    try {
+      const activeResponse = fetch(`${shutdownBase}/readyz`);
+      await started;
+
+      const closePromise = shuttingDownCloud.close();
+      expect(shuttingDownCloud.server.listening).toBe(false);
+      expect(shutdownSpy).not.toHaveBeenCalled();
+
+      releaseQuery();
+      const response = await activeResponse;
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual({ ok: true });
+      await closePromise;
+      expect(shutdownSpy).toHaveBeenCalledOnce();
+    } finally {
+      releaseQuery();
+      await shuttingDownCloud.close();
+    }
   });
 });

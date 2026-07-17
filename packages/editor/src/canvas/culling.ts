@@ -1,7 +1,28 @@
 import { useEditor } from '../store/index.js';
+import type { FrameNode } from '@pitolet/schema';
 import type { CameraController } from './CameraController.js';
 
 const MARGIN_PX = 400;
+
+interface WorldRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/** Auto-height frames have no reliable schema bottom, so only cull them horizontally. */
+export function frameIntersectsView(frame: FrameNode, view: WorldRect, margin: number): boolean {
+  const horizontal =
+    frame.canvas.x < view.x + view.width + margin &&
+    frame.canvas.x + frame.canvas.width > view.x - margin;
+  if (!horizontal) return false;
+  if (frame.canvas.height === 'auto') return true;
+  return (
+    frame.canvas.y < view.y + view.height + margin &&
+    frame.canvas.y + frame.canvas.height > view.y - margin
+  );
+}
 
 /**
  * Frame-level viewport culling: root frames fully outside the (expanded)
@@ -10,10 +31,12 @@ const MARGIN_PX = 400;
  * on-screen frames is cheap thanks to `contain` on .ptl-frame.
  */
 export function installCulling(camera: CameraController): () => void {
-  let scheduled = false;
+  let scheduled = 0;
+  let disposed = false;
 
   const cull = () => {
-    scheduled = false;
+    scheduled = 0;
+    if (disposed) return;
     const doc = useEditor.getState().doc;
     if (!doc) return;
     const view = camera.visibleWorldRect();
@@ -23,20 +46,15 @@ export function installCulling(camera: CameraController): () => void {
       if (node?.type !== 'frame') continue;
       const el = document.querySelector<HTMLElement>(`[data-frame-wrapper="${id}"]`);
       if (!el) continue;
-      const height = node.canvas.height === 'auto' ? 2000 : node.canvas.height;
-      const visible =
-        node.canvas.x < view.x + view.width + margin &&
-        node.canvas.x + node.canvas.width > view.x - margin &&
-        node.canvas.y < view.y + view.height + margin &&
-        node.canvas.y + height > view.y - margin;
+      if (el.dataset.forceRender === 'true') continue;
+      const visible = frameIntersectsView(node, view, margin);
       el.style.display = visible ? '' : 'none';
     }
   };
 
   const schedule = () => {
     if (scheduled) return;
-    scheduled = true;
-    requestAnimationFrame(cull);
+    scheduled = requestAnimationFrame(cull);
   };
 
   const unsubscribeCamera = camera.subscribe(schedule);
@@ -45,6 +63,9 @@ export function installCulling(camera: CameraController): () => void {
   });
   schedule();
   return () => {
+    disposed = true;
+    if (scheduled) cancelAnimationFrame(scheduled);
+    scheduled = 0;
     unsubscribeCamera();
     unsubscribeStore();
   };

@@ -157,9 +157,7 @@ export const api = {
     request<{ documents: DocumentSummary[] }>(`/w/${slug}/api/documents`),
 
   snapshots: (workspaceId: string, docId: string) =>
-    request<{ snapshots: Snapshot[] }>(
-      `/api/workspaces/${workspaceId}/docs/${docId}/snapshots`,
-    ),
+    request<{ snapshots: Snapshot[] }>(`/api/workspaces/${workspaceId}/docs/${docId}/snapshots`),
 
   createSnapshot: (workspaceId: string, docId: string, input: { label: string }) =>
     request<{ id: string; rev: number; kind: 'named'; label: string }>(
@@ -168,20 +166,17 @@ export const api = {
     ),
 
   restoreSnapshot: (workspaceId: string, docId: string, snapshotId: string) =>
-    request<{ rev: number }>(
-      `/api/workspaces/${workspaceId}/docs/${docId}/restore`,
-      { method: 'POST', body: JSON.stringify({ snapshotId }) },
-    ),
+    request<{ rev: number }>(`/api/workspaces/${workspaceId}/docs/${docId}/restore`, {
+      method: 'POST',
+      body: JSON.stringify({ snapshotId }),
+    }),
 
   shareLinks: (workspaceId: string, docId: string) =>
     request<{ shareLinks: ShareLink[] }>(
       `/api/workspaces/${workspaceId}/share-links?docId=${encodeURIComponent(docId)}`,
     ),
 
-  createShareLink: (
-    workspaceId: string,
-    input: { docId: string; expiresInDays?: number },
-  ) =>
+  createShareLink: (workspaceId: string, input: { docId: string; expiresInDays?: number }) =>
     request<{ token: string; url: string; docId: string; expiresAt: string | null }>(
       `/api/workspaces/${workspaceId}/share-links`,
       { method: 'POST', body: JSON.stringify(input) },

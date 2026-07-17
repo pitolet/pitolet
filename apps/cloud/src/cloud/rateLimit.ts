@@ -44,7 +44,23 @@ export class TokenBucketLimiter {
     const now = this.clock();
     let bucket = this.buckets.get(key);
     if (!bucket) {
-      if (this.buckets.size >= this.maxKeys) this.sweep(now);
+      if (this.buckets.size >= this.maxKeys) {
+        this.sweep(now);
+        // A hostile stream of fresh keys can keep every bucket younger than
+        // one window. Keep maxKeys a hard bound by dropping the oldest
+        // remaining key before admitting another.
+        if (this.buckets.size >= this.maxKeys) {
+          let oldestKey: string | undefined;
+          let oldestAt = Infinity;
+          for (const [candidate, value] of this.buckets) {
+            if (value.last < oldestAt) {
+              oldestKey = candidate;
+              oldestAt = value.last;
+            }
+          }
+          if (oldestKey !== undefined) this.buckets.delete(oldestKey);
+        }
+      }
       bucket = { tokens: this.capacity, last: now };
       this.buckets.set(key, bucket);
     } else {

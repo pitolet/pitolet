@@ -20,6 +20,10 @@
 }
 
 .ptl-left-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ptl-space-1);
   padding: var(--ptl-space-2) var(--ptl-space-3) 0;
 }
 
@@ -29,6 +33,7 @@
   background: var(--ptl-bg-1);
   flex-shrink: 0;
   min-height: 0;
+  position: relative;
 }
 
 .ptl-panel--left {
@@ -39,6 +44,105 @@
 .ptl-panel--right {
   width: var(--ptl-inspector-width);
   border-left: 1px solid var(--ptl-border);
+}
+
+.ptl-panel-resizer {
+  position: absolute;
+  z-index: 20;
+  padding: 0;
+  border: none;
+  background: transparent;
+  touch-action: none;
+}
+
+.ptl-panel-resizer::after {
+  content: '';
+  position: absolute;
+  border-radius: var(--ptl-radius-full);
+  background: transparent;
+  transition: background 120ms ease;
+}
+
+.ptl-panel-resizer:hover::after,
+.ptl-panel-resizer:focus-visible::after {
+  background: var(--ptl-accent);
+}
+
+.ptl-panel-resizer--left,
+.ptl-panel-resizer--right {
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  cursor: col-resize;
+}
+
+.ptl-panel-resizer--left {
+  right: -4px;
+}
+
+.ptl-panel-resizer--right {
+  left: -4px;
+}
+
+.ptl-panel-resizer--left::after,
+.ptl-panel-resizer--right::after {
+  top: 0;
+  bottom: 0;
+  left: 3px;
+  width: 2px;
+}
+
+.ptl-panel-resizer--code {
+  position: relative;
+  width: 100%;
+  height: 7px;
+  flex-shrink: 0;
+  cursor: row-resize;
+  border-top: 1px solid var(--ptl-border);
+  background: var(--ptl-bg-1);
+}
+
+.ptl-panel-resizer--code::after {
+  top: 2px;
+  right: 0;
+  left: 0;
+  height: 2px;
+}
+
+.ptl-panel-collapse--right {
+  position: absolute;
+  top: var(--ptl-space-2);
+  right: var(--ptl-space-2);
+  z-index: 5;
+}
+
+.ptl-panel--right .ptl-insp-section:first-child .ptl-insp-section-header,
+.ptl-panel--right > .ptl-inspector > .ptl-panel-header:first-child {
+  padding-right: 28px;
+}
+
+.ptl-panel--rail {
+  width: 36px;
+  padding-top: var(--ptl-space-2);
+  align-items: center;
+}
+
+.ptl-panel--rail-left {
+  border-right: 1px solid var(--ptl-border);
+}
+
+.ptl-panel--rail-right {
+  border-left: 1px solid var(--ptl-border);
+}
+
+/* Keep inspection and layer selection available while disconnected, but do
+   not leave controls looking like they can save changes. */
+.ptl-app--editing-paused .ptl-panel--right :is(input, textarea, button, [role='combobox']),
+.ptl-app--editing-paused .ptl-tokens :is(input, textarea, button),
+.ptl-app--editing-paused .ptl-components button,
+.ptl-app--editing-paused .ptl-layer-action {
+  pointer-events: none;
+  opacity: 0.45;
 }
 
 .ptl-panel-header {

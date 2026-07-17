@@ -33,6 +33,7 @@
 
 .ptl-select-positioner {
   z-index: 1000;
+  max-height: var(--available-height);
 }
 
 .ptl-select-popup {
@@ -41,8 +42,10 @@
   box-shadow: var(--ptl-shadow-popover);
   padding: var(--ptl-space-1);
   min-width: var(--anchor-width, 120px);
-  max-height: 320px;
+  max-height: min(320px, calc(var(--available-height) - 8px));
   overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .ptl-select-item {

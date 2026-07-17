@@ -6,8 +6,28 @@ import { validateDocument } from './zod.js';
  * key+1. `migrate` runs the chain, then fully validates.
  */
 const MIGRATIONS: Record<number, (doc: Record<string, unknown>) => Record<string, unknown>> = {
-  // 1 → 2 example (none yet):
-  // 1: (doc) => ({ ...doc, schemaVersion: 2 }),
+  1: (doc) => {
+    const nodes = isRecord(doc.nodes) ? doc.nodes : {};
+    const sourceComponents = isRecord(doc.components) ? doc.components : {};
+    const components: Record<string, unknown> = {};
+    for (const [id, value] of Object.entries(sourceComponents)) {
+      if (!isRecord(value)) {
+        components[id] = value;
+        continue;
+      }
+      const rootId = typeof value.rootId === 'string' ? value.rootId : '';
+      const root = isRecord(nodes[rootId]) ? nodes[rootId] : undefined;
+      const children = root && Array.isArray(root.children) ? root.children : [];
+      components[id] = {
+        ...value,
+        // Preserve the old renderer's meaning exactly once during migration.
+        // New documents set this explicitly and never infer it again.
+        contentRootId:
+          children.length === 1 && typeof children[0] === 'string' ? children[0] : rootId,
+      };
+    }
+    return { ...doc, schemaVersion: 2, components };
+  },
 };
 
 export function migrateDocument(raw: unknown): PitoletDocument {
@@ -29,4 +49,8 @@ export function migrateDocument(raw: unknown): PitoletDocument {
     version = doc.schemaVersion as number;
   }
   return validateDocument(doc);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

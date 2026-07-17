@@ -1,7 +1,6 @@
 import './Kbd.css';
 
-const IS_MAC =
-  typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform ?? '');
+const IS_MAC = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform ?? '');
 
 /** Renders a shortcut like "mod+shift+k" as platform-appropriate key caps. */
 export function Kbd({ keys }: { keys: string }) {

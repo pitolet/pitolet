@@ -1,9 +1,9 @@
 import type { Color, Length, StyleValue, TextAlign } from '@pitolet/schema';
 import { IconButton, Select, Tooltip } from '@pitolet/ui';
-import { AlignCenter, AlignLeft, AlignRight } from 'lucide-react';
+import { AlignCenter, AlignJustify, AlignLeft, AlignRight } from 'lucide-react';
 import { ensureFontLoaded, GOOGLE_FONTS } from '../../fonts/googleFonts.js';
 import { ColorField, LengthField, Row, Section, useResolved } from '../fields.js';
-import { setStyle, useStyleValue } from '../useStyle.js';
+import { setStyle, styleContextFor, useStyleValue } from '../useStyle.js';
 import { NumberScrubInput } from '@pitolet/ui';
 import { useCoalesceKey } from '../useStyle.js';
 
@@ -37,8 +37,8 @@ export function TypographySection() {
     typeof lh.resolved === 'number' ? lh.resolved : lh.resolved ? lh.resolved.value : null;
 
   return (
-    <Section title="Text">
-      <Row label="Font">
+    <Section title="Text" collapseKey="Typography">
+      <Row label="Font" styleContext={styleContextFor(family, 'fontFamily', 'font')}>
         <Select
           value={familyResolved.resolved ?? 'system-ui'}
           options={FAMILIES}
@@ -87,15 +87,18 @@ export function TypographySection() {
           label="↔"
           title="Letter spacing"
           min={-20}
-          onWrite={(len, key) => setStyle('Set letter spacing', (d) => (d.letterSpacing = len), key)}
+          onWrite={(len, key) =>
+            setStyle('Set letter spacing', (d) => (d.letterSpacing = len), key)
+          }
         />
       </Row>
-      <Row label="Align">
+      <Row label="Align" styleContext={styleContextFor(align, 'textAlign', 'text align')}>
         {(
           [
             ['left', AlignLeft],
             ['center', AlignCenter],
             ['right', AlignRight],
+            ['justify', AlignJustify],
           ] as const
         ).map(([v, Icon]) => (
           <Tooltip key={v} content={`Align ${v}`}>
@@ -110,7 +113,7 @@ export function TypographySection() {
           </Tooltip>
         ))}
       </Row>
-      <Row label="Color">
+      <Row label="Color" styleContext={styleContextFor(color, 'color', 'text color')}>
         <ColorField
           value={color.value as StyleValue<Color> | undefined}
           mixed={color.mixed}
