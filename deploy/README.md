@@ -102,6 +102,12 @@ chmod 600 backup-ssh/id_ed25519 backup-ssh/known_hosts
 Set `RESTIC_SSH_DIR=./backup-ssh`. Keep the private key and `known_hosts` out
 of Git.
 
+Cloudflare R2 and other S3-compatible stores also work. Set
+`RESTIC_REPOSITORY` to the provider endpoint and bucket path, then set
+`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_DEFAULT_REGION`. R2 uses
+`auto` for the region. Keep `RESTIC_SSH_DIR=./backup-ssh`; the directory may be
+empty when SFTP is not used.
+
 ## 6. Launch
 
 ```sh
