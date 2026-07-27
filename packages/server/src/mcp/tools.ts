@@ -42,15 +42,13 @@ import { confirmLine, MAX_DEPTH, styleSummary, summarizeNode } from './summarize
 import { launchChromium } from '../importer/capture.js';
 
 /**
- * Pitolet's MCP tool surface — how coding agents read and WRITE designs.
- * Every write flows through the same validated patch pipeline as human
- * edits: live on any open canvas, undoable in-editor, persisted to disk.
+ * MCP tools for reading and editing Pitolet documents. Writes use the same
+ * validation and history as editor changes.
  *
- * Context discipline: reads return compact summaries (never raw document
- * JSON); `get_design_as_code` is the canonical full-fidelity read.
+ * Reads return compact summaries rather than raw document JSON.
  */
 
-/** Recursive node spec for insert_nodes — compact, defaults-friendly. */
+/** Recursive node input for insert_nodes. */
 interface NodeSpec {
   type?: 'element' | 'text' | 'image' | 'frame';
   tag?: string;
@@ -176,7 +174,7 @@ export function registerTools(
     'list_frames',
     {
       description:
-        'List the top-level frames (artboards) of a document: id, name, size, child count. Start here to orient.',
+        'List the top-level frames in a document with their ids, names, sizes, and child counts.',
       inputSchema: { docId: docIdParam },
     },
     ({ docId }) => {
@@ -200,7 +198,7 @@ export function registerTools(
     'get_node',
     {
       description:
-        'Summarized subtree of a node (compact style notation, not raw JSON). Use depth 1-2 to orient; prefer get_design_as_code for a full-fidelity read.',
+        'Return a compact node summary. Use get_design_as_code for complete generated code.',
       inputSchema: {
         docId: docIdParam,
         nodeId: z.string().describe('Node id'),
@@ -272,8 +270,7 @@ export function registerTools(
   server.registerTool(
     'get_design_as_code',
     {
-      description:
-        'THE canonical full-fidelity read: a node subtree as production React+Tailwind (or HTML+CSS) — the densest lossless representation of a design.',
+      description: 'Return a node subtree as React with Tailwind or HTML with CSS.',
       inputSchema: {
         docId: docIdParam,
         nodeId: z.string().describe('Node id (a frame id from list_frames, or any node)'),
@@ -339,7 +336,7 @@ export function registerTools(
     server.registerTool(
       'set_selection',
       {
-        description: 'Select nodes in the open editor — point the human at something.',
+        description: 'Select nodes in the open editor.',
         inputSchema: { docId: docIdParam, nodeIds: z.array(z.string()).max(1_000) },
       },
       ({ docId, nodeIds }) => {
@@ -411,7 +408,7 @@ export function registerTools(
       'insert_nodes',
       {
         description:
-          'Insert a subtree of new nodes into a container. Spec is compact: {type?, tag?, name?, text?, styles?, children?}. Styles use Pitolet StyleDecl (token refs like {"$token":"color.primary"} encouraged). Returns created root ids.',
+          'Insert a subtree into a container. Each node may include type, tag, name, text, styles, and children. Returns the ids of the new root nodes.',
         inputSchema: {
           docId: docIdParam,
           parentId: z.string().describe('Container node id (frame or element)'),
@@ -586,7 +583,7 @@ export function registerTools(
         'export_project',
         {
           description:
-            'Export the document as a code project (theme.css + frames/*.tsx + components/*.tsx) plus a manifest for drift checks. With annotate=true, JSX elements carry data-ptl-id attributes linking back to design nodes.',
+            'Export the document as a code project with a manifest for drift checks. Set annotate=true to add source node ids to JSX.',
           inputSchema: {
             docId: docIdParam,
             annotate: z.boolean().default(false).optional(),
@@ -603,14 +600,14 @@ export function registerTools(
       'check_drift',
       {
         description:
-          'Compare the last export against the current design AND the files on disk. Statuses: in-sync, design-updated (design changed since export — regenerate or update code), file-edited (code was hand/agent-edited since export — re-exporting would overwrite), both, missing.',
+          'Compare the current document and project files with the last export. Returns in-sync, design-updated, file-edited, both, or missing for each file.',
         inputSchema: { docId: docIdParam },
       },
       ({ docId }) => {
         const { doc } = requireDoc(docId);
         const entries = checkDrift(doc, exportBaseDir);
         if (entries === null) {
-          return text('no export found for this document — run export_project first');
+          return text('no export found for this document; run export_project first');
         }
         const drifted = entries.filter((e) => e.status !== 'in-sync');
         const lines = entries.map((e) => `${e.status.padEnd(15)} ${e.path}`);
@@ -621,15 +618,15 @@ export function registerTools(
           )
         ) {
           advice.push(
-            '→ design changed since last export: run export_project (or read get_design_as_code and update the files yourself)',
+            'design changed since the last export; run export_project or update the files from get_design_as_code',
           );
         }
         if (drifted.some((e) => e.status === 'file-edited' || e.status === 'both')) {
           advice.push(
-            '→ files were edited since export: re-exporting will OVERWRITE those edits — reconcile the code changes into the design first (update_node) or export selectively',
+            'files were edited since the last export. A new export will overwrite them; update the document first or export selectively',
           );
         }
-        if (drifted.length === 0) advice.push('→ everything in sync');
+        if (drifted.length === 0) advice.push('everything in sync');
         return text([...lines, '', ...advice].join('\n'));
       },
     );
@@ -640,7 +637,7 @@ export function registerTools(
       'import_design_system',
       {
         description:
-          "Import the user's real design tokens from CSS (Tailwind v4 @theme or :root custom properties). Read their theme/globals CSS file yourself and pass the text — recognized: --color-*, --spacing-*, --radius-*, --shadow-*, --font-*, --text-*. Merges into the document (existing names are overwritten) and reflows the canvas live.",
+          'Import design tokens from CSS. Pass Tailwind v4 @theme or :root variables with --color-*, --spacing-*, --radius-*, --shadow-*, --font-*, or --text-* prefixes. Existing token names are overwritten.',
         inputSchema: {
           docId: docIdParam,
           css: z.string().min(1).max(500_000).describe('Raw CSS text containing the variables'),
@@ -651,7 +648,7 @@ export function registerTools(
         const parsed = parseCssTokens(css);
         if (parsed.count === 0) {
           throw new Error(
-            `no recognizable tokens found${parsed.skipped.length > 0 ? ` (${parsed.skipped.length} declarations skipped as unparseable)` : ''} — expected --color-*/--spacing-*/--radius-*/--shadow-*/--font-*/--text-* custom properties`,
+            `no recognizable tokens found${parsed.skipped.length > 0 ? ` (${parsed.skipped.length} declarations could not be parsed)` : ''}; expected --color-*/--spacing-*/--radius-*/--shadow-*/--font-*/--text-* custom properties`,
           );
         }
         store.applyRecipe(
@@ -681,8 +678,7 @@ export function registerTools(
     server.registerTool(
       'add_comment',
       {
-        description:
-          'Pin a comment to a node — visible instantly in the editor. Use it to explain what you changed, ask a question, or flag something for the human.',
+        description: 'Add a comment to a node in the editor.',
         inputSchema: {
           docId: docIdParam,
           nodeId: z.string(),
@@ -717,8 +713,7 @@ export function registerTools(
   server.registerTool(
     'get_comments',
     {
-      description:
-        "Read comments — the human's notes to you live here. Filter by node, or read all unresolved ones to find outstanding requests.",
+      description: 'List comments, optionally filtered by node.',
       inputSchema: {
         docId: docIdParam,
         nodeId: z.string().optional().describe('Only comments on this node'),
@@ -770,7 +765,7 @@ export function registerTools(
       'set_tokens',
       {
         description:
-          'Merge design-token changes, e.g. {"color": {"primary": {"$value": {"space":"oklch","l":0.6,"c":0.15,"h":250}}}}. Set a token to null to delete it. Changes reflow every bound style live.',
+          'Merge design-token changes. Set a token to null to delete it. Updates appear on every bound layer.',
         inputSchema: {
           docId: docIdParam,
           patch: z

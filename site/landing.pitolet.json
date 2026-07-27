@@ -14,7 +14,7 @@
       "children": [
         "n1",
         "n11",
-        "n158"
+        "n154"
       ],
       "tag": "div",
       "visible": true,
@@ -482,10 +482,10 @@
       "children": [
         "n12",
         "n26",
-        "n48",
-        "n70",
-        "n94",
-        "n98"
+        "n44",
+        "n66",
+        "n90",
+        "n94"
       ],
       "tag": "main",
       "visible": true,
@@ -1266,9 +1266,9 @@
       "parent": "n26",
       "children": [
         "n28",
-        "n33",
-        "n38",
-        "n43"
+        "n32",
+        "n36",
+        "n40"
       ],
       "tag": "div",
       "visible": true,
@@ -1332,8 +1332,7 @@
       "name": "Proof DOM + CSS",
       "parent": "n27",
       "children": [
-        "n29",
-        "n30"
+        "n29"
       ],
       "tag": "div",
       "visible": true,
@@ -1341,17 +1340,9 @@
       "styles": {
         "base": {
           "display": "flex",
-          "flexDirection": "row",
+          "flexDirection": "column",
           "alignItems": "center",
-          "gap": {
-            "row": {
-              "value": 0,
-              "unit": "px"
-            },
-            "column": {
-              "$token": "spacing.3"
-            }
-          },
+          "justifyContent": "center",
           "minWidth": {
             "value": 0,
             "unit": "px"
@@ -1362,72 +1353,11 @@
     "n29": {
       "id": "n29",
       "type": "element",
-      "name": "Proof Marker",
-      "parent": "n28",
-      "children": [],
-      "tag": "div",
-      "visible": true,
-      "locked": false,
-      "styles": {
-        "base": {
-          "display": "flex",
-          "flexDirection": "column",
-          "width": {
-            "value": 8,
-            "unit": "px"
-          },
-          "height": {
-            "value": 8,
-            "unit": "px"
-          },
-          "fills": [
-            {
-              "type": "solid",
-              "color": {
-                "$token": "color.primary"
-              }
-            }
-          ],
-          "radius": {
-            "tl": {
-              "$token": "radius.full"
-            },
-            "tr": {
-              "$token": "radius.full"
-            },
-            "br": {
-              "$token": "radius.full"
-            },
-            "bl": {
-              "$token": "radius.full"
-            }
-          },
-          "shadows": [
-            {
-              "x": 0,
-              "y": 0,
-              "blur": 12,
-              "spread": 0,
-              "color": {
-                "space": "oklch",
-                "l": 0.71,
-                "c": 0.125,
-                "h": 215,
-                "alpha": 0.45
-              }
-            }
-          ]
-        }
-      }
-    },
-    "n30": {
-      "id": "n30",
-      "type": "element",
       "name": "Proof Copy",
       "parent": "n28",
       "children": [
-        "n31",
-        "n32"
+        "n30",
+        "n31"
       ],
       "tag": "div",
       "visible": true,
@@ -1436,6 +1366,7 @@
         "base": {
           "display": "flex",
           "flexDirection": "column",
+          "alignItems": "center",
           "gap": {
             "row": {
               "$token": "spacing.1"
@@ -1448,15 +1379,16 @@
           "minWidth": {
             "value": 0,
             "unit": "px"
-          }
+          },
+          "textAlign": "center"
         }
       }
     },
-    "n31": {
-      "id": "n31",
+    "n30": {
+      "id": "n30",
       "type": "text",
       "name": "Proof Title",
-      "parent": "n30",
+      "parent": "n29",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -1478,11 +1410,11 @@
         }
       }
     },
-    "n32": {
-      "id": "n32",
+    "n31": {
+      "id": "n31",
       "type": "text",
       "name": "Proof Detail",
-      "parent": "n30",
+      "parent": "n29",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -1503,11 +1435,35 @@
         }
       }
     },
-    "n33": {
-      "id": "n33",
+    "n32": {
+      "id": "n32",
       "type": "element",
       "name": "Proof MCP",
       "parent": "n27",
+      "children": [
+        "n33"
+      ],
+      "tag": "div",
+      "visible": true,
+      "locked": false,
+      "styles": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "alignItems": "center",
+          "justifyContent": "center",
+          "minWidth": {
+            "value": 0,
+            "unit": "px"
+          }
+        }
+      }
+    },
+    "n33": {
+      "id": "n33",
+      "type": "element",
+      "name": "Proof Copy",
+      "parent": "n32",
       "children": [
         "n34",
         "n35"
@@ -1518,101 +1474,8 @@
       "styles": {
         "base": {
           "display": "flex",
-          "flexDirection": "row",
+          "flexDirection": "column",
           "alignItems": "center",
-          "gap": {
-            "row": {
-              "value": 0,
-              "unit": "px"
-            },
-            "column": {
-              "$token": "spacing.3"
-            }
-          },
-          "minWidth": {
-            "value": 0,
-            "unit": "px"
-          }
-        }
-      }
-    },
-    "n34": {
-      "id": "n34",
-      "type": "element",
-      "name": "Proof Marker",
-      "parent": "n33",
-      "children": [],
-      "tag": "div",
-      "visible": true,
-      "locked": false,
-      "styles": {
-        "base": {
-          "display": "flex",
-          "flexDirection": "column",
-          "width": {
-            "value": 8,
-            "unit": "px"
-          },
-          "height": {
-            "value": 8,
-            "unit": "px"
-          },
-          "fills": [
-            {
-              "type": "solid",
-              "color": {
-                "$token": "color.primary"
-              }
-            }
-          ],
-          "radius": {
-            "tl": {
-              "$token": "radius.full"
-            },
-            "tr": {
-              "$token": "radius.full"
-            },
-            "br": {
-              "$token": "radius.full"
-            },
-            "bl": {
-              "$token": "radius.full"
-            }
-          },
-          "shadows": [
-            {
-              "x": 0,
-              "y": 0,
-              "blur": 12,
-              "spread": 0,
-              "color": {
-                "space": "oklch",
-                "l": 0.71,
-                "c": 0.125,
-                "h": 215,
-                "alpha": 0.45
-              }
-            }
-          ]
-        }
-      }
-    },
-    "n35": {
-      "id": "n35",
-      "type": "element",
-      "name": "Proof Copy",
-      "parent": "n33",
-      "children": [
-        "n36",
-        "n37"
-      ],
-      "tag": "div",
-      "visible": true,
-      "locked": false,
-      "styles": {
-        "base": {
-          "display": "flex",
-          "flexDirection": "column",
           "gap": {
             "row": {
               "$token": "spacing.1"
@@ -1625,15 +1488,16 @@
           "minWidth": {
             "value": 0,
             "unit": "px"
-          }
+          },
+          "textAlign": "center"
         }
       }
     },
-    "n36": {
-      "id": "n36",
+    "n34": {
+      "id": "n34",
       "type": "text",
       "name": "Proof Title",
-      "parent": "n35",
+      "parent": "n33",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -1655,11 +1519,11 @@
         }
       }
     },
-    "n37": {
-      "id": "n37",
+    "n35": {
+      "id": "n35",
       "type": "text",
       "name": "Proof Detail",
-      "parent": "n35",
+      "parent": "n33",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -1680,14 +1544,13 @@
         }
       }
     },
-    "n38": {
-      "id": "n38",
+    "n36": {
+      "id": "n36",
       "type": "element",
       "name": "Proof React or HTML",
       "parent": "n27",
       "children": [
-        "n39",
-        "n40"
+        "n37"
       ],
       "tag": "div",
       "visible": true,
@@ -1695,17 +1558,9 @@
       "styles": {
         "base": {
           "display": "flex",
-          "flexDirection": "row",
+          "flexDirection": "column",
           "alignItems": "center",
-          "gap": {
-            "row": {
-              "value": 0,
-              "unit": "px"
-            },
-            "column": {
-              "$token": "spacing.3"
-            }
-          },
+          "justifyContent": "center",
           "minWidth": {
             "value": 0,
             "unit": "px"
@@ -1713,75 +1568,14 @@
         }
       }
     },
-    "n39": {
-      "id": "n39",
-      "type": "element",
-      "name": "Proof Marker",
-      "parent": "n38",
-      "children": [],
-      "tag": "div",
-      "visible": true,
-      "locked": false,
-      "styles": {
-        "base": {
-          "display": "flex",
-          "flexDirection": "column",
-          "width": {
-            "value": 8,
-            "unit": "px"
-          },
-          "height": {
-            "value": 8,
-            "unit": "px"
-          },
-          "fills": [
-            {
-              "type": "solid",
-              "color": {
-                "$token": "color.primary"
-              }
-            }
-          ],
-          "radius": {
-            "tl": {
-              "$token": "radius.full"
-            },
-            "tr": {
-              "$token": "radius.full"
-            },
-            "br": {
-              "$token": "radius.full"
-            },
-            "bl": {
-              "$token": "radius.full"
-            }
-          },
-          "shadows": [
-            {
-              "x": 0,
-              "y": 0,
-              "blur": 12,
-              "spread": 0,
-              "color": {
-                "space": "oklch",
-                "l": 0.71,
-                "c": 0.125,
-                "h": 215,
-                "alpha": 0.45
-              }
-            }
-          ]
-        }
-      }
-    },
-    "n40": {
-      "id": "n40",
+    "n37": {
+      "id": "n37",
       "type": "element",
       "name": "Proof Copy",
-      "parent": "n38",
+      "parent": "n36",
       "children": [
-        "n41",
-        "n42"
+        "n38",
+        "n39"
       ],
       "tag": "div",
       "visible": true,
@@ -1790,6 +1584,7 @@
         "base": {
           "display": "flex",
           "flexDirection": "column",
+          "alignItems": "center",
           "gap": {
             "row": {
               "$token": "spacing.1"
@@ -1802,15 +1597,16 @@
           "minWidth": {
             "value": 0,
             "unit": "px"
-          }
+          },
+          "textAlign": "center"
         }
       }
     },
-    "n41": {
-      "id": "n41",
+    "n38": {
+      "id": "n38",
       "type": "text",
       "name": "Proof Title",
-      "parent": "n40",
+      "parent": "n37",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -1832,11 +1628,11 @@
         }
       }
     },
-    "n42": {
-      "id": "n42",
+    "n39": {
+      "id": "n39",
       "type": "text",
       "name": "Proof Detail",
-      "parent": "n40",
+      "parent": "n37",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -1857,14 +1653,13 @@
         }
       }
     },
-    "n43": {
-      "id": "n43",
+    "n40": {
+      "id": "n40",
       "type": "element",
       "name": "Proof Cloud or local",
       "parent": "n27",
       "children": [
-        "n44",
-        "n45"
+        "n41"
       ],
       "tag": "div",
       "visible": true,
@@ -1872,17 +1667,9 @@
       "styles": {
         "base": {
           "display": "flex",
-          "flexDirection": "row",
+          "flexDirection": "column",
           "alignItems": "center",
-          "gap": {
-            "row": {
-              "value": 0,
-              "unit": "px"
-            },
-            "column": {
-              "$token": "spacing.3"
-            }
-          },
+          "justifyContent": "center",
           "minWidth": {
             "value": 0,
             "unit": "px"
@@ -1890,75 +1677,14 @@
         }
       }
     },
-    "n44": {
-      "id": "n44",
-      "type": "element",
-      "name": "Proof Marker",
-      "parent": "n43",
-      "children": [],
-      "tag": "div",
-      "visible": true,
-      "locked": false,
-      "styles": {
-        "base": {
-          "display": "flex",
-          "flexDirection": "column",
-          "width": {
-            "value": 8,
-            "unit": "px"
-          },
-          "height": {
-            "value": 8,
-            "unit": "px"
-          },
-          "fills": [
-            {
-              "type": "solid",
-              "color": {
-                "$token": "color.primary"
-              }
-            }
-          ],
-          "radius": {
-            "tl": {
-              "$token": "radius.full"
-            },
-            "tr": {
-              "$token": "radius.full"
-            },
-            "br": {
-              "$token": "radius.full"
-            },
-            "bl": {
-              "$token": "radius.full"
-            }
-          },
-          "shadows": [
-            {
-              "x": 0,
-              "y": 0,
-              "blur": 12,
-              "spread": 0,
-              "color": {
-                "space": "oklch",
-                "l": 0.71,
-                "c": 0.125,
-                "h": 215,
-                "alpha": 0.45
-              }
-            }
-          ]
-        }
-      }
-    },
-    "n45": {
-      "id": "n45",
+    "n41": {
+      "id": "n41",
       "type": "element",
       "name": "Proof Copy",
-      "parent": "n43",
+      "parent": "n40",
       "children": [
-        "n46",
-        "n47"
+        "n42",
+        "n43"
       ],
       "tag": "div",
       "visible": true,
@@ -1967,6 +1693,7 @@
         "base": {
           "display": "flex",
           "flexDirection": "column",
+          "alignItems": "center",
           "gap": {
             "row": {
               "$token": "spacing.1"
@@ -1979,15 +1706,16 @@
           "minWidth": {
             "value": 0,
             "unit": "px"
-          }
+          },
+          "textAlign": "center"
         }
       }
     },
-    "n46": {
-      "id": "n46",
+    "n42": {
+      "id": "n42",
       "type": "text",
       "name": "Proof Title",
-      "parent": "n45",
+      "parent": "n41",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -2009,11 +1737,11 @@
         }
       }
     },
-    "n47": {
-      "id": "n47",
+    "n43": {
+      "id": "n43",
       "type": "text",
       "name": "Proof Detail",
-      "parent": "n45",
+      "parent": "n41",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -2034,13 +1762,13 @@
         }
       }
     },
-    "n48": {
-      "id": "n48",
+    "n44": {
+      "id": "n44",
       "type": "element",
       "name": "Props Band",
       "parent": "n11",
       "children": [
-        "n49"
+        "n45"
       ],
       "tag": "section",
       "visible": true,
@@ -2086,14 +1814,14 @@
         }
       }
     },
-    "n49": {
-      "id": "n49",
+    "n45": {
+      "id": "n45",
       "type": "element",
       "name": "Props",
-      "parent": "n48",
+      "parent": "n44",
       "children": [
-        "n50",
-        "n53"
+        "n46",
+        "n49"
       ],
       "tag": "div",
       "visible": true,
@@ -2119,14 +1847,14 @@
         }
       }
     },
-    "n50": {
-      "id": "n50",
+    "n46": {
+      "id": "n46",
       "type": "element",
       "name": "Props Introduction",
-      "parent": "n49",
+      "parent": "n45",
       "children": [
-        "n51",
-        "n52"
+        "n47",
+        "n48"
       ],
       "tag": "div",
       "visible": true,
@@ -2155,11 +1883,11 @@
         }
       }
     },
-    "n51": {
-      "id": "n51",
+    "n47": {
+      "id": "n47",
       "type": "text",
       "name": "Props Heading",
-      "parent": "n50",
+      "parent": "n46",
       "children": [],
       "tag": "h2",
       "visible": true,
@@ -2187,11 +1915,11 @@
         }
       }
     },
-    "n52": {
-      "id": "n52",
+    "n48": {
+      "id": "n48",
       "type": "text",
       "name": "Props Summary",
-      "parent": "n50",
+      "parent": "n46",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -2217,14 +1945,14 @@
         }
       }
     },
-    "n53": {
-      "id": "n53",
+    "n49": {
+      "id": "n49",
       "type": "element",
       "name": "Props Layout",
-      "parent": "n49",
+      "parent": "n45",
       "children": [
-        "n54",
-        "n59"
+        "n50",
+        "n55"
       ],
       "tag": "div",
       "visible": true,
@@ -2252,14 +1980,14 @@
         }
       }
     },
-    "n54": {
-      "id": "n54",
+    "n50": {
+      "id": "n50",
       "type": "element",
       "name": "Edit the real page",
-      "parent": "n53",
+      "parent": "n49",
       "children": [
-        "n55",
-        "n56"
+        "n51",
+        "n52"
       ],
       "tag": "article",
       "visible": true,
@@ -2387,11 +2115,11 @@
         }
       }
     },
-    "n55": {
-      "id": "n55",
+    "n51": {
+      "id": "n51",
       "type": "text",
       "name": "Card Number",
-      "parent": "n54",
+      "parent": "n50",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -2434,14 +2162,14 @@
         }
       }
     },
-    "n56": {
-      "id": "n56",
+    "n52": {
+      "id": "n52",
       "type": "element",
       "name": "Card Copy",
-      "parent": "n54",
+      "parent": "n50",
       "children": [
-        "n57",
-        "n58"
+        "n53",
+        "n54"
       ],
       "tag": "div",
       "visible": true,
@@ -2463,11 +2191,11 @@
         }
       }
     },
-    "n57": {
-      "id": "n57",
+    "n53": {
+      "id": "n53",
       "type": "text",
       "name": "Card Title",
-      "parent": "n56",
+      "parent": "n52",
       "children": [],
       "tag": "h3",
       "visible": true,
@@ -2498,11 +2226,11 @@
         }
       }
     },
-    "n58": {
-      "id": "n58",
+    "n54": {
+      "id": "n54",
       "type": "text",
       "name": "Card Body",
-      "parent": "n56",
+      "parent": "n52",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -2528,14 +2256,14 @@
         }
       }
     },
-    "n59": {
-      "id": "n59",
+    "n55": {
+      "id": "n55",
       "type": "element",
       "name": "Secondary Props",
-      "parent": "n53",
+      "parent": "n49",
       "children": [
-        "n60",
-        "n65"
+        "n56",
+        "n61"
       ],
       "tag": "div",
       "visible": true,
@@ -2558,14 +2286,14 @@
         }
       }
     },
-    "n60": {
-      "id": "n60",
+    "n56": {
+      "id": "n56",
       "type": "element",
       "name": "Your agent stays in sync",
-      "parent": "n59",
+      "parent": "n55",
       "children": [
-        "n61",
-        "n62"
+        "n57",
+        "n58"
       ],
       "tag": "article",
       "visible": true,
@@ -2634,11 +2362,11 @@
         }
       }
     },
-    "n61": {
-      "id": "n61",
+    "n57": {
+      "id": "n57",
       "type": "text",
       "name": "Card Number",
-      "parent": "n60",
+      "parent": "n56",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -2680,14 +2408,14 @@
         }
       }
     },
-    "n62": {
-      "id": "n62",
+    "n58": {
+      "id": "n58",
       "type": "element",
       "name": "Card Copy",
-      "parent": "n60",
+      "parent": "n56",
       "children": [
-        "n63",
-        "n64"
+        "n59",
+        "n60"
       ],
       "tag": "div",
       "visible": true,
@@ -2709,11 +2437,11 @@
         }
       }
     },
-    "n63": {
-      "id": "n63",
+    "n59": {
+      "id": "n59",
       "type": "text",
       "name": "Card Title",
-      "parent": "n62",
+      "parent": "n58",
       "children": [],
       "tag": "h3",
       "visible": true,
@@ -2737,11 +2465,11 @@
         }
       }
     },
-    "n64": {
-      "id": "n64",
+    "n60": {
+      "id": "n60",
       "type": "text",
       "name": "Card Body",
-      "parent": "n62",
+      "parent": "n58",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -2767,14 +2495,14 @@
         }
       }
     },
-    "n65": {
-      "id": "n65",
+    "n61": {
+      "id": "n61",
       "type": "element",
       "name": "Keep the code",
-      "parent": "n59",
+      "parent": "n55",
       "children": [
-        "n66",
-        "n67"
+        "n62",
+        "n63"
       ],
       "tag": "article",
       "visible": true,
@@ -2843,11 +2571,11 @@
         }
       }
     },
-    "n66": {
-      "id": "n66",
+    "n62": {
+      "id": "n62",
       "type": "text",
       "name": "Card Number",
-      "parent": "n65",
+      "parent": "n61",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -2889,14 +2617,14 @@
         }
       }
     },
-    "n67": {
-      "id": "n67",
+    "n63": {
+      "id": "n63",
       "type": "element",
       "name": "Card Copy",
-      "parent": "n65",
+      "parent": "n61",
       "children": [
-        "n68",
-        "n69"
+        "n64",
+        "n65"
       ],
       "tag": "div",
       "visible": true,
@@ -2918,11 +2646,11 @@
         }
       }
     },
-    "n68": {
-      "id": "n68",
+    "n64": {
+      "id": "n64",
       "type": "text",
       "name": "Card Title",
-      "parent": "n67",
+      "parent": "n63",
       "children": [],
       "tag": "h3",
       "visible": true,
@@ -2946,11 +2674,11 @@
         }
       }
     },
-    "n69": {
-      "id": "n69",
+    "n65": {
+      "id": "n65",
       "type": "text",
       "name": "Card Body",
-      "parent": "n67",
+      "parent": "n63",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -2976,13 +2704,13 @@
         }
       }
     },
-    "n70": {
-      "id": "n70",
+    "n66": {
+      "id": "n66",
       "type": "element",
       "name": "Import Band",
       "parent": "n11",
       "children": [
-        "n71"
+        "n67"
       ],
       "tag": "section",
       "visible": true,
@@ -3028,14 +2756,14 @@
         }
       }
     },
-    "n71": {
-      "id": "n71",
+    "n67": {
+      "id": "n67",
       "type": "element",
       "name": "Import Existing Site",
-      "parent": "n70",
+      "parent": "n66",
       "children": [
-        "n72",
-        "n78"
+        "n68",
+        "n74"
       ],
       "tag": "div",
       "visible": true,
@@ -3163,15 +2891,15 @@
         }
       }
     },
-    "n72": {
-      "id": "n72",
+    "n68": {
+      "id": "n68",
       "type": "element",
       "name": "Import Copy",
-      "parent": "n71",
+      "parent": "n67",
       "children": [
-        "n73",
-        "n74",
-        "n75"
+        "n69",
+        "n70",
+        "n71"
       ],
       "tag": "div",
       "visible": true,
@@ -3197,11 +2925,11 @@
         }
       }
     },
-    "n73": {
-      "id": "n73",
+    "n69": {
+      "id": "n69",
       "type": "text",
       "name": "Import Heading",
-      "parent": "n72",
+      "parent": "n68",
       "children": [],
       "tag": "h2",
       "visible": true,
@@ -3229,11 +2957,11 @@
         }
       }
     },
-    "n74": {
-      "id": "n74",
+    "n70": {
+      "id": "n70",
       "type": "text",
       "name": "Import Body",
-      "parent": "n72",
+      "parent": "n68",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -3259,14 +2987,14 @@
         }
       }
     },
-    "n75": {
-      "id": "n75",
+    "n71": {
+      "id": "n71",
       "type": "element",
       "name": "Import Command",
-      "parent": "n72",
+      "parent": "n68",
       "children": [
-        "n76",
-        "n77"
+        "n72",
+        "n73"
       ],
       "tag": "div",
       "visible": true,
@@ -3336,11 +3064,11 @@
         }
       }
     },
-    "n76": {
-      "id": "n76",
+    "n72": {
+      "id": "n72",
       "type": "text",
       "name": "Import Prompt",
-      "parent": "n75",
+      "parent": "n71",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -3364,11 +3092,11 @@
         }
       }
     },
-    "n77": {
-      "id": "n77",
+    "n73": {
+      "id": "n73",
       "type": "text",
       "name": "Import Code",
-      "parent": "n75",
+      "parent": "n71",
       "children": [],
       "tag": "code",
       "visible": true,
@@ -3392,15 +3120,15 @@
         }
       }
     },
-    "n78": {
-      "id": "n78",
+    "n74": {
+      "id": "n74",
       "type": "element",
       "name": "Import Details",
-      "parent": "n71",
+      "parent": "n67",
       "children": [
-        "n79",
-        "n84",
-        "n89"
+        "n75",
+        "n80",
+        "n85"
       ],
       "tag": "div",
       "visible": true,
@@ -3426,14 +3154,14 @@
         }
       }
     },
-    "n79": {
-      "id": "n79",
+    "n75": {
+      "id": "n75",
       "type": "element",
       "name": "One responsive document",
-      "parent": "n78",
+      "parent": "n74",
       "children": [
-        "n80",
-        "n81"
+        "n76",
+        "n77"
       ],
       "tag": "div",
       "visible": true,
@@ -3455,11 +3183,11 @@
         }
       }
     },
-    "n80": {
-      "id": "n80",
+    "n76": {
+      "id": "n76",
       "type": "text",
       "name": "Import Check",
-      "parent": "n79",
+      "parent": "n75",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -3481,14 +3209,14 @@
         }
       }
     },
-    "n81": {
-      "id": "n81",
+    "n77": {
+      "id": "n77",
       "type": "element",
       "name": "Import Point Copy",
-      "parent": "n79",
+      "parent": "n75",
       "children": [
-        "n82",
-        "n83"
+        "n78",
+        "n79"
       ],
       "tag": "div",
       "visible": true,
@@ -3509,11 +3237,11 @@
         }
       }
     },
-    "n82": {
-      "id": "n82",
+    "n78": {
+      "id": "n78",
       "type": "text",
       "name": "Import Point Title",
-      "parent": "n81",
+      "parent": "n77",
       "children": [],
       "tag": "h3",
       "visible": true,
@@ -3532,11 +3260,11 @@
         }
       }
     },
-    "n83": {
-      "id": "n83",
+    "n79": {
+      "id": "n79",
       "type": "text",
       "name": "Import Point Body",
-      "parent": "n81",
+      "parent": "n77",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -3558,14 +3286,14 @@
         }
       }
     },
-    "n84": {
-      "id": "n84",
+    "n80": {
+      "id": "n80",
       "type": "element",
       "name": "Local assets",
-      "parent": "n78",
+      "parent": "n74",
       "children": [
-        "n85",
-        "n86"
+        "n81",
+        "n82"
       ],
       "tag": "div",
       "visible": true,
@@ -3587,11 +3315,11 @@
         }
       }
     },
-    "n85": {
-      "id": "n85",
+    "n81": {
+      "id": "n81",
       "type": "text",
       "name": "Import Check",
-      "parent": "n84",
+      "parent": "n80",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -3613,14 +3341,14 @@
         }
       }
     },
-    "n86": {
-      "id": "n86",
+    "n82": {
+      "id": "n82",
       "type": "element",
       "name": "Import Point Copy",
-      "parent": "n84",
+      "parent": "n80",
       "children": [
-        "n87",
-        "n88"
+        "n83",
+        "n84"
       ],
       "tag": "div",
       "visible": true,
@@ -3641,11 +3369,11 @@
         }
       }
     },
-    "n87": {
-      "id": "n87",
+    "n83": {
+      "id": "n83",
       "type": "text",
       "name": "Import Point Title",
-      "parent": "n86",
+      "parent": "n82",
       "children": [],
       "tag": "h3",
       "visible": true,
@@ -3664,11 +3392,11 @@
         }
       }
     },
-    "n88": {
-      "id": "n88",
+    "n84": {
+      "id": "n84",
       "type": "text",
       "name": "Import Point Body",
-      "parent": "n86",
+      "parent": "n82",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -3690,14 +3418,14 @@
         }
       }
     },
-    "n89": {
-      "id": "n89",
+    "n85": {
+      "id": "n85",
       "type": "element",
       "name": "See what changed",
-      "parent": "n78",
+      "parent": "n74",
       "children": [
-        "n90",
-        "n91"
+        "n86",
+        "n87"
       ],
       "tag": "div",
       "visible": true,
@@ -3719,11 +3447,11 @@
         }
       }
     },
-    "n90": {
-      "id": "n90",
+    "n86": {
+      "id": "n86",
       "type": "text",
       "name": "Import Check",
-      "parent": "n89",
+      "parent": "n85",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -3745,14 +3473,14 @@
         }
       }
     },
-    "n91": {
-      "id": "n91",
+    "n87": {
+      "id": "n87",
       "type": "element",
       "name": "Import Point Copy",
-      "parent": "n89",
+      "parent": "n85",
       "children": [
-        "n92",
-        "n93"
+        "n88",
+        "n89"
       ],
       "tag": "div",
       "visible": true,
@@ -3773,11 +3501,11 @@
         }
       }
     },
-    "n92": {
-      "id": "n92",
+    "n88": {
+      "id": "n88",
       "type": "text",
       "name": "Import Point Title",
-      "parent": "n91",
+      "parent": "n87",
       "children": [],
       "tag": "h3",
       "visible": true,
@@ -3796,11 +3524,11 @@
         }
       }
     },
-    "n93": {
-      "id": "n93",
+    "n89": {
+      "id": "n89",
       "type": "text",
       "name": "Import Point Body",
-      "parent": "n91",
+      "parent": "n87",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -3822,13 +3550,13 @@
         }
       }
     },
-    "n94": {
-      "id": "n94",
+    "n90": {
+      "id": "n90",
       "type": "element",
       "name": "Dogfood Band",
       "parent": "n11",
       "children": [
-        "n95"
+        "n91"
       ],
       "tag": "section",
       "visible": true,
@@ -3874,14 +3602,14 @@
         }
       }
     },
-    "n95": {
-      "id": "n95",
+    "n91": {
+      "id": "n91",
       "type": "element",
       "name": "Dogfood",
-      "parent": "n94",
+      "parent": "n90",
       "children": [
-        "n96",
-        "n97"
+        "n92",
+        "n93"
       ],
       "tag": "div",
       "visible": true,
@@ -3924,11 +3652,11 @@
         }
       }
     },
-    "n96": {
-      "id": "n96",
+    "n92": {
+      "id": "n92",
       "type": "text",
       "name": "Dogfood Text",
-      "parent": "n95",
+      "parent": "n91",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -3950,11 +3678,11 @@
         }
       }
     },
-    "n97": {
-      "id": "n97",
+    "n93": {
+      "id": "n93",
       "type": "text",
       "name": "Dogfood Link",
-      "parent": "n95",
+      "parent": "n91",
       "children": [],
       "tag": "a",
       "visible": true,
@@ -3979,13 +3707,13 @@
         "href": "https://github.com/pitolet/pitolet/tree/main/site"
       }
     },
-    "n98": {
-      "id": "n98",
+    "n94": {
+      "id": "n94",
       "type": "element",
       "name": "Pricing Band",
       "parent": "n11",
       "children": [
-        "n99"
+        "n95"
       ],
       "tag": "section",
       "visible": true,
@@ -4031,14 +3759,14 @@
         }
       }
     },
-    "n99": {
-      "id": "n99",
+    "n95": {
+      "id": "n95",
       "type": "element",
       "name": "Pricing",
-      "parent": "n98",
+      "parent": "n94",
       "children": [
-        "n100",
-        "n101"
+        "n96",
+        "n97"
       ],
       "tag": "div",
       "visible": true,
@@ -4064,11 +3792,11 @@
         }
       }
     },
-    "n100": {
-      "id": "n100",
+    "n96": {
+      "id": "n96",
       "type": "text",
       "name": "Pricing Heading",
-      "parent": "n99",
+      "parent": "n95",
       "children": [],
       "tag": "h2",
       "visible": true,
@@ -4097,15 +3825,15 @@
         }
       }
     },
-    "n101": {
-      "id": "n101",
+    "n97": {
+      "id": "n97",
       "type": "element",
       "name": "Plans",
-      "parent": "n99",
+      "parent": "n95",
       "children": [
-        "n102",
-        "n119",
-        "n141"
+        "n98",
+        "n115",
+        "n137"
       ],
       "tag": "div",
       "visible": true,
@@ -4133,16 +3861,16 @@
         }
       }
     },
-    "n102": {
-      "id": "n102",
+    "n98": {
+      "id": "n98",
       "type": "element",
       "name": "Plan Free",
-      "parent": "n101",
+      "parent": "n97",
       "children": [
-        "n103",
-        "n105",
-        "n108",
-        "n109"
+        "n99",
+        "n101",
+        "n104",
+        "n105"
       ],
       "tag": "article",
       "visible": true,
@@ -4210,13 +3938,13 @@
         }
       }
     },
-    "n103": {
-      "id": "n103",
+    "n99": {
+      "id": "n99",
       "type": "element",
       "name": "Plan Head",
-      "parent": "n102",
+      "parent": "n98",
       "children": [
-        "n104"
+        "n100"
       ],
       "tag": "div",
       "visible": true,
@@ -4230,11 +3958,11 @@
         }
       }
     },
-    "n104": {
-      "id": "n104",
+    "n100": {
+      "id": "n100",
       "type": "text",
       "name": "Plan Name",
-      "parent": "n103",
+      "parent": "n99",
       "children": [],
       "tag": "h3",
       "visible": true,
@@ -4253,14 +3981,14 @@
         }
       }
     },
-    "n105": {
-      "id": "n105",
+    "n101": {
+      "id": "n101",
       "type": "element",
       "name": "Price Row",
-      "parent": "n102",
+      "parent": "n98",
       "children": [
-        "n106",
-        "n107"
+        "n102",
+        "n103"
       ],
       "tag": "div",
       "visible": true,
@@ -4282,11 +4010,11 @@
         }
       }
     },
-    "n106": {
-      "id": "n106",
+    "n102": {
+      "id": "n102",
       "type": "text",
       "name": "Price",
-      "parent": "n105",
+      "parent": "n101",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -4309,11 +4037,11 @@
         }
       }
     },
-    "n107": {
-      "id": "n107",
+    "n103": {
+      "id": "n103",
       "type": "text",
       "name": "Price Unit",
-      "parent": "n105",
+      "parent": "n101",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -4334,11 +4062,11 @@
         }
       }
     },
-    "n108": {
-      "id": "n108",
+    "n104": {
+      "id": "n104",
       "type": "text",
       "name": "Plan Blurb",
-      "parent": "n102",
+      "parent": "n98",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -4360,15 +4088,15 @@
         }
       }
     },
-    "n109": {
-      "id": "n109",
+    "n105": {
+      "id": "n105",
       "type": "element",
       "name": "Features",
-      "parent": "n102",
+      "parent": "n98",
       "children": [
-        "n110",
-        "n113",
-        "n116"
+        "n106",
+        "n109",
+        "n112"
       ],
       "tag": "ul",
       "visible": true,
@@ -4389,14 +4117,14 @@
         }
       }
     },
-    "n110": {
-      "id": "n110",
+    "n106": {
+      "id": "n106",
       "type": "element",
       "name": "Feature",
-      "parent": "n109",
+      "parent": "n105",
       "children": [
-        "n111",
-        "n112"
+        "n107",
+        "n108"
       ],
       "tag": "li",
       "visible": true,
@@ -4418,11 +4146,11 @@
         }
       }
     },
-    "n111": {
-      "id": "n111",
+    "n107": {
+      "id": "n107",
       "type": "text",
       "name": "Check",
-      "parent": "n110",
+      "parent": "n106",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -4444,11 +4172,11 @@
         }
       }
     },
-    "n112": {
-      "id": "n112",
+    "n108": {
+      "id": "n108",
       "type": "text",
       "name": "Feature Text",
-      "parent": "n110",
+      "parent": "n106",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -4469,14 +4197,14 @@
         }
       }
     },
-    "n113": {
-      "id": "n113",
+    "n109": {
+      "id": "n109",
       "type": "element",
       "name": "Feature",
-      "parent": "n109",
+      "parent": "n105",
       "children": [
-        "n114",
-        "n115"
+        "n110",
+        "n111"
       ],
       "tag": "li",
       "visible": true,
@@ -4498,11 +4226,11 @@
         }
       }
     },
-    "n114": {
-      "id": "n114",
+    "n110": {
+      "id": "n110",
       "type": "text",
       "name": "Check",
-      "parent": "n113",
+      "parent": "n109",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -4524,11 +4252,11 @@
         }
       }
     },
-    "n115": {
-      "id": "n115",
+    "n111": {
+      "id": "n111",
       "type": "text",
       "name": "Feature Text",
-      "parent": "n113",
+      "parent": "n109",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -4549,14 +4277,14 @@
         }
       }
     },
-    "n116": {
-      "id": "n116",
+    "n112": {
+      "id": "n112",
       "type": "element",
       "name": "Feature",
-      "parent": "n109",
+      "parent": "n105",
       "children": [
-        "n117",
-        "n118"
+        "n113",
+        "n114"
       ],
       "tag": "li",
       "visible": true,
@@ -4578,11 +4306,11 @@
         }
       }
     },
-    "n117": {
-      "id": "n117",
+    "n113": {
+      "id": "n113",
       "type": "text",
       "name": "Check",
-      "parent": "n116",
+      "parent": "n112",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -4604,11 +4332,11 @@
         }
       }
     },
-    "n118": {
-      "id": "n118",
+    "n114": {
+      "id": "n114",
       "type": "text",
       "name": "Feature Text",
-      "parent": "n116",
+      "parent": "n112",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -4629,16 +4357,16 @@
         }
       }
     },
-    "n119": {
-      "id": "n119",
+    "n115": {
+      "id": "n115",
       "type": "element",
       "name": "Plan Pro",
-      "parent": "n101",
+      "parent": "n97",
       "children": [
+        "n116",
         "n120",
-        "n124",
-        "n127",
-        "n128"
+        "n123",
+        "n124"
       ],
       "tag": "article",
       "visible": true,
@@ -4738,14 +4466,14 @@
         }
       }
     },
-    "n120": {
-      "id": "n120",
+    "n116": {
+      "id": "n116",
       "type": "element",
       "name": "Plan Head",
-      "parent": "n119",
+      "parent": "n115",
       "children": [
-        "n121",
-        "n122"
+        "n117",
+        "n118"
       ],
       "tag": "div",
       "visible": true,
@@ -4759,11 +4487,11 @@
         }
       }
     },
-    "n121": {
-      "id": "n121",
+    "n117": {
+      "id": "n117",
       "type": "text",
       "name": "Plan Name",
-      "parent": "n120",
+      "parent": "n116",
       "children": [],
       "tag": "h3",
       "visible": true,
@@ -4782,13 +4510,13 @@
         }
       }
     },
-    "n122": {
-      "id": "n122",
+    "n118": {
+      "id": "n118",
       "type": "element",
       "name": "Badge",
-      "parent": "n120",
+      "parent": "n116",
       "children": [
-        "n123"
+        "n119"
       ],
       "tag": "div",
       "visible": true,
@@ -4839,11 +4567,11 @@
         }
       }
     },
-    "n123": {
-      "id": "n123",
+    "n119": {
+      "id": "n119",
       "type": "text",
       "name": "Badge Text",
-      "parent": "n122",
+      "parent": "n118",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -4869,14 +4597,14 @@
         }
       }
     },
-    "n124": {
-      "id": "n124",
+    "n120": {
+      "id": "n120",
       "type": "element",
       "name": "Price Row",
-      "parent": "n119",
+      "parent": "n115",
       "children": [
-        "n125",
-        "n126"
+        "n121",
+        "n122"
       ],
       "tag": "div",
       "visible": true,
@@ -4898,11 +4626,11 @@
         }
       }
     },
-    "n125": {
-      "id": "n125",
+    "n121": {
+      "id": "n121",
       "type": "text",
       "name": "Price",
-      "parent": "n124",
+      "parent": "n120",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -4925,11 +4653,11 @@
         }
       }
     },
-    "n126": {
-      "id": "n126",
+    "n122": {
+      "id": "n122",
       "type": "text",
       "name": "Price Unit",
-      "parent": "n124",
+      "parent": "n120",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -4950,11 +4678,11 @@
         }
       }
     },
-    "n127": {
-      "id": "n127",
+    "n123": {
+      "id": "n123",
       "type": "text",
       "name": "Plan Blurb",
-      "parent": "n119",
+      "parent": "n115",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -4976,16 +4704,16 @@
         }
       }
     },
-    "n128": {
-      "id": "n128",
+    "n124": {
+      "id": "n124",
       "type": "element",
       "name": "Features",
-      "parent": "n119",
+      "parent": "n115",
       "children": [
-        "n129",
-        "n132",
-        "n135",
-        "n138"
+        "n125",
+        "n128",
+        "n131",
+        "n134"
       ],
       "tag": "ul",
       "visible": true,
@@ -5006,14 +4734,14 @@
         }
       }
     },
-    "n129": {
-      "id": "n129",
+    "n125": {
+      "id": "n125",
       "type": "element",
       "name": "Feature",
-      "parent": "n128",
+      "parent": "n124",
       "children": [
-        "n130",
-        "n131"
+        "n126",
+        "n127"
       ],
       "tag": "li",
       "visible": true,
@@ -5035,11 +4763,11 @@
         }
       }
     },
-    "n130": {
-      "id": "n130",
+    "n126": {
+      "id": "n126",
       "type": "text",
       "name": "Check",
-      "parent": "n129",
+      "parent": "n125",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -5061,11 +4789,11 @@
         }
       }
     },
-    "n131": {
-      "id": "n131",
+    "n127": {
+      "id": "n127",
       "type": "text",
       "name": "Feature Text",
-      "parent": "n129",
+      "parent": "n125",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -5086,14 +4814,14 @@
         }
       }
     },
-    "n132": {
-      "id": "n132",
+    "n128": {
+      "id": "n128",
       "type": "element",
       "name": "Feature",
-      "parent": "n128",
+      "parent": "n124",
       "children": [
-        "n133",
-        "n134"
+        "n129",
+        "n130"
       ],
       "tag": "li",
       "visible": true,
@@ -5115,11 +4843,11 @@
         }
       }
     },
-    "n133": {
-      "id": "n133",
+    "n129": {
+      "id": "n129",
       "type": "text",
       "name": "Check",
-      "parent": "n132",
+      "parent": "n128",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -5141,11 +4869,11 @@
         }
       }
     },
-    "n134": {
-      "id": "n134",
+    "n130": {
+      "id": "n130",
       "type": "text",
       "name": "Feature Text",
-      "parent": "n132",
+      "parent": "n128",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -5166,14 +4894,14 @@
         }
       }
     },
-    "n135": {
-      "id": "n135",
+    "n131": {
+      "id": "n131",
       "type": "element",
       "name": "Feature",
-      "parent": "n128",
+      "parent": "n124",
       "children": [
-        "n136",
-        "n137"
+        "n132",
+        "n133"
       ],
       "tag": "li",
       "visible": true,
@@ -5195,11 +4923,11 @@
         }
       }
     },
-    "n136": {
-      "id": "n136",
+    "n132": {
+      "id": "n132",
       "type": "text",
       "name": "Check",
-      "parent": "n135",
+      "parent": "n131",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -5221,11 +4949,11 @@
         }
       }
     },
-    "n137": {
-      "id": "n137",
+    "n133": {
+      "id": "n133",
       "type": "text",
       "name": "Feature Text",
-      "parent": "n135",
+      "parent": "n131",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -5246,14 +4974,14 @@
         }
       }
     },
-    "n138": {
-      "id": "n138",
+    "n134": {
+      "id": "n134",
       "type": "element",
       "name": "Feature",
-      "parent": "n128",
+      "parent": "n124",
       "children": [
-        "n139",
-        "n140"
+        "n135",
+        "n136"
       ],
       "tag": "li",
       "visible": true,
@@ -5275,11 +5003,11 @@
         }
       }
     },
-    "n139": {
-      "id": "n139",
+    "n135": {
+      "id": "n135",
       "type": "text",
       "name": "Check",
-      "parent": "n138",
+      "parent": "n134",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -5301,11 +5029,11 @@
         }
       }
     },
-    "n140": {
-      "id": "n140",
+    "n136": {
+      "id": "n136",
       "type": "text",
       "name": "Feature Text",
-      "parent": "n138",
+      "parent": "n134",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -5326,16 +5054,16 @@
         }
       }
     },
-    "n141": {
-      "id": "n141",
+    "n137": {
+      "id": "n137",
       "type": "element",
       "name": "Plan Self-host",
-      "parent": "n101",
+      "parent": "n97",
       "children": [
-        "n142",
-        "n144",
-        "n147",
-        "n148"
+        "n138",
+        "n140",
+        "n143",
+        "n144"
       ],
       "tag": "article",
       "visible": true,
@@ -5403,13 +5131,13 @@
         }
       }
     },
-    "n142": {
-      "id": "n142",
+    "n138": {
+      "id": "n138",
       "type": "element",
       "name": "Plan Head",
-      "parent": "n141",
+      "parent": "n137",
       "children": [
-        "n143"
+        "n139"
       ],
       "tag": "div",
       "visible": true,
@@ -5423,11 +5151,11 @@
         }
       }
     },
-    "n143": {
-      "id": "n143",
+    "n139": {
+      "id": "n139",
       "type": "text",
       "name": "Plan Name",
-      "parent": "n142",
+      "parent": "n138",
       "children": [],
       "tag": "h3",
       "visible": true,
@@ -5446,14 +5174,14 @@
         }
       }
     },
-    "n144": {
-      "id": "n144",
+    "n140": {
+      "id": "n140",
       "type": "element",
       "name": "Price Row",
-      "parent": "n141",
+      "parent": "n137",
       "children": [
-        "n145",
-        "n146"
+        "n141",
+        "n142"
       ],
       "tag": "div",
       "visible": true,
@@ -5475,11 +5203,11 @@
         }
       }
     },
-    "n145": {
-      "id": "n145",
+    "n141": {
+      "id": "n141",
       "type": "text",
       "name": "Price",
-      "parent": "n144",
+      "parent": "n140",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -5502,11 +5230,11 @@
         }
       }
     },
-    "n146": {
-      "id": "n146",
+    "n142": {
+      "id": "n142",
       "type": "text",
       "name": "Price Unit",
-      "parent": "n144",
+      "parent": "n140",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -5527,11 +5255,11 @@
         }
       }
     },
-    "n147": {
-      "id": "n147",
+    "n143": {
+      "id": "n143",
       "type": "text",
       "name": "Plan Blurb",
-      "parent": "n141",
+      "parent": "n137",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -5553,15 +5281,15 @@
         }
       }
     },
-    "n148": {
-      "id": "n148",
+    "n144": {
+      "id": "n144",
       "type": "element",
       "name": "Features",
-      "parent": "n141",
+      "parent": "n137",
       "children": [
-        "n149",
-        "n152",
-        "n155"
+        "n145",
+        "n148",
+        "n151"
       ],
       "tag": "ul",
       "visible": true,
@@ -5582,14 +5310,14 @@
         }
       }
     },
-    "n149": {
-      "id": "n149",
+    "n145": {
+      "id": "n145",
       "type": "element",
       "name": "Feature",
-      "parent": "n148",
+      "parent": "n144",
       "children": [
-        "n150",
-        "n151"
+        "n146",
+        "n147"
       ],
       "tag": "li",
       "visible": true,
@@ -5611,11 +5339,11 @@
         }
       }
     },
-    "n150": {
-      "id": "n150",
+    "n146": {
+      "id": "n146",
       "type": "text",
       "name": "Check",
-      "parent": "n149",
+      "parent": "n145",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -5637,11 +5365,11 @@
         }
       }
     },
-    "n151": {
-      "id": "n151",
+    "n147": {
+      "id": "n147",
       "type": "text",
       "name": "Feature Text",
-      "parent": "n149",
+      "parent": "n145",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -5662,14 +5390,14 @@
         }
       }
     },
-    "n152": {
-      "id": "n152",
+    "n148": {
+      "id": "n148",
       "type": "element",
       "name": "Feature",
-      "parent": "n148",
+      "parent": "n144",
       "children": [
-        "n153",
-        "n154"
+        "n149",
+        "n150"
       ],
       "tag": "li",
       "visible": true,
@@ -5691,11 +5419,11 @@
         }
       }
     },
-    "n153": {
-      "id": "n153",
+    "n149": {
+      "id": "n149",
       "type": "text",
       "name": "Check",
-      "parent": "n152",
+      "parent": "n148",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -5717,11 +5445,11 @@
         }
       }
     },
-    "n154": {
-      "id": "n154",
+    "n150": {
+      "id": "n150",
       "type": "text",
       "name": "Feature Text",
-      "parent": "n152",
+      "parent": "n148",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -5742,14 +5470,14 @@
         }
       }
     },
-    "n155": {
-      "id": "n155",
+    "n151": {
+      "id": "n151",
       "type": "element",
       "name": "Feature",
-      "parent": "n148",
+      "parent": "n144",
       "children": [
-        "n156",
-        "n157"
+        "n152",
+        "n153"
       ],
       "tag": "li",
       "visible": true,
@@ -5771,11 +5499,11 @@
         }
       }
     },
-    "n156": {
-      "id": "n156",
+    "n152": {
+      "id": "n152",
       "type": "text",
       "name": "Check",
-      "parent": "n155",
+      "parent": "n151",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -5797,11 +5525,11 @@
         }
       }
     },
-    "n157": {
-      "id": "n157",
+    "n153": {
+      "id": "n153",
       "type": "text",
       "name": "Feature Text",
-      "parent": "n155",
+      "parent": "n151",
       "children": [],
       "tag": "span",
       "visible": true,
@@ -5822,13 +5550,13 @@
         }
       }
     },
-    "n158": {
-      "id": "n158",
+    "n154": {
+      "id": "n154",
       "type": "element",
       "name": "Footer Band",
       "parent": "n0",
       "children": [
-        "n159"
+        "n155"
       ],
       "tag": "section",
       "visible": true,
@@ -5874,14 +5602,14 @@
         }
       }
     },
-    "n159": {
-      "id": "n159",
+    "n155": {
+      "id": "n155",
       "type": "element",
       "name": "Footer",
-      "parent": "n158",
+      "parent": "n154",
       "children": [
-        "n160",
-        "n161"
+        "n156",
+        "n157"
       ],
       "tag": "footer",
       "visible": true,
@@ -5909,11 +5637,11 @@
         }
       }
     },
-    "n160": {
-      "id": "n160",
+    "n156": {
+      "id": "n156",
       "type": "text",
       "name": "Copyright",
-      "parent": "n159",
+      "parent": "n155",
       "children": [],
       "tag": "p",
       "visible": true,
@@ -5934,15 +5662,15 @@
         }
       }
     },
-    "n161": {
-      "id": "n161",
+    "n157": {
+      "id": "n157",
       "type": "element",
       "name": "Footer Links",
-      "parent": "n159",
+      "parent": "n155",
       "children": [
-        "n162",
-        "n163",
-        "n164"
+        "n158",
+        "n159",
+        "n160"
       ],
       "tag": "div",
       "visible": true,
@@ -5964,11 +5692,11 @@
         }
       }
     },
-    "n162": {
-      "id": "n162",
+    "n158": {
+      "id": "n158",
       "type": "text",
       "name": "Terms",
-      "parent": "n161",
+      "parent": "n157",
       "children": [],
       "tag": "a",
       "visible": true,
@@ -5999,11 +5727,11 @@
         "href": "/terms.html"
       }
     },
-    "n163": {
-      "id": "n163",
+    "n159": {
+      "id": "n159",
       "type": "text",
       "name": "Privacy",
-      "parent": "n161",
+      "parent": "n157",
       "children": [],
       "tag": "a",
       "visible": true,
@@ -6034,11 +5762,11 @@
         "href": "/privacy.html"
       }
     },
-    "n164": {
-      "id": "n164",
+    "n160": {
+      "id": "n160",
       "type": "text",
       "name": "GitHub",
-      "parent": "n161",
+      "parent": "n157",
       "children": [],
       "tag": "a",
       "visible": true,

@@ -121,7 +121,7 @@ export function sharedPasswordAuth(
 
       const ip = clientIp(req, options.trustProxy);
       if (isRateLimited(ip)) {
-        json(429, { error: 'too many login attempts — try again in a minute' });
+        json(429, { error: 'too many login attempts; try again in a minute' });
         return;
       }
 

@@ -1,8 +1,8 @@
 # Pitolet
 
-Pitolet is a visual editor for web interfaces. It runs locally by default and
-also exposes an API and MCP server so coding agents can work on the same
-document.
+Pitolet lets you edit a web interface visually while a coding agent works on
+the same document over MCP. Running `npx pitolet` starts the local editor, API,
+and MCP server.
 
 ```bash
 npx pitolet

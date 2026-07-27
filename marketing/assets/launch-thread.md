@@ -5,41 +5,37 @@ and 4 each get a GIF cut from the video (insert-with-glow; token recolor).
 Keep replies on; the whole point is conversations with the MCP/Claude crowd.
 
 **1.**
-I built Pitolet, an open-source design tool for web interfaces. Claude Code can edit the canvas with you.
+I built Pitolet because tweaking an interface from Claude Code kept turning
+into another prompt or a manual CSS edit.
 
-It connects over MCP, edits land on your canvas live, and ⌘Z undoes them.
+Pitolet opens the result in a visual editor. Claude stays connected over MCP,
+and ⌘Z undoes its changes.
 
 44-second demo: [video]
 
 **2.**
-The canvas renders with the browser's own layout engine. You draw real
-flexbox, real grid, real :hover states.
-
-That's why the React + Tailwind it exports matches the canvas: the editor
-and the codegen read the same style pipeline. There is no translation step
-to get wrong.
+The canvas is a web page. Its layout uses CSS flexbox and grid, and the hover
+states are CSS too. Pitolet exports React and Tailwind from that document.
 
 **3.**
 Here's Claude Code adding a section to my landing page.
 
-It reads the frame and the design tokens first, then inserts nodes through
-the same validated patch pipeline human edits use. The glow shows what it
+The change appears on the canvas while Claude works. The glow shows what it
 touched. [GIF]
 
 **4.**
-Design tokens are live. One set_tokens call from the agent and every bound
-element re-styles: buttons, links, borders. [GIF]
+Claude can edit design tokens too. Here, one colour change updates every
+linked element. [GIF]
 
 **5.**
-Design files are JSON in your git repo. They diff. Your agent can read them
-in CI without any design-tool API, and a check_drift tool tells you when
-design and shipped code have diverged.
+Pitolet files are readable JSON, so they can sit next to the code in git.
+`check_drift` reports when the document and exported project no longer match.
 
 **6.**
 The pitolet.com landing page is a Pitolet document exported by Pitolet. You can inspect the source and the generated page in the repo.
 
 **7.**
-Core is AGPL-3.0 — self-host with `npx pitolet` or one Docker command.
+The core is AGPL-3.0. Self-host it with `npx pitolet` or Docker.
 Hosted version has a free tier, $12/seat for teams.
 
 Repo: github.com/pitolet/pitolet

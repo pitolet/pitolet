@@ -8,29 +8,27 @@ day before posting.
 
 ## r/webdev
 
-**Title:** I built an open-source design tool that exports real React +
+**Title:** I built an open-source design tool that exports React +
 Tailwind instead of absolute-positioned divs
 
 **Body:**
 
-Every design-to-code exporter I tried produces the same thing: a pile of
-absolutely positioned divs with magic numbers. The root cause isn't the
-exporter, it's that the design tool's layout model only approximates CSS.
+The design-to-code exporters I tried leaned heavily on absolute positioning.
+Their output was hard to continue working on as a normal web page. I wanted a
+canvas that used CSS layout from the start.
 
-So I built Pitolet, which hands layout to the browser itself. You draw with
-flexbox and grid directly, hover states are real CSS
-pseudo-classes, and breakpoints are cascading overrides on one frame instead
-of five hand-synced artboards. The code generator and the canvas renderer
-read the same style-resolution code, so the export matches the canvas by
-construction. Output is semantic React + Tailwind v4, or plain HTML/CSS.
+Pitolet does that. Frames use flexbox or grid, and interaction states are CSS
+pseudo-classes. Breakpoint changes are stored as overrides on one frame. The
+same style resolver is used by the canvas and code generator. Output is React
+with Tailwind v4 or plain HTML with CSS.
 
 Documents are human-readable JSON in your repo. There's also an MCP server so
 coding agents can read and edit designs, which turned out to be the feature I
 use most.
 
-`npx pitolet` to try it locally (Node 22+). Core is AGPL. I'd honestly like
-to know where the codegen falls short of what you'd write by hand — that's
-the bar I'm trying to clear.
+`npx pitolet` to try it locally (Node 22+). The core is AGPL. I'd like to know
+where the codegen falls short of what you would write by hand. That is the bar
+I'm trying to clear.
 
 Repo: https://github.com/pitolet/pitolet
 
@@ -42,28 +40,22 @@ Repo: https://github.com/pitolet/pitolet
 
 **Body:**
 
-I wanted the coding agent to work in the same shippable design artifact, so I
-built my design tool with an MCP server where Claude Code is a full participant:
-20 tools covering
-read (design-as-code, tokens, screenshots), write (insert nodes, edit styles,
-set tokens), and collaboration (it reads comments you pin on nodes and can
-reply).
+I wanted Claude Code to edit the interface I was looking at, not a separate
+mockup. Pitolet's MCP server lets it inspect the page and change nodes or
+styles. It can also read comments attached to layers.
 
-The part that makes it feel sane instead of scary: agent edits go through the
-same validated patch pipeline as human edits. They show up live on the open
-canvas with a glow on whatever the agent touched, there's an "Agent editing"
-badge while it works, and ⌘Z reverts its changes like any other edit.
+Agent changes appear on the open canvas and stay in the normal undo history. A
+short glow shows which layers changed.
 
 Setup is two commands:
 
     npx pitolet
     claude mcp add --transport http pitolet http://localhost:4517/mcp
 
-Then things like "add a testimonials section to the Landing frame using our
-design tokens" just work, and you watch it happen. 44-second video in the
-repo. Open source (AGPL). Curious what workflows people would want here —
-design review by agents? Agents keeping design and code in sync? (There's a
-check_drift tool that diffs both.)
+Then ask it to add a section or change a token and watch the result appear.
+There is a 44-second demo in the repo. The core is AGPL-3.0.
+
+I'm interested in where this would fit into other people's agent workflows.
 
 Repo: https://github.com/pitolet/pitolet
 
@@ -79,15 +71,21 @@ are plain JSON
 I built a web design tool and the self-hosted story is the one I actually
 care about, so posting it here.
 
-- One container: `docker run -p 4517:4517 -v pitolet-data:/data
-  -e PITOLET_PASSWORD=change-me ghcr.io/pitolet/pitolet`
+- One container:
+
+  ```sh
+  docker run -p 4517:4517 -v pitolet-data:/data \
+    -e PITOLET_PASSWORD=change-me \
+    ghcr.io/pitolet/pitolet
+  ```
+
 - Or no container at all: `npx pitolet`
 - Documents are human-readable `*.pitolet.json` files in a directory you
   control. Back them up, git them, edit them with scripts. No database.
 - Auth is a shared password (constant-time compare, HMAC session cookie),
   suitable for a homelab or a small team behind a reverse proxy.
-- AGPL-3.0 core. There's a hosted version, but nothing in the self-hosted
-  build phones home or needs an account.
+- AGPL-3.0 core. The self-hosted build needs no Pitolet account or hosted
+  Pitolet service.
 
 What it is: a Figma-style canvas editor for web design where everything you
 draw is real DOM/CSS, with code export (React + Tailwind or HTML/CSS) and an

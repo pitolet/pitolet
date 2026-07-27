@@ -62,7 +62,7 @@ export function docCreateDenial(plan: Plan, docCount: number): string | null {
   const limit = PLAN_LIMITS[plan].docsPerWorkspace;
   if (docCount < limit) return null;
   return plan === 'free'
-    ? `Free workspaces are limited to ${limit} documents — upgrade to Pro for unlimited`
+    ? `Free workspaces are limited to ${limit} documents. Upgrade to Pro to remove this limit.`
     : `This workspace has reached its ${limit}-document limit`;
 }
 
@@ -71,7 +71,7 @@ export function memberLimitDenial(plan: Plan, memberCount: number): string | nul
   const limit = PLAN_LIMITS[plan].membersPerWorkspace;
   if (memberCount < limit) return null;
   return plan === 'free'
-    ? `Free workspaces are limited to ${limit} members — upgrade to Pro for up to ${PLAN_LIMITS.pro.membersPerWorkspace}`
+    ? `Free workspaces are limited to ${limit} members. Upgrade to Pro for up to ${PLAN_LIMITS.pro.membersPerWorkspace}.`
     : `Pro workspaces are limited to ${limit} members`;
 }
 
@@ -79,7 +79,8 @@ export function memberLimitDenial(plan: Plan, memberCount: number): string | nul
 export function tokenLimitDenial(plan: Plan, activeTokenCount: number): string | null {
   const limit = PLAN_LIMITS[plan].tokensPerWorkspace;
   if (activeTokenCount < limit) return null;
-  return `Free workspaces are limited to ${limit} agent token — upgrade to Pro for unlimited tokens`;
+  const unit = limit === 1 ? 'agent token' : 'agent tokens';
+  return `Free workspaces are limited to ${limit} ${unit}. Upgrade to Pro for unlimited tokens.`;
 }
 
 /** Denial reason for minting one more ACTIVE share link on a doc, or null when allowed. */
@@ -87,8 +88,8 @@ export function shareLinkLimitDenial(plan: Plan, activeLinkCount: number): strin
   const limit = PLAN_LIMITS[plan].shareLinksPerDoc;
   if (activeLinkCount < limit) return null;
   return plan === 'free'
-    ? `Free workspaces are limited to ${limit} active share links per document — upgrade to Pro for up to ${PLAN_LIMITS.pro.shareLinksPerDoc}`
-    : `Documents are limited to ${limit} active share links — revoke one first`;
+    ? `Free workspaces support ${limit} active share links per document. Pro supports up to ${PLAN_LIMITS.pro.shareLinksPerDoc}.`
+    : `Documents support ${limit} active share links. Revoke one first.`;
 }
 
 /**
@@ -99,9 +100,10 @@ export function workspaceCreateDenial(ownedPlans: readonly string[]): string | n
   const ownsPro = ownedPlans.some((p) => planOf(p) === 'pro');
   const maxOwned = ownsPro ? PLAN_LIMITS.pro.workspacesPerUser : PLAN_LIMITS.free.workspacesPerUser;
   if (ownedPlans.length < maxOwned) return null;
+  const unit = maxOwned === 1 ? 'owned workspace' : 'owned workspaces';
   return ownsPro
     ? `You may own at most ${maxOwned} workspaces`
-    : `Free accounts are limited to ${maxOwned} owned workspace — upgrade it to Pro to own up to ${PLAN_LIMITS.pro.workspacesPerUser}`;
+    : `Free accounts are limited to ${maxOwned} ${unit}. Upgrade it to Pro to own up to ${PLAN_LIMITS.pro.workspacesPerUser}.`;
 }
 
 /** Human-readable byte size for denial messages (100 MB, 5 GB, …). */
@@ -117,6 +119,6 @@ export function formatBytes(bytes: number): string {
 export function assetLimitMessage(plan: Plan): string {
   const limit = formatBytes(PLAN_LIMITS[plan].assetBytesPerWorkspace);
   return plan === 'free'
-    ? `Workspace asset storage is full (${limit} on Free) — upgrade to Pro for ${formatBytes(PLAN_LIMITS.pro.assetBytesPerWorkspace)}`
+    ? `Workspace asset storage is full (${limit} on Free). Pro includes ${formatBytes(PLAN_LIMITS.pro.assetBytesPerWorkspace)}.`
     : `Workspace asset storage is full (${limit} limit)`;
 }

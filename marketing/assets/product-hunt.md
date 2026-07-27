@@ -2,15 +2,14 @@
 
 **Name:** Pitolet
 
-**Tagline (≤60 chars):** Design in real DOM, ship React, let your agent edit
+**Tagline (≤60 chars):** Fix the interfaces your coding agent builds
 
 **Topics:** Design Tools, Developer Tools, Open Source, Artificial Intelligence
 
 **Description (≤260 chars):**
-Pitolet is an open-source design tool for web work. The canvas renders real
-DOM and CSS, documents are JSON in your git repo, and coding agents like
-Claude Code connect over MCP to read and edit designs live. Exports clean
-React + Tailwind.
+Pitolet gives you a visual way to fix interfaces made by coding agents.
+Claude Code can stay connected over MCP while you edit. Pitolet files are
+readable JSON and export to React with Tailwind or plain HTML with CSS.
 
 **Gallery:** lead with the demo video (voiceover version), then stills:
 agent-glow insert moment, token recolor before/after, code panel, landing
@@ -18,18 +17,15 @@ page with "this page is a Pitolet document" callout.
 
 **First comment (maker):**
 
-Hi PH — solo builder here.
+Hi PH. I'm the solo builder behind Pitolet.
 
-Pitolet started from a problem I kept running into: I would design a web page,
-then rebuild the same page in CSS. Once a coding agent joined the workflow,
-there was one more participant working through that same translation step.
+I built it after struggling to tweak the interfaces coding agents produced.
+Small visual changes kept turning into another prompt or a manual CSS edit.
 
-So Pitolet renders the canvas with the browser's own layout engine (what you
-draw is real flexbox, grid, hover states), and it ships an MCP server so your
-coding agent works in the same document you do. The agent's edits appear on
-your canvas as they happen, with a glow so you can see what it touched, and
-⌘Z undoes them like any other edit. Design files are readable JSON that live
-in your repo and diff in git.
+Pitolet opens that interface in a visual editor. Claude Code can keep working
+over MCP while I adjust the page myself. Its changes appear on the canvas, and
+⌘Z undoes them. The canvas uses normal DOM and CSS, so the document can export
+to React with Tailwind or plain HTML with CSS.
 
 The pitolet.com landing page is a Pitolet document exported by Pitolet. The
 source document and generated HTML are both in the repo.

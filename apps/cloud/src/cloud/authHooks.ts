@@ -111,7 +111,7 @@ export function makeWorkspaceAuthHooks(
         }
         if (action === 'doc:write' && !writeBuckets.allow(ctx.userId ?? 'anonymous')) {
           return denied(
-            `Rate limit exceeded: ${WS_PATCHES_PER_MINUTE} edits/min — slow down and retry`,
+            `Rate limit exceeded: ${WS_PATCHES_PER_MINUTE} edits/min. Slow down and retry.`,
             429,
           );
         }

@@ -1,7 +1,7 @@
 {
   "name": "pitolet",
   "version": "1.2.0",
-  "description": "Run the Pitolet editor, API, MCP server, and code exporter locally.",
+  "description": "Edit agent-built web interfaces locally with Pitolet.",
   "type": "module",
   "license": "AGPL-3.0-only",
   "repository": {

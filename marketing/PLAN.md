@@ -1,136 +1,118 @@
-# Pitolet marketing plan
+# Pitolet marketing notes
 
-This is a solo-founder launch with a small budget. Focus on places where
-developers already look for tools, and spend only after an organic channel
-shows that it can bring the right users. The two clearest product stories are:
+This is a solo-founder launch with a small budget. Start in developer
+communities where the product is relevant. Do not pay for promotion until an
+unpaid post shows that the message works.
 
-1. **Coding agents work in the same shippable artifact.** Claude Code edits
-   the canvas live over MCP, you can ⌘Z it, and the changed document remains
-   real DOM/CSS that exports deterministically to code.
-2. **The landing page is a Pitolet document**, exported by Pitolet's own
-   codegen. Every post gets to say "the page you're reading is the demo."
+The main story is the problem that led to Pitolet: an agent gets the interface
+close, then the user fixes the visual details on the page. The agent stays
+connected over MCP.
 
 ## Positioning
 
-Core message: _the design tool your coding agent can use — real DOM and CSS on
-the canvas, the file lives in your repo, no handoff._
+Core message: _fix the interface your coding agent built._
 
-| Audience                 | Lead with                                                        | Where they are                        |
-| ------------------------ | ---------------------------------------------------------------- | ------------------------------------- |
-| AI-coding early adopters | 20 MCP tools; agent edits live, undoable                         | r/ClaudeAI, r/mcp, X, MCP directories |
-| Figma-frustrated devs    | real flexbox, real `:hover`, codegen that isn't px soup          | HN, r/webdev, dev newsletters         |
-| Self-hosters / OSS       | AGPL, `npx pitolet`, one Docker command, designs are JSON in git | HN, r/selfhosted, awesome lists       |
+| Audience           | Lead with                                                        | Where they are                        |
+| ------------------ | ---------------------------------------------------------------- | ------------------------------------- |
+| Coding-agent users | Agent changes appear on the canvas and can be undone             | r/ClaudeAI, r/mcp, X, MCP directories |
+| Web developers     | CSS layout on the canvas and editable exported code              | HN, r/webdev, dev newsletters         |
+| Self-hosters / OSS | AGPL, `npx pitolet`, one Docker command, designs are JSON in git | HN, r/selfhosted, awesome lists       |
 
-Proof points to repeat everywhere: landing page is a Pitolet export ·
-`npx pitolet` works cold · designs diff cleanly in git · agent edits are
-undoable in-editor.
+Useful proof:
+
+- The landing page is a Pitolet export.
+- `npx pitolet` starts the local version.
+- Documents are readable JSON.
+- Agent changes appear on the canvas and can be undone.
 
 ## Assets (ready in `marketing/assets/`)
 
-| File               | Channel                                                 | When                         |
-| ------------------ | ------------------------------------------------------- | ---------------------------- |
-| `show-hn.md`       | Hacker News launch post + prepped answers               | Launch day 1                 |
-| `product-hunt.md`  | PH listing + maker comment                              | Launch day ~7                |
-| `reddit.md`        | r/webdev, r/ClaudeAI, r/selfhosted posts                | Launch week, staggered       |
-| `launch-thread.md` | X/Bluesky thread                                        | Launch day 1, after HN is up |
-| `newsletters.md`   | Console.dev submission + 25/50/100-word blurbs          | Week 1–2 submissions         |
-| `vs-figma.md`      | pitolet.com/vs-figma page copy (build as a Pitolet doc) | Before launch                |
-| `v1.0-release.md`  | GitHub v1.0 release notes                               | Release day                  |
+| File               | Channel                                        | When                         |
+| ------------------ | ---------------------------------------------- | ---------------------------- |
+| `show-hn.md`       | Hacker News launch post + prepped answers      | Launch day 1                 |
+| `product-hunt.md`  | PH listing + maker comment                     | Launch day ~7                |
+| `reddit.md`        | r/webdev, r/ClaudeAI, r/selfhosted posts       | Launch week, staggered       |
+| `launch-thread.md` | X/Bluesky thread                               | Launch day 1, after HN is up |
+| `newsletters.md`   | Console.dev submission + 25/50/100-word blurbs | Week 1–2 submissions         |
+| `vs-figma.md`      | Source note for the comparison page            | Reference                    |
+| `v1.0-release.md`  | GitHub v1.0 release notes                      | Historical reference         |
 
 Existing media:
 
-- `pitolet-demo.mp4` at the repo root: the ElevenLabs-narrated and music-mixed
-  44s hero demo (1080p). Voiceover script and mix settings are in
-  `assets/demo-voiceover.md`; the generated narration is in `audio/`, and the
-  silent master is in `videos/pitolet-demo-silent.mp4`.
-- `marketing/videos/`: six social cuts, three clips × two formats.
-  `insert` (12s, agent adds a section live) → pinned tweet, thread slot 3,
-  YouTuber hand-off. `recolor` (10s, token change re-styles the doc) →
-  thread slot 4, Reels/Shorts vertical. `code` (10s, inspector + React
-  export) → r/webdev and the codegen argument. Wide = 1600×900 for
-  X/LinkedIn; tall = 1080×1920 for Reels/Shorts/TikTok. Each opens on a
-  hook card and closes on the npx chip.
+- `pitolet-demo.mp4` at the repo root is the 44-second narrated demo. Mix
+  settings are in `assets/demo-voiceover.md`. The narration file is in
+  `audio/`, and the silent master is in `videos/pitolet-demo-silent.mp4`.
+- `marketing/videos/` contains wide and vertical cuts of three moments:
+  inserting a section, changing a token, and opening the code panel.
 - `marketing/gifs/`: three README-ready, palette-optimized GIFs generated from
   the same clips.
 
-## Pre-launch checklist
+## Before promotion
 
-- [x] Demo video with voiceover; 3 GIFs; hero GIF at the top of the README
-- [ ] `/vs-figma` page live (copy in `assets/vs-figma.md`)
-- [ ] Public read-only demo doc via a share link (dogfoods the share feature)
-- [ ] Deploy: Virtarix VPS, DNS, Paddle live keys, Resend, npm Trusted
-      Publisher, deprecate 0.1.0 (see deploy/README.md)
-- [ ] Repo public + v1.0 tagged a few days before the HN post
+- Confirm that the demo video and README GIFs still match the product.
+- Build and check `/vs-figma` from its source in `site/build.ts`.
+- Prepare a public, read-only demo document.
+- Check the production deployment, billing, email, and npm publishing.
+- Use the current tagged release. The repository is already public.
 
 ## Launch sequence
 
-1. **Repo public + tag v1.0.** A few days early so the repo has releases and
-   green CI when traffic arrives.
-2. **Show HN** (Tue–Thu, 8–10am ET). Post from `assets/show-hn.md`. Stay at
-   the keyboard all day; comment quality decides the front page. Prepped
-   answers for AGPL/CLA/Penpot/why-not-a-plugin are in the same file.
-3. **MCP directories, same week** — the unfair free channel: official
+1. **Show HN** (Tue–Thu, 8–10am ET). Post from `assets/show-hn.md`. Stay at
+   the keyboard to answer questions. Notes on AGPL, the CLA, Penpot, and Figma
+   plugins are in the same file.
+2. **MCP directories, same week.** Submit to the official
    Anthropic registry, Smithery, PulseMCP, Glama, mcp.so, awesome-mcp-servers.
    Short listing copy is in `assets/newsletters.md`.
-4. **X/Bluesky thread** (`assets/launch-thread.md`) once the HN post is live,
-   with the video. Tag the MCP/Claude Code community; Anthropic DevRel
-   amplifies good MCP servers.
-5. **Product Hunt ~a week later** (`assets/product-hunt.md`). Don't burn both
+3. **X/Bluesky thread** (`assets/launch-thread.md`) once the HN post is live,
+   with the video.
+4. **Product Hunt ~a week later** (`assets/product-hunt.md`). Don't burn both
    audiences the same day.
-6. **Reddit, staggered over the week** (`assets/reddit.md`). Each post is
+5. **Reddit, staggered over the week** (`assets/reddit.md`). Each post is
    written for its subreddit; don't cross-post identical text.
-7. **Newsletter submissions** (`assets/newsletters.md`): Console.dev (free),
+6. **Newsletter submissions** (`assets/newsletters.md`): Console.dev (free),
    TLDR submission form, JavaScript Weekly / React Status pick up strong HN
-   launches on their own — the blurbs make it easy for them.
+   launches on their own. Use the prepared blurbs.
 
-## Ongoing free channels
+## Follow-up posts
 
-- **Content, one post every 1–2 weeks.** In order: "I let Claude Code redesign
-  my landing page" (narrative, shareable) · why design tools lie about layout
-  (technical essay, the resolve.ts single-source-of-truth story) · your design
-  system as tokens the agent actually uses · per-agent setup guides (Claude
-  Code, Cursor, Windsurf, Cline) as SEO landing pages.
-- **Build in public on X/Bluesky**: ship-logs, GIFs, agent clips.
-- **OSS flywheel**: same-day replies to first issues, `good first issue`
-  labels, public roadmap in Discussions. Submit to awesome-selfhosted and
-  awesome-react.
+- Write about the original problem: fixing an interface after an agent gets it
+  close.
+- Explain how the canvas and code export share the same CSS resolver.
+- Publish setup guides for the agent clients people actually use.
+- Submit Pitolet to relevant open-source and self-hosting lists.
 
-## Paid (spend only where it multiplies)
+## Paid promotion
 
-| Tactic                                             | Cost            | Note                                                  |
-| -------------------------------------------------- | --------------- | ----------------------------------------------------- |
-| Screen Studio                                      | ~$90 once       | For narrated/polished video cuts                      |
-| Mid-tier dev YouTubers (50k–300k, AI-coding niche) | $200–1.5k/video | Best $/attention; the agent demo is inherently visual |
-| Console.dev sponsorship                            | ~$400           | Post-launch, point at /vs-figma                       |
-| React Status / JS Weekly slot                      | $1–2k           | Only after organic launch data                        |
-| EthicalAds / Carbon                                | $50–300/mo      | Cheap always-on, low ceiling                          |
-| Reddit promoted post tests                         | $100–300        | Only channel where paid looks native                  |
+| Tactic                                             | Cost            | Note                                             |
+| -------------------------------------------------- | --------------- | ------------------------------------------------ |
+| Screen Studio                                      | ~$90 once       | For narrated/polished video cuts                 |
+| Mid-tier dev YouTubers (50k–300k, AI-coding niche) | $200–1.5k/video | Test one channel with the demo                   |
+| Console.dev sponsorship                            | ~$400           | Post-launch, point at /vs-figma                  |
+| React Status / JS Weekly slot                      | $1–2k           | Only after organic launch data                   |
+| EthicalAds / Carbon                                | $50–300/mo      | Small test after the unpaid launch               |
+| Reddit promoted post tests                         | $100–300        | Use only if the unpaid Reddit posts perform well |
 
-Skip Google/Meta ads: contested CPCs, dev ad-blindness.
+Skip Google and Meta ads unless unpaid results give a reason to test them.
 
-Budget shapes: **$100** = Screen Studio + all-organic. **$500–1k launch
-boost** = + one YouTube video + Console.dev, timed 1–2 weeks post-HN.
-**$500/mo ongoing** = rotate one newsletter or video slot + $100 ads.
+At roughly $500 to $1,000, test one YouTube video and one Console.dev
+placement after the Hacker News post. Review the results before setting an
+ongoing budget.
 
-## Funnel and metrics
+## What to measure
 
-Stars / npm installs → cloud signups → activated (doc created + MCP token
-used) → Pro. UTM-tag every channel link. Watch:
+Track repository visits, npm installs, cloud signups, first document creation,
+MCP token use, and paid upgrades. Add UTM tags to channel links.
 
-- **MCP token creation rate** among signups — the activation event for the
-  differentiated use case. If low, fix onboarding ("connect your agent" step),
-  not traffic.
-- Star→signup ratio per channel; spend follows the best ratio.
-- Free→Pro pressure points are team features (workspaces, members, history,
-  share links) — team-workflow content is monetization content.
+If few new accounts create an MCP token, fix that onboarding step before
+buying traffic. Compare signup rates by channel before deciding where to spend.
 
-## First 30 days
+## Promotion schedule
 
-- **Week 1**: voiceover + GIFs, README hero GIF, /vs-figma live, deploy
-  checklist done.
-- **Week 2**: repo public, v1.0 → Show HN (full-day comment duty) → MCP
-  directories + X thread + newsletter submissions.
+- **Week 1**: check the demo, README GIFs, comparison page, and production
+  setup.
+- **Week 2**: post to Show HN, submit to MCP directories, publish the social
+  thread, and contact newsletters.
 - **Week 3**: Product Hunt; Reddit staggered; first blog post; same-day issue
   replies.
-- **Week 4**: review funnel per channel; commission one YouTube video +
-  Console.dev slot using week-one numbers as social proof.
+- **Week 4**: compare the results by channel. If the unpaid launch worked,
+  commission one YouTube video and test a Console.dev placement.

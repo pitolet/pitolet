@@ -1,17 +1,20 @@
 # @pitolet/cloud
 
-This package runs [app.pitolet.com](https://app.pitolet.com). It handles accounts, Postgres-backed workspaces, agent tokens, and the hosted MCP endpoint. Each workspace serves the editor under `/w/:slug/`.
+This package contains the server behind
+[app.pitolet.com](https://app.pitolet.com). It adds accounts and
+Postgres-backed workspaces to the core server. Each workspace gets an editor
+URL under `/w/:slug/` and its own MCP endpoint.
 
 The source is visible, but it is commercially licensed rather than open source. See [LICENSE](./LICENSE).
 
 ## Layout
 
-- `src/server.ts` — the http server. Validates `DATABASE_URL` +
+- `src/server.ts`: the HTTP server. Validates `DATABASE_URL` +
   `BETTER_AUTH_SECRET`, runs SQL migrations and the better-auth schema, listens
   on `PITOLET_CLOUD_PORT` (default 8080), graceful shutdown on SIGTERM.
-- `src/db/migrate.ts` — numbered-SQL migration runner (also a CLI entry).
-- `src/router.ts` — the tenancy security boundary.
-- `dashboard/` — the account/workspace dashboard SPA (owned separately).
+- `src/db/migrate.ts`: numbered-SQL migration runner and CLI entry.
+- `src/router.ts`: the tenancy security boundary.
+- `dashboard/`: the account and workspace dashboard.
 
 ## Develop
 
@@ -38,9 +41,9 @@ pnpm --filter @pitolet/cloud build
 `build` runs `build:server` (tsup) then `build:dashboard` (vite). The server
 build emits, flat in `dist/`:
 
-- `dist/server.js` — the server bundle (`CMD` of the Docker image).
-- `dist/migrate.js` — the migration runner (deploy pre-step).
-- `dist/migrations/*.sql` — copied from `src/db/migrations`. The runner
+- `dist/server.js`: the server bundle (`CMD` of the Docker image).
+- `dist/migrate.js`: the migration runner used during deployment.
+- `dist/migrations/*.sql`: copied from `src/db/migrations`. The runner
   resolves them relative to its own location, so don't move them.
 
 Workspace deps (`pitolet`, `@pitolet/schema`) are inlined via tsup `noExternal`.
@@ -59,11 +62,13 @@ Docker Compose (Caddy + app + Postgres + restic backups). Full runbook:
 docker build -f apps/cloud/Dockerfile -t ghcr.io/pitolet/pitolet-cloud .
 ```
 
-The build stage installs the pnpm workspace (manifests-first for layer
-caching), runs the root `pnpm build` (editor + server core), builds the cloud
-server bundle and — if present — the dashboard, then `pnpm deploy --legacy`
-prunes to prod deps. Because the editor and the freshly-built bundles are not
-runtime `node_modules` deps, they are copied explicitly into the image:
+The build installs workspace dependencies before copying the source so Docker
+can reuse the dependency layer. It then builds the editor, core server, cloud
+server, and dashboard. `pnpm deploy --legacy` removes development
+dependencies.
+
+The built editor and server bundles are copied into the image explicitly
+because they are not runtime packages in `node_modules`:
 
 | Content                     | Image path       | Resolved via                            |
 | --------------------------- | ---------------- | --------------------------------------- |
@@ -78,14 +83,11 @@ Runtime: `node:22-alpine`, `USER node`, `EXPOSE 8080`, `VOLUME /data`
 (`PITOLET_CLOUD_DATA`), healthcheck probes `GET /readyz`, which includes a
 Postgres round-trip. `GET /healthz` is the process-only liveness endpoint.
 
-### CI / CD
+### Release and deployment
 
-- **`.github/workflows/release.yml`** publishes npm first, then calls
-  **`.github/workflows/docker.yml`** to build and push matching OSS and cloud
-  images. A Docker retry verifies that the exact npm version exists before it
-  pushes anything.
-- **`.github/workflows/deploy.yml`** (`workflow_dispatch`, immutable `tag`)
-  uploads the complete deployment configuration, takes a fresh backup, and
-  boots a candidate container. It replaces the live app and static site only
-  after the candidate passes `/readyz`, and restores the previous files and
-  image if a later check fails.
+`.github/workflows/release.yml` publishes npm and builds the matching container
+images through `.github/workflows/docker.yml`.
+
+`.github/workflows/deploy.yml` takes a fresh backup and starts a candidate
+container before replacing the live app. If a later public check fails, it
+restores the previous image and configuration.

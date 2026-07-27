@@ -725,32 +725,10 @@ function buildProofStrip(doc: PitoletDocument, frameId: string) {
         name: `Proof ${title}`,
         styles: {
           display: 'flex',
-          flexDirection: 'row',
+          flexDirection: 'column',
           alignItems: 'center',
-          gap: gap(px(0), sp('3')),
+          justifyContent: 'center',
           minWidth: px(0),
-        },
-      }),
-    );
-    attach(
-      doc,
-      point.id,
-      createElement({
-        name: 'Proof Marker',
-        styles: {
-          width: px(8),
-          height: px(8),
-          fills: fill(t('color.primary')),
-          radius: radAll(rad('full')),
-          shadows: [
-            {
-              x: 0,
-              y: 0,
-              blur: 12,
-              spread: 0,
-              color: oklch(0.71, 0.125, 215, 0.45),
-            },
-          ],
         },
       }),
     );
@@ -762,8 +740,10 @@ function buildProofStrip(doc: PitoletDocument, frameId: string) {
         styles: {
           display: 'flex',
           flexDirection: 'column',
+          alignItems: 'center',
           gap: gap(sp('1'), px(0)),
           minWidth: px(0),
+          textAlign: 'center',
         },
       }),
     );
@@ -2218,7 +2198,7 @@ type PageMeta = { title: string; description: string; url: string };
 const LANDING_META: PageMeta = {
   title: 'Pitolet | Edit your coding agent’s interface',
   description:
-    'Pitolet lets you edit the interface your coding agent made. Work on the page and send the result back to your agent.',
+    'Edit your coding agent’s interface directly on the page. Your agent can read the updated document over MCP.',
   url: 'https://pitolet.com',
 };
 

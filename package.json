@@ -3,7 +3,7 @@
   "version": "1.2.0",
   "private": true,
   "type": "module",
-  "description": "Design web interfaces with real DOM and CSS, work alongside a coding agent, and export React or HTML.",
+  "description": "A visual editor for the interfaces your coding agent builds.",
   "bin": {
     "pitolet": "./bin/pitolet.js"
   },

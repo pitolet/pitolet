@@ -70,7 +70,7 @@ if (args[0] === 'import') {
   server.on('error', (err: NodeJS.ErrnoException) => {
     if (err.code === 'EADDRINUSE') {
       console.error(
-        `[pitolet] port ${port} is already in use — is another Pitolet running?\n` +
+        `[pitolet] port ${port} is already in use. Is another Pitolet running?\n` +
           `          Stop it, or start this one on a different port: PITOLET_PORT=4518 pnpm dev`,
       );
       process.exit(1);
@@ -115,7 +115,7 @@ if (args[0] === 'import') {
     console.log(
       password
         ? '  auth: Password protection enabled'
-        : '  auth: No auth — anyone with network access can edit (set PITOLET_PASSWORD to protect)',
+        : '  auth: No auth. Anyone with network access can edit. Set PITOLET_PASSWORD to protect it.',
     );
     if (!editorDist) console.log('  editor: dev mode (Vite on :5173 proxies here)');
   });

@@ -1,41 +1,38 @@
-# Newsletter submissions + reusable blurbs
+# Newsletter submissions and short descriptions
 
-## Console.dev (free listing — console.dev/submit)
+## Console.dev
 
 - **Name:** Pitolet
-- **What is it? (~10 words):** Open-source design tool with real DOM canvas
-  and MCP agent editing.
-- **Description (~50 words):** Pitolet is a design tool for web work. The
-  canvas renders with the browser's layout engine, so designs are real
-  flexbox/grid/hover and export as clean React + Tailwind. Documents are JSON
-  in your repo. Coding agents connect over MCP and edit the canvas live,
-  undoably. AGPL core, `npx pitolet`.
-- **Why is it interesting?** Agent edits are live on the canvas, validated,
-  and undoable, while the document itself remains real DOM/CSS that exports
-  deterministically. The landing page is a Pitolet export, and both the source
-  document and generated page are in the repo.
+- **What is it? (~10 words):** A visual editor for interfaces made by coding
+  agents.
+- **Description (~50 words):** Pitolet gives you a visual way to fix an
+  interface made by a coding agent. The agent can keep editing over MCP while
+  you work on the page. The canvas uses DOM and CSS, and it exports React with
+  Tailwind or plain HTML with CSS. Run the AGPL core with `npx pitolet`.
+- **Why is it interesting?** Agent changes appear on the open canvas and stay
+  in the normal undo history. Pitolet files are readable JSON that can live in
+  the same repo as the exported code.
 
 ## TLDR / general submission blurb (~25 words)
 
-Pitolet: open-source design tool where the canvas is real DOM/CSS, files live
-in git, and Claude Code edits designs live over MCP. `npx pitolet`.
+Pitolet is a visual editor for fixing interfaces made by coding agents. Claude
+Code can keep editing the page over MCP. `npx pitolet`.
 
 ## 50-word blurb
 
-Pitolet is an open-source design tool for web work. Designs render with the
-browser's own layout engine and export as clean React + Tailwind. Documents
-are JSON in your repo. Coding agents connect over MCP to read and edit the
-canvas live, undoable with ⌘Z. Free tier hosted, AGPL self-hosted.
+Pitolet lets you fix an agent-built interface in a visual editor. Claude Code
+can stay connected over MCP, and its changes appear on the canvas. Documents
+are JSON files in your repo and export to React with Tailwind or plain HTML
+with CSS. The core is AGPL-3.0.
 
 ## 100-word boilerplate (press/about)
 
-Pitolet is an open-source design tool for web interfaces. Its canvas uses the
-browser's layout engine, so elements use real DOM, flexbox, grid, and hover
-states. The same document exports as React and Tailwind or plain HTML and CSS.
-Documents are readable JSON files that can live in a git repo. Coding agents
-such as Claude Code connect over MCP, read the design, and edit the open canvas.
-The core is AGPL-3.0, and a hosted version with team workspaces is available at
-app.pitolet.com.
+Pitolet is a visual editor for interfaces made by coding agents. Open the page
+on the canvas, adjust it yourself, and let the agent keep working over MCP.
+Agent changes appear as they happen and can be undone in the editor. The
+canvas uses DOM and CSS, and the document exports to React with Tailwind or
+plain HTML with CSS. Pitolet files are readable JSON that can live in a git
+repo. The core is AGPL-3.0. A hosted version is available at app.pitolet.com.
 
 ## MCP directory listing (Smithery / PulseMCP / Glama / mcp.so)
 

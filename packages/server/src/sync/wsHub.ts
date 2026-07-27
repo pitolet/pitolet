@@ -230,7 +230,7 @@ export class WsHub {
     const target = [...this.clients.values()].find((c) => c.subscribedDocs.has(docId));
     if (!target) {
       return Promise.reject(
-        new Error('no editor is currently viewing this document — open it in Pitolet first'),
+        new Error('no editor is viewing this document; open it in Pitolet first'),
       );
     }
     const reqId = nanoid(8);

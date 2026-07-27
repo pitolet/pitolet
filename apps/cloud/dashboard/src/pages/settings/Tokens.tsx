@@ -146,7 +146,7 @@ function TokenReveal({
     <div className="ptl-dash-token-reveal">
       <div className="ptl-dash-token-warn">
         <AlertTriangle size={15} />
-        Copy this token now — it is shown only once and cannot be recovered.
+        Copy this token now. It is shown only once and cannot be recovered.
       </div>
       <div className="ptl-dash-token-value">
         <span className="ptl-dash-token-code">{token.token}</span>

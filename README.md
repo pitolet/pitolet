@@ -1,23 +1,26 @@
 # Pitolet
 
-**Design web interfaces with real DOM and CSS, alongside your coding agent.**
+**Fix the interfaces your coding agent builds.**
 
 [![Claude Code editing a Pitolet canvas live](marketing/gifs/pitolet-insert.gif)](pitolet-demo.mp4)
 
-_Claude Code adds a section over MCP. You can watch the edit happen and undo it with ⌘Z. [Watch the 44-second demo.](pitolet-demo.mp4)_
+_Claude Code adds a section through MCP. The change appears on the canvas and can be undone with ⌘Z. [Watch the 44-second demo.](pitolet-demo.mp4)_
 
-Pitolet is a design tool for web interfaces. The canvas runs in the browser, so every layer uses real DOM and CSS: flexbox, grid, text wrapping, fonts, breakpoints, and interaction states. Exported code comes from that same document instead of a separate interpretation of it.
+Pitolet opens an agent-built interface on a canvas where you can adjust it
+directly. Your agent reads or edits the same document over MCP. The canvas
+uses DOM and CSS.
 
-## Why Pitolet
+Pitolet documents are readable JSON files that can live in your repo. Pitolet
+exports them as React with Tailwind or plain HTML with CSS.
 
-| Figma                                | Pitolet                                                     |
-| ------------------------------------ | ----------------------------------------------------------- |
-| A separate layout model              | Real flexbox and grid, rendered by the browser              |
-| Several frames for several widths    | One frame with cascading breakpoint overrides               |
-| Interaction mockups and variants     | Real `:hover`, `:focus`, and `:active` styles               |
-| Design-to-code translation           | React, Tailwind, or HTML generated from the canvas document |
-| Design files stored behind an API    | Readable JSON files that can live in your repo              |
-| Agent access varies by tool and plan | Built-in read/write MCP with live, undoable edits           |
+## What stays editable
+
+Supported DOM remains editable on the canvas, including layout, type, colours,
+breakpoints, and interaction states. Code export reads those values from the
+document.
+
+For a feature-by-feature comparison, see
+[Pitolet vs Figma](https://pitolet.com/vs-figma/).
 
 ## Quickstart
 
@@ -26,7 +29,8 @@ pnpm install
 pnpm dev          # server on :4517, editor on :5173
 ```
 
-Open http://localhost:5173. Pitolet creates a sample document in `./pitolet/`. It is ordinary JSON, so you can keep it in the repo and review it like any other file.
+Open http://localhost:5173. The sample document is stored as JSON in
+`./pitolet/`, where it can be committed with the rest of the project.
 
 Production build:
 
@@ -44,11 +48,11 @@ pitolet                # serves editor + API + MCP on :4517
 
 ## See it work
 
-**Change one token; every bound element updates.**
+Editing a token updates every element bound to it.
 
 ![An agent recoloring a Pitolet document through its design tokens](marketing/gifs/pitolet-recolor.gif)
 
-**Open the code panel; the same document is React and Tailwind.**
+The code panel shows the React and Tailwind generated from the document.
 
 ![A Pitolet document exported as React and Tailwind](marketing/gifs/pitolet-code.gif)
 
@@ -71,7 +75,7 @@ docker run -p 4517:4517 -v pitolet-data:/data \
   pitolet
 ```
 
-## Connect your coding agent (MCP)
+## Connect an agent over MCP
 
 ```bash
 claude mcp add --transport http pitolet http://localhost:4517/mcp
@@ -83,7 +87,9 @@ Then, in Claude Code:
 
 ### Import an existing site
 
-Use the CLI when you already have a page and want it on the Pitolet canvas. Normal agent editing still happens over MCP. The import command runs locally, captures the page, and sends one responsive document to your own server or a cloud workspace:
+`pitolet import` captures a page on your machine and creates a Pitolet
+document on a local server or cloud workspace. Use MCP for normal agent edits
+after the import.
 
 ```bash
 # Self-hosted (no auth)
@@ -94,7 +100,11 @@ PITOLET_TOKEN=ptl_... pitolet import http://localhost:3000 \
   --to https://app.pitolet.com/w/your-workspace
 ```
 
-By default, Pitolet captures the page at 375, 768, and 1440 pixels. The mobile styles become the base and wider layouts become breakpoint overrides. Images are copied into Pitolet. Regions it cannot edit safely—such as canvas, SVG, iframe, and video content—are kept as images and listed in the report.
+By default, Pitolet checks the page at 375, 768, and 1440 pixels. It uses the
+mobile result as the base and stores wider layouts as breakpoint overrides.
+Images are copied into Pitolet. Unsupported areas remain visible as image
+nodes, and the report identifies each one. This applies to canvas, SVG,
+iframes, video, and other content that Pitolet cannot edit safely.
 
 Useful options:
 
@@ -107,50 +117,58 @@ pitolet import https://example.com/dashboard \
   --report-dir ./import-report
 ```
 
-The first import downloads a compatible Chromium build and caches it. Each run saves source, imported, and difference images for every width. The importer recreates appearance and responsive structure; it does not copy application logic, routing, event handlers, or live data.
+The first import downloads and caches a compatible Chromium build. Each run
+saves the source capture, the imported result, and a difference image for
+every width. Import does not copy application logic, routing, event handlers,
+or live data.
 
-Agent edits use the same validation and history as edits made in the UI. They appear on the open canvas, show a short highlight, and can be undone with ⌘Z.
+Agent edits use the same validation and history as edits made in the UI. They
+appear on the open canvas with a short highlight and can be undone with ⌘Z.
 
-**Read**: `list_documents`, `list_frames`, `get_node`, `get_selection`, `get_design_as_code`, `get_tokens`, `get_screenshot` (uses the open editor when available, then the bundled Playwright Core fallback).
-**Write**: `create_frame`, `insert_nodes`, `update_node`, `delete_nodes`, `set_tokens`, `set_selection`, `create_document`.
-**Collaborate**: `add_comment` / `get_comments` / `resolve_comment`. The agent reads the notes you pin on nodes and can leave its own, threaded to the same node.
-**Design system**: `import_design_system` merges your real `theme.css` / `globals.css` custom properties (colors, spacing, radius, shadows, fonts, type scale) into the document's tokens, so agent output uses your system rather than the defaults.
-**Repo linking**: `export_project { annotate }` writes the project plus a `.pitolet-manifest.json` (per-file source frame + content hash) and, with `annotate`, stamps `data-ptl-id` attributes and `// @pitolet` headers into the code. `check_drift` then reports, per file, whether the design changed, the file was hand-edited, both, or everything is in sync, so the agent knows what to reconcile.
+### What agents can do
 
-The import command includes Playwright Core. If its matching Chromium build is missing, the first import downloads and caches it. MCP's `get_screenshot` uses the open editor when it can; otherwise it reuses that cached browser for a headless capture. A screenshot request never starts a browser download on its own. If Chromium is still missing, open the document in the editor or run one import first.
+- Read documents with `list_documents`, `list_frames`, `get_node`,
+  `get_selection`, `get_design_as_code`, `get_tokens`, and `get_screenshot`.
+- Write with `create_frame`, `insert_nodes`, `update_node`, `delete_nodes`,
+  `set_tokens`, `set_selection`, and `create_document`.
+- Work with comments through `add_comment`, `get_comments`, and
+  `resolve_comment`.
+- Import CSS custom properties from `theme.css` or `globals.css` with
+  `import_design_system`.
+- Export a project and its `.pitolet-manifest.json` with `export_project`.
+  `check_drift` reports whether each design or code file changed.
+
+`get_screenshot` uses the open editor when one is available. Otherwise, it
+uses the Chromium build cached by the import command. Screenshot requests do
+not download a browser, so run an import first if Chromium is missing.
 
 ## The editor
 
-- **Canvas**: infinite, 60fps pan/zoom (wheel pans, ⌘/pinch zooms, space-drag). Frames are artboards, and everything inside flows with real CSS.
-- **Tools**: `V` select · `F` frame · `R` box · `T` text. Double-click to descend into a tree, double-click text to edit inline. Drag layers to reorder or reparent with live flex drop indicators, or drop image files straight onto the canvas.
-- **Inspector**: Framer-style Stack vocabulary over real CSS. Direction, alignment, gap, padding/margin, sizing with `auto`/`fill`/`%`/`px`, typography (Google Fonts, variable weights), fills, gradients, borders, radius, shadows, opacity, overflow, absolute positioning. Every field can bind to a design token (◈).
-- **Tokens**: colors, spacing, radius, type scale. Editing a token reflows the whole canvas live and re-emits as Tailwind `@theme` variables.
-- **Components**: ⌘⌥K componentizes a subtree. Instances take variant props and per-node overrides, and codegen emits a real typed React component.
-- **Breakpoints & states**: pick Base, a named width, or `:hover`, `:focus`, or `:active` in the top bar. The selected frame previews that context immediately. Edits stay in the chosen layer and wider breakpoints inherit the narrower styles.
-- **Collaboration**: open Comments from the top bar, select a layer, and write a note. The inspector footer is a shortcut to the same panel, and canvas markers appear while comments are open. Your coding agent reads and replies to the same threads. The top bar also has an activity feed and a document switcher for multiple `.pitolet.json` files.
-- **Preview (⌘↩)**: the frame rendered from generated code in an iframe, so hover states and media queries are real.
-- **Code panel (⌘J)**: live React+Tailwind or HTML+CSS for the selection, plus one-click full-project export (`theme.css`, `components/`, `frames/`).
-- **⌘K**: command palette with everything above.
+- **Canvas and tools:** Wheel to pan, ⌘ or pinch to zoom, and hold Space to
+  drag. `V` selects, `F` draws a frame, `R` draws a box, and `T` adds text.
+- **Inspector and tokens:** Edit CSS layout and appearance from the inspector.
+  Values can be linked to document tokens.
+- **Breakpoints and states:** Choose a width or interaction state from the top
+  bar. The selected frame updates to show it.
+- **Components and comments:** Turn a subtree into a component with ⌘⌥K.
+  Comments are attached to layers and shared with connected agents.
+- **Preview and code:** Press ⌘↩ to preview generated code or ⌘J to inspect and
+  export it. Press ⌘K for other commands.
 
 ## Architecture
 
-pnpm monorepo, TypeScript strict throughout:
+Pitolet is a TypeScript pnpm workspace:
 
 ```
-packages/schema    the contract: flat node map, token-aware StyleDecl, zod validation,
-                   style cascade (resolve.ts) and CSS emission (css.ts) — the single
-                   source of style truth shared by canvas rendering AND codegen
-packages/codegen   deterministic compiler → React+Tailwind v4 / HTML+CSS
-                   (token utilities, scale snapping, arbitrary-value fallback)
-packages/server    authoritative document store (validated Immer patches, monotonic revs),
-                   WebSocket sync, disk persistence (.pitolet.json), asset store, MCP endpoint
-packages/editor    React 19 SPA: DOM canvas (one transformed world container),
-                   screen-space overlays, transient-rAF interactions (zero React
-                   renders during drags), Zustand + patch-based undo/redo
-packages/ui        Pitolet's own design system (dark, token-driven — dogfooded)
+packages/schema    document types, validation, and style resolution
+packages/codegen   React/Tailwind and HTML/CSS code generation
+packages/server    document storage, WebSocket sync, assets, and MCP
+packages/editor    React canvas, inspector, and undo history
+packages/ui        shared UI components
 ```
 
-Editor pixels and generated code can't drift, because both derive from the same `resolveStyles` → `styleToCssProps` pipeline.
+Canvas rendering and code generation both call `resolveStyles` before
+`styleToCssProps`.
 
 ## Development
 
@@ -168,18 +186,28 @@ pnpm check:package # install and boot the exact npm tarball
 UPDATE_GOLDEN=1 pnpm vitest run --project codegen   # regenerate golden files intentionally
 ```
 
-Documents live in `./pitolet/*.pitolet.json`. Edit them externally (git checkout, scripts, agents writing JSON) and the server hot-reloads every connected editor.
+Documents live in `./pitolet/*.pitolet.json`. The server watches that directory
+and reloads connected editors when a file changes.
 
 ## Pitolet Cloud
 
-[app.pitolet.com](https://app.pitolet.com) is the hosted version. It adds team workspaces, scoped agent tokens, read-only share links, and version history. Each workspace has a stable MCP endpoint, so your agent can connect without a local server or tunnel. The free tier is available without self-hosting; the cloud code lives in [apps/cloud](apps/cloud) under a commercial license.
+[app.pitolet.com](https://app.pitolet.com) is the hosted version. It provides
+team workspaces, scoped agent tokens, read-only share links, and version
+history. Each workspace has its own MCP endpoint, so an agent can connect
+without a local server or tunnel. The cloud code lives in
+[apps/cloud](apps/cloud) under a commercial license.
 
 The [pitolet.com](https://pitolet.com) landing page is a Pitolet document exported from [site/](site).
 
 ## License
 
-Pitolet's core — everything under `packages/` — is licensed under [AGPL-3.0](LICENSE): free to use, self-host, and modify forever. If you run a modified version as a network service, the AGPL requires you to share your changes.
+Everything under `packages/` is licensed under [AGPL-3.0](LICENSE). You may
+use, self-host, and modify it. If you run a modified version as a network
+service, the AGPL requires you to make those changes available.
 
-Code under `apps/cloud` (the hosted platform: accounts, billing, workspaces) is source-visible but commercially licensed — it may not be run in production except by the Pitolet maintainers.
+Code under `apps/cloud` is source-visible and commercially licensed. Only the
+Pitolet maintainers may run it in production.
 
-Contributions require a one-time [CLA](CONTRIBUTING.md#contributor-license-agreement) so your work can ship in both editions.
+Contributors sign a one-time
+[CLA](CONTRIBUTING.md#contributor-license-agreement) because changes to the
+core are used in both editions.

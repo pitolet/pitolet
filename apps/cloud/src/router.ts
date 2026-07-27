@@ -133,7 +133,7 @@ const SHARE_NOT_FOUND_HTML = `<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Link not found — Pitolet</title>
+<title>Link not found | Pitolet</title>
 <style>
   body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
          background: #101014; color: #e4e4e9; font: 15px/1.6 system-ui, sans-serif; }
@@ -486,7 +486,7 @@ export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
       if (pathname === '/') {
         res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8' });
         res.end(
-          'Pitolet cloud — dashboard build not found (run `pnpm --filter @pitolet/cloud build`)',
+          'Pitolet cloud dashboard build not found. Run `pnpm --filter @pitolet/cloud build`.',
         );
         return;
       }
@@ -1059,7 +1059,7 @@ export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
       return;
     }
     res.writeHead(404, { 'content-type': 'text/plain' });
-    res.end('editor build not found — run `pnpm build` first');
+    res.end('editor build not found; run `pnpm build` first');
   }
 
   function handleUpgrade(req: http.IncomingMessage, socket: Duplex, head: Buffer): void {
@@ -1211,7 +1211,7 @@ function serveStatic(
     }
     filePath = resolve(rootPath, 'index.html');
     if (!existsSync(filePath)) {
-      res.writeHead(404).end('editor build not found — run `pnpm build` first');
+      res.writeHead(404).end('editor build not found; run `pnpm build` first');
       return;
     }
   }

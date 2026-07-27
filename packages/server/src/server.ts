@@ -178,7 +178,7 @@ function serveStatic(
   if (!existsSync(filePath) || statSync(filePath).isDirectory()) {
     filePath = join(resolvedRoot, 'index.html');
     if (!existsSync(filePath)) {
-      res.writeHead(404).end('editor build not found — run `pnpm build` first');
+      res.writeHead(404).end('editor build not found; run `pnpm build` first');
       return;
     }
   }

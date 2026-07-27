@@ -1,7 +1,8 @@
-## What & why
+## Summary
 
-<!-- One or two sentences. Link the issue if there is one. -->
+<!-- What changed, and why? Link an issue if there is one. -->
 
-- [ ] Tests green (`pnpm test`) and typecheck clean (`pnpm typecheck`)
+- [ ] `pnpm test` passes
+- [ ] `pnpm typecheck` passes
 - [ ] New behavior has a test
-- [ ] UI change? Screenshot below
+- [ ] UI changes include a screenshot

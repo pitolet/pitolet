@@ -1,4 +1,4 @@
-# Demo video voiceover
+# Demo video notes
 
 Target: 44 seconds, with a short pause between each product beat.
 
@@ -22,15 +22,20 @@ Target: 44 seconds, with a short pause between each product beat.
 - Final audio: stereo AAC at 48kHz, -16.9 LUFS integrated, -3.9 dB true peak
 - Existing baked-in callouts remain unchanged; no duplicate labels were added
 
-> [warmly] Meet Pitolet — where design and code finally share the same canvas.
+## Narration for the next render
+
+The current MP3 and video use the previous script. Use this version when the
+demo is rendered again.
+
+> [warmly] Pitolet lets you fix an interface your coding agent
+> built, right on the page.
 >
-> [confident] Ask your coding agent for a change... and watch it appear live,
-> using your real design system.
+> [confident] Ask the agent for a change and watch it appear on the canvas.
 >
-> [with quiet satisfaction] Change one token, and the whole page responds.
+> [with quiet satisfaction] If a colour is wrong, change the token. Every
+> linked element updates.
 >
-> [slightly excited] Then open the code: the design is already a working React
-> interface.
+> [slightly excited] Open the code panel when you want the edited page as
+> React.
 >
-> [assured] No handoff. No translation. Just one artifact, from first idea to
-> production.
+> [assured] Keep editing it yourself, or send the agent back in.

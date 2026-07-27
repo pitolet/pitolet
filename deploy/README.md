@@ -4,9 +4,9 @@ Pitolet Cloud runs on one VPS with Caddy, the app container, Postgres 17, and re
 
 Target hosts:
 
-- `pitolet.com` — static marketing site (served from `./static`, including
+- `pitolet.com`: static marketing site (served from `./static`, including
   `/vs-figma/`).
-- `app.pitolet.com` — the cloud app.
+- `app.pitolet.com`: the cloud app.
 
 ## 1. Provision the VPS
 
@@ -17,7 +17,7 @@ Target hosts:
    - `pitolet.com`
    - `app.pitolet.com`
      Wait for propagation before step 6. Caddy needs the names resolving to the
-     box to issue Let's Encrypt certificates.
+     server to issue Let's Encrypt certificates.
 
 ## 2. Create a deploy user + harden SSH
 
@@ -33,7 +33,7 @@ chown -R deploy:deploy /home/deploy/.ssh
 chmod 700 /home/deploy/.ssh && chmod 600 /home/deploy/.ssh/authorized_keys
 ```
 
-Harden `/etc/ssh/sshd_config` — key-only, no root:
+Harden `/etc/ssh/sshd_config` to require keys and block root login:
 
 ```
 PermitRootLogin no
@@ -117,7 +117,7 @@ docker compose config         # catches missing variables and YAML errors
 docker compose pull app caddy postgres
 docker compose build --pull backup
 docker compose up -d
-docker compose ps             # all services healthy?
+docker compose ps             # check that every service is healthy
 ```
 
 The app applies pending database migrations before it starts listening. During
@@ -156,10 +156,10 @@ curl -H "Authorization: Bearer $PITOLET_METRICS_TOKEN" \
 
 **Uptime checks.** Point an uptime monitor at these URLs, all expecting `200`:
 
-- `https://app.pitolet.com/healthz` — process liveness.
-- `https://app.pitolet.com/readyz` — readiness, including a database query
+- `https://app.pitolet.com/healthz`: process liveness.
+- `https://app.pitolet.com/readyz`: readiness, including a database query
   (the Docker health check uses this URL).
-- `https://pitolet.com` — the static landing page.
+- `https://pitolet.com`: the static landing page.
 
 **Gauge log.** Every 5 minutes (and once at shutdown) the app logs a single
 structured line. Grep it out of the container logs; no backend required:
@@ -199,14 +199,14 @@ pre-deploy restic snapshot is the recovery point for a manual database restore.
 
 Add these repository **secrets**:
 
-- `VPS_HOST` — the server IP or hostname.
-- `VPS_USER` — `deploy`.
-- `VPS_SSH_KEY` — a private key whose public half is in
+- `VPS_HOST`: the server IP or hostname.
+- `VPS_USER`: `deploy`.
+- `VPS_SSH_KEY`: a private key whose public half is in
   `/home/deploy/.ssh/authorized_keys`. Generate a dedicated pair:
   `ssh-keygen -t ed25519 -f pitolet_deploy -N ""`, append `pitolet_deploy.pub`
   to the deploy user's `authorized_keys`, and paste `pitolet_deploy` (private)
   as the secret.
-- `RESEND_API_KEY` — a Resend API key for the verified sending domain. The
+- `RESEND_API_KEY`: a Resend API key for the verified sending domain. The
   workflow writes it to the protected production `.env` without printing it.
 
 Trigger from the Actions tab (**workflow_dispatch**) with the immutable image
@@ -254,6 +254,6 @@ docker compose exec postgres sh -c '
 docker compose run --rm backup sh -c 'rm -rf /restore/*'
 ```
 
-If every step succeeds and the tables/rows look right, the backup chain is
-sound. Record the drill date and snapshot ID. If a step fails, remove the
-scratch database and `/restore/*` before retrying.
+If the restore succeeds and the expected tables are present, record the drill
+date and snapshot ID. If a step fails, remove the scratch database and
+`/restore/*` before retrying.
