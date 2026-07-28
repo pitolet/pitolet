@@ -98,6 +98,11 @@ services:
     read_only: true
     cap_drop:
       - ALL
+    # Assets are intentionally stored as 0600 by the app. The backup process
+    # runs as root with every capability dropped, so it needs this narrow
+    # read-only bypass to include files owned by the app user.
+    cap_add:
+      - DAC_READ_SEARCH
     security_opt:
       - no-new-privileges:true
     stop_grace_period: 2m
