@@ -78,6 +78,16 @@ export interface ShareLink {
   revokedAt: string | null;
 }
 
+export interface BillingSummary {
+  plan: string;
+  status: string | null;
+  currentPeriodEnd: string | null;
+  priceId: string | null;
+  productId: string | null;
+  checkout: { workspaceId: string; workspaceSig: string } | null;
+  billingEnabled: boolean;
+}
+
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -148,6 +158,9 @@ export const api = {
       method: 'DELETE',
       body: JSON.stringify({ tokenId }),
     }),
+
+  billing: (workspaceId: string) =>
+    request<BillingSummary>(`/api/workspaces/${workspaceId}/billing`),
 
   /**
    * List a workspace's documents. Served by the per-workspace runtime under

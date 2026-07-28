@@ -15,6 +15,7 @@ export interface SelectProps<V extends string = string> {
   /** Compact width control for inspector rows. */
   className?: string;
   disabled?: boolean;
+  ariaLabel?: string;
 }
 
 export function Select<V extends string = string>({
@@ -23,6 +24,7 @@ export function Select<V extends string = string>({
   options,
   className = '',
   disabled,
+  ariaLabel,
 }: SelectProps<V>) {
   const items = useMemo(
     () => options.map((o) => ({ value: o.value, label: o.label })),
@@ -37,7 +39,7 @@ export function Select<V extends string = string>({
       disabled={disabled}
       items={items}
     >
-      <BaseSelect.Trigger className={`ptl-select-trigger ${className}`}>
+      <BaseSelect.Trigger className={`ptl-select-trigger ${className}`} aria-label={ariaLabel}>
         <BaseSelect.Value />
         <BaseSelect.Icon className="ptl-select-icon">
           <ChevronsUpDown size={12} />

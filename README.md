@@ -77,13 +77,42 @@ docker run -p 4517:4517 -v pitolet-data:/data \
 
 ## Connect an agent over MCP
 
+Start Pitolet, then give this to your coding agent:
+
+```text
+Connect this project to Pitolet over MCP.
+
+Endpoint: http://localhost:4517/mcp
+
+No token is needed for this local server. Verify the connection by listing the Pitolet documents.
+```
+
+For manual setup:
+
 ```bash
+# Codex
+codex mcp add pitolet --url http://localhost:4517/mcp
+
+# Claude Code
 claude mcp add --transport http pitolet http://localhost:4517/mcp
 ```
 
-Then, in Claude Code:
+Cursor users can add the same endpoint as a Streamable HTTP server in
+`.cursor/mcp.json`.
 
-> _"In Pitolet, add a testimonial section to the Landing frame using the design tokens."_
+Once it is connected, ask the agent to work in the open Pitolet document:
+
+```text
+Use Pitolet for this page: a settings page for my app.
+
+Create a new Pitolet document with a clear name and build the page there. Keep it responsive. I want to edit it in Pitolet while you work.
+```
+
+For example, in Claude Code:
+
+```text
+In Pitolet, add a testimonial section to the Landing frame using the design tokens.
+```
 
 ### Import an existing site
 

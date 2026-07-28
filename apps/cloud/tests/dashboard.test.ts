@@ -105,6 +105,19 @@ describe('dashboard SPA serving', () => {
     expect(await res.text()).toBe(DASHBOARD_SENTINEL);
   });
 
+  it('falls back to index.html for workspace home and document detail routes', async () => {
+    for (const path of [
+      '/workspace/some-workspace-id',
+      '/workspace/some-workspace-id/documents/doc-1',
+      '/workspace/some-workspace-id/people',
+      '/workspace/some-workspace-id/settings',
+    ]) {
+      const res = await fetch(`${base}${path}`);
+      expect(res.status).toBe(200);
+      expect(await res.text()).toBe(DASHBOARD_SENTINEL);
+    }
+  });
+
   it('keeps /api/* priority over the SPA fallback (401 JSON, not HTML)', async () => {
     const res = await fetch(`${base}/api/me`);
     expect(res.status).toBe(401);

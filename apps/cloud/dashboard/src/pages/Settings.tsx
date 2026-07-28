@@ -1,69 +1,90 @@
-import { Button, Select, Tabs } from '@pitolet/ui';
-import { ChevronLeft, FileText } from 'lucide-react';
+import { Button, Select } from '@pitolet/ui';
+import { RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import type { Me } from '../api.js';
-import { navigate } from '../router.js';
-import { Members } from './settings/Members.js';
-import { Tokens } from './settings/Tokens.js';
+import { ApiError, api, type BillingSummary, type WorkspaceSummary } from '../api.js';
+import { AgentSetup } from '../components/AgentSetup.js';
+import { WorkspaceShell } from '../components/WorkspaceShell.js';
 
-/**
- * /settings/:workspaceId — Members | Agent tokens. Resolves the workspace from
- * the already-loaded /api/me payload so a deep link that isn't a member's
- * workspace shows a not-found state (the API would 404 anyway).
- */
-export function Settings({ me, workspaceId }: { me: Me; workspaceId: string }) {
-  const ws = me.workspaces.find((w) => w.id === workspaceId);
-  const [tab, setTab] = useState('members');
+export function Settings({ workspace }: { workspace: WorkspaceSummary }) {
+  return (
+    <WorkspaceShell
+      workspace={workspace}
+      active="settings"
+      title="Settings"
+      description={workspace.name}
+    >
+      <div className="ptl-settings-stack">
+        <section className="ptl-settings-section">
+          <AgentSetup
+            workspace={workspace}
+            title="Agent connections"
+            description="Set up a coding agent or manage the tokens it uses."
+          />
+        </section>
 
-  if (!ws) {
-    return (
-      <>
-        <BackLink />
-        <div className="ptl-dash-empty">Workspace not found, or you don't have access to it.</div>
-      </>
-    );
+        <PlanCard workspace={workspace} />
+      </div>
+    </WorkspaceShell>
+  );
+}
+
+function PlanCard({ workspace }: { workspace: WorkspaceSummary }) {
+  const [billing, setBilling] = useState<BillingSummary | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const isOwner = workspace.role === 'owner';
+
+  async function reload() {
+    if (!isOwner) return;
+    setError(null);
+    try {
+      setBilling(await api.billing(workspace.id));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Could not load plan details.');
+    }
   }
 
+  useEffect(() => {
+    void reload();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [workspace.id, isOwner]);
+
   return (
-    <>
-      <BackLink />
-      <div className="ptl-dash-page-head">
+    <section className="ptl-settings-section">
+      <div className="ptl-dash-section-head">
         <div>
-          <h1 className="ptl-dash-title">{ws.name}</h1>
-          <p className="ptl-dash-subtitle">
-            /{ws.slug} · <span style={{ textTransform: 'capitalize' }}>{ws.role}</span>
-          </p>
+          <h2 className="ptl-dash-section-title">Plan</h2>
+          <p className="ptl-dash-subtitle">The current plan for this workspace.</p>
         </div>
-        <Button variant="ghost" size="sm" onClick={() => navigate(`/docs/${ws.id}`)}>
-          <FileText size={13} /> Documents
-        </Button>
       </div>
-
-      <div className="ptl-dash-tabbar">
-        <Tabs
-          value={tab}
-          onValueChange={setTab}
-          tabs={[
-            { value: 'members', label: 'Members' },
-            { value: 'tokens', label: 'Agent tokens' },
-          ]}
-        />
+      <div className="ptl-plan-card">
+        <div>
+          <strong className="ptl-plan-name">{billing?.plan ?? workspace.plan}</strong>
+          <span className="ptl-plan-role">
+            {workspace.role === 'owner'
+              ? billing?.status
+                ? `Subscription ${billing.status}`
+                : 'Workspace owner'
+              : `Only an owner can manage this plan`}
+          </span>
+        </div>
+        {billing?.currentPeriodEnd && (
+          <span className="ptl-plan-renewal">
+            Current period ends {new Date(billing.currentPeriodEnd).toLocaleDateString()}
+          </span>
+        )}
+        {error && (
+          <div className="ptl-inline-error" role="alert">
+            <span>{error}</span>
+            <Button variant="ghost" size="sm" onClick={reload}>
+              <RefreshCw size={13} /> Retry
+            </Button>
+          </div>
+        )}
       </div>
-
-      {tab === 'members' ? <Members ws={ws} me={me} /> : <Tokens ws={ws} />}
-    </>
+    </section>
   );
 }
 
-function BackLink() {
-  return (
-    <button type="button" className="ptl-dash-back" onClick={() => navigate('/')}>
-      <ChevronLeft size={14} /> All workspaces
-    </button>
-  );
-}
-
-/** Shared confirm-then-act button used by member/token removal. */
 export function ConfirmButton({
   label,
   confirmLabel,
@@ -76,11 +97,11 @@ export function ConfirmButton({
   disabled?: boolean;
 }) {
   const [armed, setArmed] = useState(false);
-  // Auto-disarm after a few seconds so a stray armed button can't be clicked later.
+
   useEffect(() => {
     if (!armed) return;
-    const t = setTimeout(() => setArmed(false), 4000);
-    return () => clearTimeout(t);
+    const timer = window.setTimeout(() => setArmed(false), 4000);
+    return () => window.clearTimeout(timer);
   }, [armed]);
 
   return (
@@ -89,12 +110,8 @@ export function ConfirmButton({
       size="sm"
       disabled={disabled}
       onClick={() => {
-        if (armed) {
-          onConfirm();
-          setArmed(false);
-        } else {
-          setArmed(true);
-        }
+        if (armed) onConfirm();
+        setArmed((current) => !current);
       }}
     >
       {armed ? confirmLabel : label}
@@ -102,14 +119,13 @@ export function ConfirmButton({
   );
 }
 
-/** Small labelled select used in member/token forms (full-height form styling). */
 export function RoleSelect({
   value,
   onChange,
   disabled,
 }: {
   value: string;
-  onChange: (v: string) => void;
+  onChange: (value: string) => void;
   disabled?: boolean;
 }) {
   return (
@@ -117,6 +133,7 @@ export function RoleSelect({
       value={value}
       onValueChange={onChange}
       disabled={disabled}
+      ariaLabel="Role"
       options={[
         { value: 'owner', label: 'Owner' },
         { value: 'editor', label: 'Editor' },

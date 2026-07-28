@@ -1,19 +1,10 @@
 import { BrandMark, Button } from '@pitolet/ui';
+import { CheckCircle2 } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 import { authClient } from '../authClient.js';
 
 type Mode = 'sign-in' | 'sign-up';
 
-/**
- * Signed-out `/` screen. Email+password (sign in / create account toggle) plus
- * a magic-link option. Uses the better-auth react client; on success the parent
- * re-fetches /api/me and swaps to the workspace list.
- *
- * Social sign-in (github/google) is intentionally omitted here — the server
- * only registers those providers when their env credentials exist (I6). Render
- * them behind a config check when that lands:
- *   // <Button onClick={() => authClient.signIn.social({ provider: 'github' })}>…
- */
 export function SignIn({ onAuthed }: { onAuthed: () => void }) {
   const [mode, setMode] = useState<Mode>('sign-in');
   const [name, setName] = useState('');
@@ -23,15 +14,15 @@ export function SignIn({ onAuthed }: { onAuthed: () => void }) {
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  async function submit(e: FormEvent) {
-    e.preventDefault();
+  async function submit(event: FormEvent) {
+    event.preventDefault();
     setError(null);
     setNotice(null);
     setBusy(true);
     try {
       if (mode === 'sign-up') {
-        const { error } = await authClient.signUp.email({ email, password, name });
-        if (error) throw new Error(error.message ?? 'Could not create account');
+        const result = await authClient.signUp.email({ email, password, name });
+        if (result.error) throw new Error(result.error.message ?? 'Could not create account');
         const session = await authClient.getSession();
         if (!session.data) {
           setNotice(`Check ${email} to verify your account.`);
@@ -40,12 +31,9 @@ export function SignIn({ onAuthed }: { onAuthed: () => void }) {
           return;
         }
       } else {
-        const { error } = await authClient.signIn.email({ email, password });
-        if (error) throw new Error(error.message ?? 'Invalid email or password');
+        const result = await authClient.signIn.email({ email, password });
+        if (result.error) throw new Error(result.error.message ?? 'Email or password is incorrect');
       }
-      // Honor `/?next=<path>` (set by the server when an anonymous browser
-      // hits a workspace URL). Same-origin paths only — a leading single `/`
-      // and never `//host` — so this can't become an open redirect.
       const next = new URLSearchParams(window.location.search).get('next');
       if (next && next.startsWith('/') && !next.startsWith('//')) {
         window.location.assign(next);
@@ -53,7 +41,7 @@ export function SignIn({ onAuthed }: { onAuthed: () => void }) {
       }
       onAuthed();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong');
+      setError(err instanceof Error ? err.message : 'Could not sign in');
     } finally {
       setBusy(false);
     }
@@ -68,120 +56,141 @@ export function SignIn({ onAuthed }: { onAuthed: () => void }) {
     }
     setBusy(true);
     try {
-      // Carry ?next through the email round-trip (same-origin guard as above).
       const next = new URLSearchParams(window.location.search).get('next');
       const callbackURL = next && next.startsWith('/') && !next.startsWith('//') ? next : '/';
-      const { error } = await authClient.signIn.magicLink({
-        email,
-        callbackURL,
-      });
-      if (error) throw new Error(error.message ?? 'Could not send link');
-      setNotice(`We emailed a sign-in link to ${email}.`);
+      const result = await authClient.signIn.magicLink({ email, callbackURL });
+      if (result.error) throw new Error(result.error.message ?? 'Could not send the link');
+      setNotice(`We sent a sign-in link to ${email}.`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong');
+      setError(err instanceof Error ? err.message : 'Could not send the link');
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <div className="ptl-dash-auth">
-      <form className="ptl-dash-auth-card" onSubmit={submit}>
-        <div className="ptl-dash-auth-brand" style={{ color: 'var(--ptl-accent)' }}>
+    <main className="ptl-auth-page">
+      <section className="ptl-auth-intro">
+        <div className="ptl-auth-brand">
           <BrandMark size={24} />
-          <span className="ptl-dash-auth-brand-name">Pitolet</span>
+          <span>Pitolet</span>
         </div>
-        <p className="ptl-dash-auth-tagline">
-          {mode === 'sign-in' ? 'Sign in to your workspaces' : 'Create your Pitolet account'}
-        </p>
+        <div>
+          <h1>Edit the pages your coding agent builds.</h1>
+          <p>
+            Pitolet gives you and your agent the same editable page. Your changes remain usable as
+            code.
+          </p>
+        </div>
+        <div className="ptl-auth-points">
+          <span>
+            <CheckCircle2 size={15} /> Edit the live page
+          </span>
+          <span>
+            <CheckCircle2 size={15} /> Import an existing site
+          </span>
+        </div>
+      </section>
 
-        {notice && <div className="ptl-dash-notice">{notice}</div>}
+      <section className="ptl-auth-panel">
+        <form className="ptl-dash-auth-card" onSubmit={submit}>
+          <div className="ptl-auth-form-head">
+            <h2>{mode === 'sign-in' ? 'Sign in' : 'Create your account'}</h2>
+            <p>
+              {mode === 'sign-in'
+                ? 'Open your Pitolet workspaces.'
+                : 'Start with a free workspace.'}
+            </p>
+          </div>
 
-        {mode === 'sign-up' && (
+          {notice && <div className="ptl-dash-notice">{notice}</div>}
+
+          {mode === 'sign-up' && (
+            <div className="ptl-dash-field">
+              <label className="ptl-dash-label" htmlFor="name">
+                Name
+              </label>
+              <input
+                id="name"
+                className="ptl-dash-input"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                autoComplete="name"
+                required
+              />
+            </div>
+          )}
+
           <div className="ptl-dash-field">
-            <label className="ptl-dash-label" htmlFor="name">
-              Name
+            <label className="ptl-dash-label" htmlFor="email">
+              Email
             </label>
             <input
-              id="name"
+              id="email"
+              type="email"
               className="ptl-dash-input"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              autoComplete="name"
-              placeholder="Ada Lovelace"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              autoComplete="email"
+              required
             />
           </div>
-        )}
 
-        <div className="ptl-dash-field">
-          <label className="ptl-dash-label" htmlFor="email">
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            className="ptl-dash-input"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            autoComplete="email"
-            placeholder="you@company.com"
-            required
-          />
-        </div>
+          <div className="ptl-dash-field">
+            <label className="ptl-dash-label" htmlFor="password">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              className="ptl-dash-input"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              autoComplete={mode === 'sign-up' ? 'new-password' : 'current-password'}
+              required
+            />
+          </div>
 
-        <div className="ptl-dash-field">
-          <label className="ptl-dash-label" htmlFor="password">
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            className="ptl-dash-input"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete={mode === 'sign-up' ? 'new-password' : 'current-password'}
-            placeholder="••••••••"
-            required
-          />
-        </div>
+          {error && (
+            <div className="ptl-dash-error" role="alert">
+              {error}
+            </div>
+          )}
 
-        {error && <div className="ptl-dash-error">{error}</div>}
-
-        <div className="ptl-dash-auth-actions">
           <Button type="submit" variant="primary" className="ptl-dash-btn-block" disabled={busy}>
-            {mode === 'sign-in' ? 'Sign in' : 'Create account'}
+            {busy ? 'Please wait…' : mode === 'sign-in' ? 'Sign in' : 'Create account'}
           </Button>
-        </div>
 
-        <div className="ptl-dash-divider">or</div>
+          <div className="ptl-dash-divider">
+            <span>or</span>
+          </div>
 
-        <Button
-          type="button"
-          variant="outline"
-          className="ptl-dash-btn-block"
-          disabled={busy}
-          onClick={sendMagicLink}
-        >
-          Email me a sign-in link
-        </Button>
-
-        <div className="ptl-dash-linkrow">
-          <span style={{ color: 'var(--ptl-text-3)' }}>
-            {mode === 'sign-in' ? 'No account yet?' : 'Already have an account?'}
-          </span>
-          <button
+          <Button
             type="button"
-            className="ptl-dash-link"
-            onClick={() => {
-              setMode(mode === 'sign-in' ? 'sign-up' : 'sign-in');
-              setError(null);
-              setNotice(null);
-            }}
+            variant="outline"
+            className="ptl-dash-btn-block"
+            disabled={busy}
+            onClick={sendMagicLink}
           >
-            {mode === 'sign-in' ? 'Create one' : 'Sign in'}
-          </button>
-        </div>
-      </form>
-    </div>
+            Email me a sign-in link
+          </Button>
+
+          <div className="ptl-dash-linkrow">
+            <span>{mode === 'sign-in' ? 'New to Pitolet?' : 'Already have an account?'}</span>
+            <button
+              type="button"
+              className="ptl-dash-link"
+              onClick={() => {
+                setMode(mode === 'sign-in' ? 'sign-up' : 'sign-in');
+                setError(null);
+                setNotice(null);
+              }}
+            >
+              {mode === 'sign-in' ? 'Create an account' : 'Sign in'}
+            </button>
+          </div>
+        </form>
+      </section>
+    </main>
   );
 }

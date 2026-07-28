@@ -1,160 +1,233 @@
 import { Button, Tabs } from '@pitolet/ui';
-import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { ApiError, api, type DocumentSummary, type Me, type WorkspaceSummary } from '../api.js';
-import { navigate } from '../router.js';
+import { ArrowLeft, ArrowRight, FileText, RefreshCw, Search } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { documentUrl } from '../agentSetup.js';
+import { ApiError, api, type DocumentSummary, type WorkspaceSummary } from '../api.js';
+import { WorkspaceShell } from '../components/WorkspaceShell.js';
+import { navigate, workspacePath } from '../router.js';
 import { History } from './docs/History.js';
 import { Sharing } from './docs/Sharing.js';
 
-/**
- * /docs/:workspaceId — the workspace documents page. Resolves the workspace
- * (and the caller's role) from the already-loaded /api/me payload, then lists
- * the workspace's documents via the per-workspace runtime (/w/:slug/api/
- * documents — the session cookie authenticates it). Each doc row expands into
- * a two-tab detail panel: History (version snapshots) and Sharing (public
- * read-only links). Role gating mirrors the API: any member browses history;
- * editor|owner save/restore versions and manage share links.
- */
-export function Documents({ me, workspaceId }: { me: Me; workspaceId: string }) {
-  const ws = me.workspaces.find((w) => w.id === workspaceId);
+export function Documents({
+  workspace,
+  documentId,
+}: {
+  workspace: WorkspaceSummary;
+  documentId?: string;
+}) {
+  const [documents, setDocuments] = useState<DocumentSummary[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!ws) {
+  const reload = useCallback(async () => {
+    setError(null);
+    try {
+      const response = await api.documents(workspace.slug);
+      setDocuments(response.documents);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Could not load documents.');
+    }
+  }, [workspace.slug]);
+
+  useEffect(() => {
+    void reload();
+  }, [reload]);
+
+  if (documentId) {
+    const document = documents?.find((candidate) => candidate.id === documentId);
     return (
-      <>
-        <BackLink />
-        <div className="ptl-dash-empty">Workspace not found, or you don't have access to it.</div>
-      </>
+      <DocumentDetail
+        workspace={workspace}
+        documentId={documentId}
+        document={document}
+        loading={documents === null && !error}
+      />
     );
   }
 
-  return <DocumentsList ws={ws} />;
+  return (
+    <WorkspaceShell
+      workspace={workspace}
+      active="documents"
+      title="Documents"
+      description={`Pages in ${workspace.name}`}
+    >
+      <DocumentBrowser workspace={workspace} documents={documents} error={error} onRetry={reload} />
+    </WorkspaceShell>
+  );
 }
 
-function DocumentsList({ ws }: { ws: WorkspaceSummary }) {
-  const [docs, setDocs] = useState<DocumentSummary[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [openId, setOpenId] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const { documents } = await api.documents(ws.slug);
-        if (!cancelled) setDocs(documents);
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof ApiError ? err.message : 'Could not load documents');
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [ws.slug]);
+function DocumentBrowser({
+  workspace,
+  documents,
+  error,
+  onRetry,
+}: {
+  workspace: WorkspaceSummary;
+  documents: DocumentSummary[] | null;
+  error: string | null;
+  onRetry: () => void;
+}) {
+  const [query, setQuery] = useState('');
+  const filtered = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    if (!needle) return documents ?? [];
+    return (documents ?? []).filter((document) =>
+      (document.name || 'Untitled').toLowerCase().includes(needle),
+    );
+  }, [documents, query]);
+  const origin = typeof window === 'undefined' ? 'https://app.pitolet.com' : window.location.origin;
 
   return (
-    <>
-      <BackLink />
-      <div className="ptl-dash-page-head">
-        <div>
-          <h1 className="ptl-dash-title">{ws.name}</h1>
-          <p className="ptl-dash-subtitle">
-            Documents, history, and sharing ·{' '}
-            <span style={{ textTransform: 'capitalize' }}>{ws.role}</span>
-          </p>
-        </div>
+    <section>
+      <div className="ptl-document-tools">
+        <label className="ptl-search-field">
+          <Search size={15} />
+          <span className="ptl-visually-hidden">Search documents</span>
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search documents"
+          />
+        </label>
       </div>
 
-      {error && (
-        <div className="ptl-dash-error" style={{ marginBottom: 12 }}>
-          {error}
+      {error ? (
+        <div className="ptl-state-card is-error">
+          <strong>Documents could not load</strong>
+          <span>{error}</span>
+          <Button variant="outline" size="sm" onClick={onRetry}>
+            <RefreshCw size={13} /> Retry
+          </Button>
         </div>
-      )}
-
-      {docs === null ? (
-        <div className="ptl-dash-empty">Loading documents…</div>
-      ) : docs.length === 0 ? (
-        <div className="ptl-dash-empty">
-          This workspace has no documents yet. Open the editor to create one.
+      ) : documents === null ? (
+        <div className="ptl-skeleton-list" aria-label="Loading documents">
+          <div className="ptl-skeleton-row" />
+          <div className="ptl-skeleton-row" />
+          <div className="ptl-skeleton-row" />
+        </div>
+      ) : documents.length === 0 ? (
+        <div className="ptl-state-card">
+          <FileText size={20} />
+          <strong>No documents yet</strong>
+          <span>Start from the workspace home or open the editor.</span>
+          <Button variant="outline" onClick={() => navigate(workspacePath(workspace.id))}>
+            Go to workspace home
+          </Button>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="ptl-state-card">
+          <strong>No matching documents</strong>
+          <Button variant="ghost" onClick={() => setQuery('')}>
+            Clear search
+          </Button>
         </div>
       ) : (
-        <div className="ptl-dash-list">
-          {docs.map((doc) => (
-            <DocRow
-              key={doc.id}
-              ws={ws}
-              doc={doc}
-              open={openId === doc.id}
-              onToggle={() => setOpenId((cur) => (cur === doc.id ? null : doc.id))}
-            />
+        <div className="ptl-document-list">
+          {filtered.map((document) => (
+            <article className="ptl-document-row" key={document.id}>
+              <div className="ptl-document-icon">
+                <FileText size={16} />
+              </div>
+              <div className="ptl-document-main">
+                <strong>{document.name || 'Untitled'}</strong>
+                <span>
+                  {document.frameCount} {document.frameCount === 1 ? 'frame' : 'frames'}
+                  {`, revision ${document.rev}`}
+                </span>
+              </div>
+              <div className="ptl-document-actions">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    navigate(
+                      `${workspacePath(workspace.id, 'documents')}/${encodeURIComponent(document.id)}`,
+                    )
+                  }
+                >
+                  History and sharing
+                </Button>
+                <a
+                  className="ptl-button ptl-button--outline ptl-button--sm"
+                  href={documentUrl(origin, workspace, document.id)}
+                >
+                  Open <ArrowRight size={13} />
+                </a>
+              </div>
+            </article>
           ))}
         </div>
       )}
-    </>
+    </section>
   );
 }
 
-function DocRow({
-  ws,
-  doc,
-  open,
-  onToggle,
+function DocumentDetail({
+  workspace,
+  documentId,
+  document,
+  loading,
 }: {
-  ws: WorkspaceSummary;
-  doc: DocumentSummary;
-  open: boolean;
-  onToggle: () => void;
+  workspace: WorkspaceSummary;
+  documentId: string;
+  document: DocumentSummary | undefined;
+  loading: boolean;
 }) {
   const [tab, setTab] = useState('history');
+  const origin = typeof window === 'undefined' ? 'https://app.pitolet.com' : window.location.origin;
 
   return (
-    <div className="ptl-dash-doc">
-      <div className="ptl-dash-row">
-        <button type="button" className="ptl-dash-doc-toggle" onClick={onToggle}>
-          {open ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
-          <span className="ptl-dash-row-name">{doc.name || 'Untitled'}</span>
-        </button>
-        <div className="ptl-dash-row-actions">
-          <span className="ptl-dash-row-meta">
-            {doc.frameCount} {doc.frameCount === 1 ? 'frame' : 'frames'} · rev {doc.rev}
-          </span>
-          {/* The editor opens the workspace's first doc; multi-doc routing is a
-              future editor feature (noted in the spec). */}
-          <a href={`/w/${ws.slug}/`}>
-            <Button variant="ghost" size="sm">
-              Open in editor
-            </Button>
-          </a>
-        </div>
-      </div>
+    <WorkspaceShell
+      workspace={workspace}
+      active="documents"
+      title={loading ? 'Loading document…' : document?.name || 'Document'}
+      description={
+        document
+          ? `${document.frameCount} ${document.frameCount === 1 ? 'frame' : 'frames'}, revision ${document.rev}`
+          : 'History and sharing'
+      }
+      editorHref={document ? documentUrl(origin, workspace, document.id) : undefined}
+      editorLabel={document ? 'Open document' : 'Open editor'}
+      showEditorAction={!!document}
+    >
+      <button
+        type="button"
+        className="ptl-dash-back ptl-document-back"
+        onClick={() => navigate(workspacePath(workspace.id, 'documents'))}
+      >
+        <ArrowLeft size={14} /> Documents
+      </button>
 
-      {open && (
-        <div className="ptl-dash-doc-detail">
-          <div className="ptl-dash-tabbar">
-            <Tabs
-              value={tab}
-              onValueChange={setTab}
-              tabs={[
-                { value: 'history', label: 'History' },
-                { value: 'sharing', label: 'Sharing' },
-              ]}
-            />
+      {!loading && !document ? (
+        <div className="ptl-state-card">
+          <strong>Document not found</strong>
+          <span>It may have been removed.</span>
+          <Button
+            variant="outline"
+            onClick={() => navigate(workspacePath(workspace.id, 'documents'))}
+          >
+            Back to documents
+          </Button>
+        </div>
+      ) : (
+        <section className="ptl-document-detail">
+          <Tabs
+            value={tab}
+            onValueChange={setTab}
+            tabs={[
+              { value: 'history', label: 'History' },
+              { value: 'sharing', label: 'Sharing' },
+            ]}
+          />
+          <div className="ptl-document-detail-body">
+            {tab === 'history' ? (
+              <History ws={workspace} docId={documentId} />
+            ) : (
+              <Sharing ws={workspace} docId={documentId} />
+            )}
           </div>
-          {tab === 'history' ? (
-            <History ws={ws} docId={doc.id} />
-          ) : (
-            <Sharing ws={ws} docId={doc.id} />
-          )}
-        </div>
+        </section>
       )}
-    </div>
-  );
-}
-
-function BackLink() {
-  return (
-    <button type="button" className="ptl-dash-back" onClick={() => navigate('/')}>
-      <ChevronLeft size={14} /> All workspaces
-    </button>
+    </WorkspaceShell>
   );
 }

@@ -1,8 +1,8 @@
 import { Button } from '@pitolet/ui';
-import { FileText, Plus, Settings } from 'lucide-react';
-import { type FormEvent, useState } from 'react';
+import { ArrowRight, Files, PanelsTopLeft, Plus } from 'lucide-react';
+import { type FormEvent, useEffect, useState } from 'react';
 import { ApiError, api, type WorkspaceSummary } from '../api.js';
-import { navigate } from '../router.js';
+import { navigate, workspacePath } from '../router.js';
 import { slugError, suggestSlug } from '../slug.js';
 
 export function Workspaces({
@@ -10,16 +10,16 @@ export function Workspaces({
   onCreated,
 }: {
   workspaces: WorkspaceSummary[];
-  onCreated: (ws: WorkspaceSummary) => void;
+  onCreated: (workspace: WorkspaceSummary) => void;
 }) {
-  const [creating, setCreating] = useState(false);
+  const [creating, setCreating] = useState(workspaces.length === 0);
 
   return (
     <>
       <div className="ptl-dash-page-head">
         <div>
           <h1 className="ptl-dash-title">Workspaces</h1>
-          <p className="ptl-dash-subtitle">Choose a workspace or create one.</p>
+          <p className="ptl-dash-subtitle">Choose where you want to work.</p>
         </div>
         {!creating && (
           <Button variant="primary" onClick={() => setCreating(true)}>
@@ -30,22 +30,16 @@ export function Workspaces({
 
       {creating && (
         <CreateForm
+          canCancel={workspaces.length > 0}
           onCancel={() => setCreating(false)}
-          onCreated={(ws) => {
-            setCreating(false);
-            onCreated(ws);
-          }}
+          onCreated={onCreated}
         />
       )}
 
-      {workspaces.length === 0 && !creating ? (
-        <div className="ptl-dash-empty">
-          You don't have a workspace yet. Create one to start designing.
-        </div>
-      ) : (
-        <div className="ptl-dash-grid">
-          {workspaces.map((ws) => (
-            <WorkspaceCard key={ws.id} ws={ws} />
+      {workspaces.length > 0 && (
+        <div className="ptl-workspace-grid">
+          {workspaces.map((workspace) => (
+            <WorkspaceCard workspace={workspace} key={workspace.id} />
           ))}
         </div>
       )}
@@ -53,60 +47,100 @@ export function Workspaces({
   );
 }
 
-function WorkspaceCard({ ws }: { ws: WorkspaceSummary }) {
+function WorkspaceCard({ workspace }: { workspace: WorkspaceSummary }) {
+  const [stats, setStats] = useState<{ documents: number; frames: number } | null>(null);
+  const [statsFailed, setStatsFailed] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    setStats(null);
+    setStatsFailed(false);
+    void api
+      .documents(workspace.slug)
+      .then(({ documents }) => {
+        if (!active) return;
+        setStats({
+          documents: documents.length,
+          frames: documents.reduce((total, document) => total + document.frameCount, 0),
+        });
+      })
+      .catch(() => {
+        if (active) setStatsFailed(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, [workspace.slug]);
+
   return (
-    <div className="ptl-dash-card">
-      <div className="ptl-dash-card-head">
-        <div style={{ minWidth: 0 }}>
-          <h2 className="ptl-dash-card-name">{ws.name}</h2>
-          <p className="ptl-dash-card-slug">/{ws.slug}</p>
-        </div>
-        <span className="ptl-badge ptl-badge--role">{ws.role}</span>
-      </div>
+    <button
+      type="button"
+      className="ptl-workspace-card"
+      onClick={() => navigate(workspacePath(workspace.id))}
+    >
       <div>
-        <span className="ptl-badge ptl-badge--plan">{ws.plan}</span>
+        <h2>{workspace.name}</h2>
+        <p>/{workspace.slug}</p>
       </div>
-      <div className="ptl-dash-card-actions">
-        {/* Plain link into the per-workspace editor runtime. */}
-        <a href={`/w/${ws.slug}/`}>
-          <Button variant="primary" size="sm">
-            Open
-          </Button>
-        </a>
-        <Button variant="ghost" size="sm" onClick={() => navigate(`/docs/${ws.id}`)}>
-          <FileText size={13} /> Documents
-        </Button>
-        <Button variant="ghost" size="sm" onClick={() => navigate(`/settings/${ws.id}`)}>
-          <Settings size={13} /> Settings
-        </Button>
+
+      <div className="ptl-workspace-card-stats">
+        {stats ? (
+          <>
+            <span>
+              <Files size={13} />
+              {stats.documents} {stats.documents === 1 ? 'document' : 'documents'}
+            </span>
+            <span>
+              <PanelsTopLeft size={13} />
+              {stats.frames} {stats.frames === 1 ? 'frame' : 'frames'}
+            </span>
+          </>
+        ) : statsFailed ? (
+          <span>Workspace details unavailable</span>
+        ) : (
+          <>
+            <span className="ptl-workspace-stat-skeleton" />
+            <span className="ptl-workspace-stat-skeleton is-short" />
+          </>
+        )}
       </div>
-    </div>
+
+      <div className="ptl-workspace-card-foot">
+        <span>{workspace.role}</span>
+        <span className="ptl-workspace-open">
+          Open <ArrowRight size={14} />
+        </span>
+      </div>
+    </button>
   );
 }
 
 function CreateForm({
+  canCancel,
   onCancel,
   onCreated,
 }: {
+  canCancel: boolean;
   onCancel: () => void;
-  onCreated: (ws: WorkspaceSummary) => void;
+  onCreated: (workspace: WorkspaceSummary) => void;
 }) {
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
-  // Track whether the user has hand-edited the slug; if not, keep it in sync
-  // with the name so typing a name auto-suggests a slug.
   const [slugTouched, setSlugTouched] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-
   const effectiveSlug = slugTouched ? slug : suggestSlug(name);
   const localSlugError = effectiveSlug ? slugError(effectiveSlug) : null;
 
-  async function submit(e: FormEvent) {
-    e.preventDefault();
+  async function submit(event: FormEvent) {
+    event.preventDefault();
     setError(null);
     if (!name.trim()) {
-      setError('Name is required');
+      setError('Enter a workspace name');
+      return;
+    }
+    if (!effectiveSlug) {
+      setError('Enter a workspace address');
       return;
     }
     if (localSlugError) {
@@ -115,60 +149,76 @@ function CreateForm({
     }
     setBusy(true);
     try {
-      const { workspace } = await api.createWorkspace({ name: name.trim(), slug: effectiveSlug });
-      onCreated(workspace);
+      const result = await api.createWorkspace({
+        name: name.trim(),
+        slug: effectiveSlug,
+      });
+      onCreated(result.workspace);
     } catch (err) {
-      // 400 (slug rules) and 409 (taken) both carry a server message.
-      setError(err instanceof ApiError ? err.message : 'Could not create workspace');
+      setError(err instanceof ApiError ? err.message : 'Could not create the workspace');
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <form className="ptl-dash-form" onSubmit={submit}>
-      <div className="ptl-dash-form-row">
-        <div className="ptl-dash-field" style={{ margin: 0 }}>
+    <form className="ptl-create-workspace" onSubmit={submit}>
+      <div className="ptl-create-workspace-copy">
+        <h2>Create a workspace</h2>
+        <p>Your documents and agent connections live here.</p>
+      </div>
+      <div className="ptl-create-workspace-fields">
+        <div className="ptl-dash-field">
           <label className="ptl-dash-label" htmlFor="ws-name">
-            Name
+            Workspace name
           </label>
           <input
             id="ws-name"
             className="ptl-dash-input"
             value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Acme Design"
+            onChange={(event) => setName(event.target.value)}
+            placeholder="Acme"
             autoFocus
           />
         </div>
-        <div className="ptl-dash-field" style={{ margin: 0 }}>
+        <div className="ptl-dash-field">
           <label className="ptl-dash-label" htmlFor="ws-slug">
-            Slug
+            Workspace address
           </label>
-          <input
-            id="ws-slug"
-            className={`ptl-dash-input${localSlugError ? ' is-invalid' : ''}`}
-            value={effectiveSlug}
-            onChange={(e) => {
-              setSlugTouched(true);
-              setSlug(e.target.value);
-            }}
-            placeholder="acme-design"
-            spellCheck={false}
-          />
-          <span className="ptl-dash-field-error">{localSlugError ?? ''}</span>
+          <div className="ptl-slug-field">
+            <span>app.pitolet.com/w/</span>
+            <input
+              id="ws-slug"
+              className={`ptl-dash-input${localSlugError ? ' is-invalid' : ''}`}
+              value={effectiveSlug}
+              onChange={(event) => {
+                setSlugTouched(true);
+                setSlug(event.target.value);
+              }}
+              spellCheck={false}
+            />
+          </div>
+          {localSlugError && <span className="ptl-dash-field-error">{localSlugError}</span>}
         </div>
-      </div>
-
-      {error && <div className="ptl-dash-error">{error}</div>}
-
-      <div className="ptl-dash-form-actions">
-        <Button type="submit" variant="primary" disabled={busy || !!localSlugError}>
-          Create workspace
-        </Button>
-        <Button type="button" variant="ghost" onClick={onCancel} disabled={busy}>
-          Cancel
-        </Button>
+        {error && (
+          <div className="ptl-dash-error" role="alert">
+            {error}
+          </div>
+        )}
+        <div className="ptl-dash-form-actions">
+          <Button
+            type="submit"
+            variant="primary"
+            disabled={busy || !name.trim() || !effectiveSlug || !!localSlugError}
+          >
+            {busy ? 'Creating…' : 'Create workspace'}
+          </Button>
+          {canCancel && (
+            <Button type="button" variant="ghost" onClick={onCancel} disabled={busy}>
+              Cancel
+            </Button>
+          )}
+        </div>
       </div>
     </form>
   );

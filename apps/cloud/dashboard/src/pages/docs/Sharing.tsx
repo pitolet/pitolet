@@ -1,5 +1,5 @@
 import { Button, Select } from '@pitolet/ui';
-import { Check, Copy } from 'lucide-react';
+import { Check, Copy, RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { ApiError, api, type ShareLink, type WorkspaceSummary } from '../../api.js';
 import { ConfirmButton } from '../Settings.js';
@@ -30,6 +30,7 @@ function SharingManager({ ws, docId }: { ws: WorkspaceSummary; docId: string }) 
   const [error, setError] = useState<string | null>(null);
 
   async function reload() {
+    setError(null);
     try {
       const { shareLinks } = await api.shareLinks(ws.id, docId);
       // Hide revoked/expired links from the active list.
@@ -65,19 +66,27 @@ function SharingManager({ ws, docId }: { ws: WorkspaceSummary; docId: string }) 
 
       <div className="ptl-dash-section-head">
         <h2 className="ptl-dash-section-title">Active links</h2>
+        {links && <span className="ptl-badge">{links.length}</span>}
       </div>
 
       {error && (
-        <div className="ptl-dash-error" style={{ marginBottom: 12 }}>
-          {error}
+        <div className="ptl-inline-error" role="alert">
+          <span>{error}</span>
+          <Button variant="ghost" size="sm" onClick={reload}>
+            <RefreshCw size={13} /> Retry
+          </Button>
         </div>
       )}
 
       {links === null ? (
-        <div className="ptl-dash-empty">Loading links…</div>
+        <div className="ptl-skeleton-list" aria-label="Loading share links">
+          <div className="ptl-skeleton-row" />
+          <div className="ptl-skeleton-row" />
+        </div>
       ) : links.length === 0 ? (
-        <div className="ptl-dash-empty">
-          No active share links. Anyone with a link gets read-only access to this document.
+        <div className="ptl-state-card ptl-document-empty-state">
+          <strong>No active share links</strong>
+          <span>A share link gives someone read-only access to this document.</span>
         </div>
       ) : (
         <div className="ptl-dash-list">
@@ -86,7 +95,7 @@ function SharingManager({ ws, docId }: { ws: WorkspaceSummary; docId: string }) 
               <div className="ptl-dash-row-main">
                 <ShareUrl url={l.url} />
                 <span className="ptl-dash-row-meta">
-                  created {formatDate(l.createdAt)} ·{' '}
+                  Created {formatDate(l.createdAt)},{' '}
                   {l.expiresAt ? `expires ${formatDate(l.expiresAt)}` : 'never expires'}
                 </span>
               </div>
@@ -166,22 +175,24 @@ function CreateLinkForm({
 
   return (
     <form
-      className="ptl-dash-form"
+      className="ptl-document-action-form"
       onSubmit={(e) => {
         e.preventDefault();
         void create();
       }}
     >
-      <div className="ptl-dash-form-row">
-        <div className="ptl-dash-field" style={{ margin: 0, flex: '1 1 200px', maxWidth: 220 }}>
-          <label className="ptl-dash-label">Create a share link</label>
-          <Select value={expiry} onValueChange={setExpiry} options={EXPIRY_OPTIONS} />
-        </div>
-        <div className="ptl-dash-form-actions" style={{ margin: 0, alignItems: 'flex-end' }}>
-          <Button type="submit" variant="primary" disabled={busy}>
-            Create share link
-          </Button>
-        </div>
+      <label className="ptl-dash-label">Create a share link</label>
+      <div className="ptl-document-action-controls is-share">
+        <Select
+          value={expiry}
+          onValueChange={setExpiry}
+          options={EXPIRY_OPTIONS}
+          ariaLabel="Link expiry"
+          className="ptl-document-expiry-select"
+        />
+        <Button type="submit" variant="primary" disabled={busy}>
+          Create share link
+        </Button>
       </div>
       {error && <div className="ptl-dash-error">{error}</div>}
     </form>

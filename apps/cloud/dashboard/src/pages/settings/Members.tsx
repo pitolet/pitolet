@@ -1,4 +1,5 @@
 import { Button } from '@pitolet/ui';
+import { RefreshCw, UserPlus } from 'lucide-react';
 import { type FormEvent, useEffect, useState } from 'react';
 import { ApiError, api, type Me, type Member, type WorkspaceSummary } from '../../api.js';
 import { ConfirmButton, RoleSelect } from '../Settings.js';
@@ -15,6 +16,7 @@ export function Members({ ws, me }: { ws: WorkspaceSummary; me: Me }) {
   const [error, setError] = useState<string | null>(null);
 
   async function reload() {
+    setError(null);
     try {
       const { members } = await api.members(ws.id);
       setMembers(members);
@@ -50,22 +52,40 @@ export function Members({ ws, me }: { ws: WorkspaceSummary; me: Me }) {
 
   return (
     <>
-      {isOwner && <AddMemberForm ws={ws} onAdded={reload} />}
-
       <div className="ptl-dash-section-head">
-        <h2 className="ptl-dash-section-title">Members</h2>
+        <div>
+          <h2 className="ptl-dash-section-title">Workspace access</h2>
+          <p className="ptl-dash-subtitle">
+            People listed here can open this workspace with their own Pitolet account.
+          </p>
+        </div>
       </div>
 
-      {error && (
-        <div className="ptl-dash-error" style={{ marginBottom: 12 }}>
-          {error}
+      {isOwner ? (
+        <AddMemberForm ws={ws} onAdded={reload} />
+      ) : (
+        <div className="ptl-callout">
+          <div>
+            <strong>You can view workspace access</strong>
+            <p>Only an owner can add people or change their roles.</p>
+          </div>
         </div>
       )}
 
-      {members === null ? (
-        <div className="ptl-dash-empty">Loading members…</div>
+      {error ? (
+        <div className="ptl-state-card is-error">
+          <span>{error}</span>
+          <Button variant="outline" size="sm" onClick={reload}>
+            <RefreshCw size={13} /> Retry
+          </Button>
+        </div>
+      ) : members === null ? (
+        <div className="ptl-skeleton-list" aria-label="Loading people">
+          <div className="ptl-skeleton-row" />
+          <div className="ptl-skeleton-row" />
+        </div>
       ) : (
-        <div className="ptl-dash-list">
+        <div className="ptl-dash-list ptl-member-list">
           {members.map((m) => {
             const isSelf = m.userId === me.user.id;
             return (
@@ -73,13 +93,13 @@ export function Members({ ws, me }: { ws: WorkspaceSummary; me: Me }) {
                 <div className="ptl-dash-row-main">
                   <span className="ptl-dash-row-name">
                     {m.name || m.email}
-                    {isSelf && <span style={{ color: 'var(--ptl-text-3)' }}> (you)</span>}
+                    {isSelf && <span className="ptl-member-self"> (you)</span>}
                   </span>
                   <span className="ptl-dash-row-meta">{m.email}</span>
                 </div>
                 <div className="ptl-dash-row-actions">
                   {isOwner ? (
-                    <div style={{ width: 110 }}>
+                    <div className="ptl-member-role-select">
                       <RoleSelect value={m.role} onChange={(role) => changeRole(m, role)} />
                     </div>
                   ) : (
@@ -130,10 +150,17 @@ function AddMemberForm({ ws, onAdded }: { ws: WorkspaceSummary; onAdded: () => v
 
   return (
     <form className="ptl-dash-form" onSubmit={submit}>
+      <div className="ptl-member-form-head">
+        <UserPlus size={17} />
+        <div>
+          <strong>Add an existing Pitolet account</strong>
+          <p>This does not send an invitation email.</p>
+        </div>
+      </div>
       <div className="ptl-dash-form-row">
-        <div className="ptl-dash-field" style={{ margin: 0, flex: '2 1 240px' }}>
+        <div className="ptl-dash-field ptl-member-email-field">
           <label className="ptl-dash-label" htmlFor="member-email">
-            Add member by email
+            Account email
           </label>
           <input
             id="member-email"
@@ -144,18 +171,15 @@ function AddMemberForm({ ws, onAdded }: { ws: WorkspaceSummary; onAdded: () => v
             placeholder="teammate@company.com"
           />
         </div>
-        <div className="ptl-dash-field" style={{ margin: 0, flex: '1 1 120px', maxWidth: 140 }}>
+        <div className="ptl-dash-field ptl-member-role-field">
           <label className="ptl-dash-label">Role</label>
           <RoleSelect value={role} onChange={setRole} />
         </div>
       </div>
-      <p className="ptl-dash-subtitle" style={{ marginTop: 8 }}>
-        They need a verified Pitolet account with this address.
-      </p>
       {error && <div className="ptl-dash-error">{error}</div>}
       <div className="ptl-dash-form-actions">
-        <Button type="submit" variant="primary" disabled={busy}>
-          Add member
+        <Button type="submit" variant="primary" disabled={busy || !email.trim()}>
+          Add account
         </Button>
       </div>
     </form>

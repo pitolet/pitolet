@@ -36,6 +36,13 @@ export default defineConfig({
       },
       {
         test: {
+          name: 'cloud-dashboard',
+          include: ['apps/cloud/dashboard/tests/**/*.test.{ts,tsx}'],
+          environment: 'jsdom',
+        },
+      },
+      {
+        test: {
           name: 'editor',
           include: ['packages/editor/tests/**/*.test.ts'],
           environment: 'jsdom',

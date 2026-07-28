@@ -1,5 +1,5 @@
 import { Button } from '@pitolet/ui';
-import { RotateCcw } from 'lucide-react';
+import { RefreshCw, RotateCcw } from 'lucide-react';
 import { type FormEvent, useEffect, useState } from 'react';
 import {
   ApiError,
@@ -24,6 +24,7 @@ export function History({ ws, docId }: { ws: WorkspaceSummary; docId: string }) 
   const [note, setNote] = useState<string | null>(null);
 
   async function reload() {
+    setError(null);
     try {
       const { snapshots } = await api.snapshots(ws.id, docId);
       setSnapshots(snapshots);
@@ -43,8 +44,8 @@ export function History({ ws, docId }: { ws: WorkspaceSummary; docId: string }) 
     try {
       const { rev } = await api.restoreSnapshot(ws.id, docId, snap.id);
       setNote(
-        `Restored to rev ${snap.rev}. The document is now at rev ${rev}. ` +
-          'The previous state was saved first, as the "Before restore" entry.',
+        `Restored revision ${snap.rev}. The document is now at revision ${rev}. ` +
+          'Pitolet saved the previous state first.',
       );
       await reload();
     } catch (err) {
@@ -76,42 +77,59 @@ export function History({ ws, docId }: { ws: WorkspaceSummary; docId: string }) 
 
       {note && <div className="ptl-dash-notice">{note}</div>}
       {error && (
-        <div className="ptl-dash-error" style={{ marginBottom: 12 }}>
-          {error}
+        <div className="ptl-inline-error" role="alert">
+          <span>{error}</span>
+          <Button variant="ghost" size="sm" onClick={reload}>
+            <RefreshCw size={13} /> Retry
+          </Button>
         </div>
       )}
 
       {snapshots === null ? (
-        <div className="ptl-dash-empty">Loading history…</div>
-      ) : snapshots.length === 0 ? (
-        <div className="ptl-dash-empty">No saved versions yet.</div>
-      ) : (
-        <div className="ptl-dash-list">
-          {snapshots.map((s) => (
-            <div className="ptl-dash-row" key={s.id}>
-              <div className="ptl-dash-row-main">
-                <span className="ptl-dash-row-name">
-                  <KindBadge kind={s.kind} />
-                  {s.label ? (
-                    <span style={{ marginLeft: 8 }}>{s.label}</span>
-                  ) : (
-                    <span style={{ marginLeft: 8, color: 'var(--ptl-text-3)' }}>
-                      {defaultLabel(s.kind)}
-                    </span>
-                  )}
-                </span>
-                <span className="ptl-dash-row-meta">
-                  rev {s.rev} · {relativeTime(s.createdAt)}
-                </span>
-              </div>
-              {canEdit && (
-                <div className="ptl-dash-row-actions">
-                  <RestoreButton snap={s} onConfirm={() => restore(s)} />
-                </div>
-              )}
-            </div>
-          ))}
+        <div className="ptl-skeleton-list" aria-label="Loading history">
+          <div className="ptl-skeleton-row" />
+          <div className="ptl-skeleton-row" />
         </div>
+      ) : snapshots.length === 0 ? (
+        <div className="ptl-state-card">
+          <strong>No saved versions yet</strong>
+          <span>
+            {canEdit
+              ? 'Name and save the current version with the form above.'
+              : 'An editor can save a named version of this document.'}
+          </span>
+        </div>
+      ) : (
+        <>
+          <div className="ptl-dash-section-head">
+            <h2 className="ptl-dash-section-title">Saved versions</h2>
+            <span className="ptl-badge">{snapshots.length}</span>
+          </div>
+          <div className="ptl-dash-list">
+            {snapshots.map((s) => (
+              <div className="ptl-dash-row" key={s.id}>
+                <div className="ptl-dash-row-main">
+                  <span className="ptl-dash-row-name ptl-snapshot-name">
+                    <KindBadge kind={s.kind} />
+                    {s.label ? (
+                      <span>{s.label}</span>
+                    ) : (
+                      <span className="is-muted">{defaultLabel(s.kind)}</span>
+                    )}
+                  </span>
+                  <span className="ptl-dash-row-meta">
+                    revision {s.rev}, {relativeTime(s.createdAt)}
+                  </span>
+                </div>
+                {canEdit && (
+                  <div className="ptl-dash-row-actions">
+                    <RestoreButton snap={s} onConfirm={() => restore(s)} />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </>
   );
@@ -152,25 +170,21 @@ function SaveVersionForm({ onSave }: { onSave: (label: string) => Promise<void> 
   }
 
   return (
-    <form className="ptl-dash-form" onSubmit={submit}>
-      <div className="ptl-dash-form-row">
-        <div className="ptl-dash-field" style={{ margin: 0, flex: '2 1 240px' }}>
-          <label className="ptl-dash-label" htmlFor="snap-label">
-            Save a version
-          </label>
-          <input
-            id="snap-label"
-            className="ptl-dash-input"
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            placeholder="e.g. Before the redesign"
-          />
-        </div>
-        <div className="ptl-dash-form-actions" style={{ margin: 0, alignItems: 'flex-end' }}>
-          <Button type="submit" variant="primary" disabled={busy || !label.trim()}>
-            Save version
-          </Button>
-        </div>
+    <form className="ptl-document-action-form" onSubmit={submit}>
+      <label className="ptl-dash-label" htmlFor="snap-label">
+        Save a version
+      </label>
+      <div className="ptl-document-action-controls">
+        <input
+          id="snap-label"
+          className="ptl-dash-input"
+          value={label}
+          onChange={(e) => setLabel(e.target.value)}
+          placeholder="Before the redesign"
+        />
+        <Button type="submit" variant="primary" disabled={busy || !label.trim()}>
+          Save version
+        </Button>
       </div>
     </form>
   );
@@ -200,7 +214,7 @@ function RestoreButton({ snap, onConfirm }: { snap: Snapshot; onConfirm: () => v
   return (
     <div className="ptl-dash-restore-confirm">
       <span className="ptl-dash-row-meta">
-        Restore to rev {snap.rev}? The current state is saved as a snapshot first.
+        Restore revision {snap.rev}? Pitolet will save the current state first.
       </span>
       <div className="ptl-dash-row-actions">
         <Button
