@@ -26,6 +26,13 @@ export interface PitoletRuntimeOptions {
   storage: StorageAdapter;
   /** Authentication/authorization hooks — absent = open server. */
   auth?: AuthHooks;
+  /** Optional host-owned error sink. OSS remains local-only when omitted. */
+  reportError?: (input: { label: string; error: unknown; operation?: string }) => void;
+  /** Optional host hook after a new imported document is durably stored. */
+  onDocumentImported?: (input: {
+    documentId: string;
+    actor: Pick<AuthContext, 'kind' | 'userId'>;
+  }) => void | Promise<void>;
 }
 
 export interface PitoletRuntime {
@@ -93,7 +100,9 @@ export async function createRuntime(options: PitoletRuntimeOptions): Promise<Pit
         deny(res, ctx, result);
         return true;
       }
-      mcpHandler(req, res, ctx).catch((err) => fail(res, 'mcp request failed', err));
+      mcpHandler(req, res, ctx).catch((err) =>
+        fail(res, 'mcp request failed', err, options.reportError, 'mcp'),
+      );
       return true;
     }
 
@@ -106,7 +115,7 @@ export async function createRuntime(options: PitoletRuntimeOptions): Promise<Pit
       // A client aborting mid-upload rejects the body iteration — that must
       // never become an unhandled rejection (process crash), just a dead request.
       handleAssetUpload(req, res, adapter.assets).catch((err) =>
-        fail(res, 'asset upload failed', err),
+        fail(res, 'asset upload failed', err, options.reportError, 'asset_upload'),
       );
       return true;
     }
@@ -141,13 +150,16 @@ export async function createRuntime(options: PitoletRuntimeOptions): Promise<Pit
         }
       }
       serveAsset(assetId, res, adapter.assets, { head: req.method === 'HEAD' }).catch((err) =>
-        fail(res, 'asset serve failed', err),
+        fail(res, 'asset serve failed', err, options.reportError, 'asset_read'),
       );
       return true;
     }
 
     if (pathname.startsWith('/api/')) {
-      handleApi(pathname, req, res, store, adapter, auth, ctx);
+      handleApi(pathname, req, res, store, adapter, auth, ctx, {
+        reportError: options.reportError,
+        onDocumentImported: options.onDocumentImported,
+      });
       return true;
     }
 
@@ -172,11 +184,22 @@ function documentReferencesAsset(document: PitoletDocument, assetId: string): bo
 }
 
 /** Terminal error handler for fire-and-forget request handlers. */
-function fail(res: http.ServerResponse, label: string, err: unknown): void {
+function fail(
+  res: http.ServerResponse,
+  label: string,
+  err: unknown,
+  reportError?: PitoletRuntimeOptions['reportError'],
+  operation?: string,
+): void {
   // Aborted requests (client went away) are routine — don't log a stack.
   const code = (err as NodeJS.ErrnoException | null)?.code;
   if (code !== 'ECONNRESET' && code !== 'ERR_STREAM_PREMATURE_CLOSE') {
     console.error(`[pitolet] ${label}:`, err);
+    try {
+      reportError?.({ label, error: err, operation });
+    } catch {
+      // Reporting belongs to the host and must never change request handling.
+    }
   }
   if (!res.headersSent) {
     res.writeHead(500, { 'content-type': 'application/json' });
@@ -207,6 +230,7 @@ function handleApi(
   adapter: StorageAdapter,
   auth: AuthHooks | undefined,
   ctx: AuthContext,
+  options: Pick<PitoletRuntimeOptions, 'reportError' | 'onDocumentImported'>,
 ): void {
   const json = (status: number, body: unknown) => {
     res.writeHead(status, { 'content-type': 'application/json' });
@@ -259,6 +283,15 @@ function handleApi(
           json(201, { docId: document.id, name: document.name });
         } catch (err) {
           console.error('[pitolet] document creation failed:', err);
+          try {
+            options.reportError?.({
+              label: 'document creation failed',
+              error: err,
+              operation: 'document_create',
+            });
+          } catch {
+            // Error reporting must not replace the original response.
+          }
           json(500, { error: 'document creation failed' });
         }
       })
@@ -324,8 +357,33 @@ function handleApi(
             await adapter.saveNow(document, 0);
             store.load(document, 0);
             json(201, { docId: document.id, name: document.name, duplicate: false });
+            void Promise.resolve(
+              options.onDocumentImported?.({
+                documentId: document.id,
+                actor: { kind: ctx.kind, userId: ctx.userId },
+              }),
+            ).catch((error) => {
+              try {
+                options.reportError?.({
+                  label: 'import completion hook failed',
+                  error,
+                  operation: 'document_import_hook',
+                });
+              } catch {
+                // Host reporting cannot change a completed import response.
+              }
+            });
           } catch (err) {
             console.error('[pitolet] imported document persistence failed:', err);
+            try {
+              options.reportError?.({
+                label: 'imported document persistence failed',
+                error: err,
+                operation: 'document_import',
+              });
+            } catch {
+              // Error reporting must not replace the original response.
+            }
             json(500, { error: 'import could not be saved' });
           }
         });

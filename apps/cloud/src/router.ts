@@ -7,7 +7,35 @@ import type { Pool } from 'pg';
 import { PatchRejectedError, type AuthContext } from 'pitolet';
 import { WebSocketServer } from 'ws';
 import { fromNodeHeaders, toNodeHandler } from 'better-auth/node';
+import { isPlatformAdmin } from './admin/access.js';
+import {
+  createFeedback,
+  feedbackContext,
+  FeedbackInputError,
+  getFeedback,
+  listFeedback,
+  parseFeedbackSubmission,
+  replyToFeedback,
+  unreadFeedbackCount,
+  updateFeedbackStatus,
+} from './admin/feedback.js';
+import {
+  analyticsRange,
+  listOwnerUsers,
+  listProblems,
+  ownerOverview,
+  ownerUserDetail,
+  updateProblemStatus,
+} from './admin/queries.js';
+import {
+  parseClientEvent,
+  recordProblem,
+  recordProductEvent,
+  safeClientProblemStack,
+  safeClientProblemTitle,
+} from './admin/telemetry.js';
 import type { CloudAuth } from './auth/auth.js';
+import { collectMetrics } from './ops/metrics.js';
 import {
   processPaddleWebhook,
   verifyPaddleSignature,
@@ -91,6 +119,25 @@ export interface CloudRouter {
   onPlanChanged(workspaceId: string, plan: Plan): void;
 }
 
+export interface RequestProblemContext {
+  userId?: string;
+  workspaceId?: string;
+  documentId?: string;
+}
+
+const requestProblemContexts = new WeakMap<http.IncomingMessage, RequestProblemContext>();
+
+export function requestProblemContext(req: http.IncomingMessage): RequestProblemContext {
+  return requestProblemContexts.get(req) ?? {};
+}
+
+function markRequestProblemContext(
+  req: http.IncomingMessage,
+  context: RequestProblemContext,
+): void {
+  requestProblemContexts.set(req, { ...requestProblemContext(req), ...context });
+}
+
 export class CloudHttpError extends Error {
   constructor(
     readonly status: 400 | 413,
@@ -122,6 +169,7 @@ const DOC_SUBRESOURCE =
 /** Public share-link entry: /s/:token → 302 into the workspace editor. */
 const SHARE_ENTRY_PATH = /^\/s\/([^/]+)$/;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+const DOCUMENT_ID_PATTERN = /^[A-Za-z0-9_-]{1,128}$/;
 
 /**
  * The ONE page every failed /s/:token request gets — invalid, revoked, and
@@ -157,9 +205,16 @@ const MCP_REQUESTS_PER_MINUTE = 60;
 /** Per-IP webhook budget — blunts garbage floods before HMAC work. */
 const WEBHOOK_REQUESTS_PER_MINUTE = 60;
 const MAX_WEBHOOK_BODY_BYTES = 1_000_000;
+const MAX_FEEDBACK_BODY_BYTES = 7_500_000;
 const SHARE_SESSION_COOKIE = 'pitolet_share';
 
-type SessionUser = { id: string; email: string; name: string; image?: string | null };
+type SessionUser = {
+  id: string;
+  email: string;
+  emailVerified: boolean;
+  name: string;
+  image?: string | null;
+};
 
 type WorkspacePrincipal =
   { ok: true; ctx: AuthContext; role: Role | null } | { ok: false; status: 401 | 404 };
@@ -180,6 +235,9 @@ export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
 
   const mcpLimiter = new TokenBucketLimiter({ capacity: MCP_REQUESTS_PER_MINUTE, clock });
   const webhookLimiter = new TokenBucketLimiter({ capacity: WEBHOOK_REQUESTS_PER_MINUTE, clock });
+  const feedbackLimiter = new TokenBucketLimiter({ capacity: 10, windowMs: 60 * 60_000, clock });
+  const eventLimiter = new TokenBucketLimiter({ capacity: 60, clock });
+  const clientProblemLimiter = new TokenBucketLimiter({ capacity: 30, clock });
 
   /** Fan a committed plan change out to live runtimes and the slug cache. */
   function onPlanChanged(workspaceId: string, plan: Plan): void {
@@ -199,7 +257,13 @@ export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
 
   async function getSessionUser(req: http.IncomingMessage): Promise<SessionUser | null> {
     const session = await auth.api.getSession({ headers: fromNodeHeaders(req.headers) });
-    return session?.user ?? null;
+    const user = session?.user ?? null;
+    if (user) markRequestProblemContext(req, { userId: user.id });
+    return user;
+  }
+
+  function userIsPlatformAdmin(user: SessionUser): boolean {
+    return user.emailVerified === true && isPlatformAdmin(user.email);
   }
 
   /**
@@ -401,7 +465,25 @@ export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
       return json(res, 200, {
         user: { id: user.id, email: user.email, name: user.name, image: user.image ?? null },
         workspaces,
+        isPlatformAdmin: userIsPlatformAdmin(user),
       });
+    }
+
+    if (
+      pathname === '/api/feedback/context' ||
+      pathname === '/api/feedback' ||
+      pathname === '/api/events' ||
+      pathname === '/api/problems/client' ||
+      pathname.startsWith('/api/admin/') ||
+      pathname === '/api/admin'
+    ) {
+      const user = await getSessionUser(req);
+      if (!user) return unauthorized(res);
+      if (pathname.startsWith('/api/admin')) {
+        if (!userIsPlatformAdmin(user)) return notFound(res);
+        return handleAdminApi(req, res, url, pathname, user);
+      }
+      return handleProductApi(req, res, url, pathname, user);
     }
 
     if (pathname === '/api/workspaces') {
@@ -441,6 +523,7 @@ export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
       const role = await roleFor(pool, user.id, workspaceId);
       // Non-members must not learn the workspace id is real.
       if (!role) return notFound(res);
+      markRequestProblemContext(req, { workspaceId });
       if (sub[2] === 'members') return handleMembers(req, res, workspaceId, user, role);
       if (sub[2] === 'billing') return handleBilling(req, res, workspaceId, role);
       if (sub[2] === 'share-links') return handleShareLinks(req, res, url, workspaceId, user, role);
@@ -456,6 +539,7 @@ export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
       const role = await roleFor(pool, user.id, workspaceId);
       // Non-members must not learn the workspace id is real.
       if (!role) return notFound(res);
+      markRequestProblemContext(req, { workspaceId, documentId: docId });
       // Doc∈workspace guard on EVERY history route: a foreign or unknown
       // docId is a 404 before any snapshot query runs.
       const owned = await pool.query(
@@ -492,6 +576,245 @@ export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
       }
     }
 
+    notFound(res);
+  }
+
+  async function handleProductApi(
+    req: http.IncomingMessage,
+    res: http.ServerResponse,
+    url: URL,
+    pathname: string,
+    user: SessionUser,
+  ): Promise<void> {
+    if (pathname === '/api/feedback/context') {
+      if (req.method !== 'GET') return json(res, 405, { error: 'method not allowed' });
+      const workspaceId = url.searchParams.get('workspaceId');
+      const documentId = url.searchParams.get('documentId');
+      try {
+        return json(res, 200, await feedbackContext(pool, user.id, workspaceId, documentId));
+      } catch (error) {
+        if (error instanceof FeedbackInputError)
+          return json(res, error.status, { error: error.message });
+        throw error;
+      }
+    }
+
+    if (pathname === '/api/feedback') {
+      if (req.method !== 'POST') return json(res, 405, { error: 'method not allowed' });
+      if (!feedbackLimiter.allow(user.id))
+        return json(res, 429, { error: 'too many feedback submissions' });
+      try {
+        const body = await readJson(req, MAX_FEEDBACK_BODY_BYTES);
+        const input = parseFeedbackSubmission(body);
+        const origin =
+          process.env.BETTER_AUTH_URL ??
+          `${req.headers['x-forwarded-proto'] ?? 'http'}://${req.headers.host ?? 'localhost'}`;
+        const created = await createFeedback(pool, user, input, origin.replace(/\/$/, ''));
+        return json(res, 201, created);
+      } catch (error) {
+        if (error instanceof FeedbackInputError)
+          return json(res, error.status, { error: error.message });
+        throw error;
+      }
+    }
+
+    if (pathname === '/api/events') {
+      if (req.method !== 'POST') return json(res, 405, { error: 'method not allowed' });
+      if (!eventLimiter.allow(user.id)) return json(res, 429, { error: 'rate limited' });
+      const parsed = parseClientEvent(await readJson(req));
+      if (!parsed) return json(res, 400, { error: 'invalid event' });
+      if (parsed.workspaceId && !UUID_PATTERN.test(parsed.workspaceId)) {
+        return json(res, 400, { error: 'invalid event' });
+      }
+      if (parsed.workspaceId && !(await roleFor(pool, user.id, parsed.workspaceId)))
+        return notFound(res);
+      if (
+        (parsed.documentId && !parsed.workspaceId) ||
+        (parsed.documentId && !DOCUMENT_ID_PATTERN.test(parsed.documentId))
+      ) {
+        return json(res, 400, { error: 'invalid event' });
+      }
+      if (parsed.workspaceId && parsed.documentId) {
+        const document = await pool.query(
+          `SELECT 1 FROM documents
+           WHERE id = $1 AND workspace_id = $2 AND deleted_at IS NULL`,
+          [parsed.documentId, parsed.workspaceId],
+        );
+        if (document.rowCount === 0) return notFound(res);
+      }
+      markRequestProblemContext(req, {
+        workspaceId: parsed.workspaceId ?? undefined,
+        documentId: parsed.documentId ?? undefined,
+      });
+      await recordProductEvent(pool, { ...parsed, userId: user.id });
+      return json(res, 202, { ok: true });
+    }
+
+    if (pathname === '/api/problems/client') {
+      if (req.method !== 'POST') return json(res, 405, { error: 'method not allowed' });
+      if (!clientProblemLimiter.allow(user.id)) return json(res, 429, { error: 'rate limited' });
+      const body = await readJson(req);
+      const source =
+        body?.source === 'editor' ? 'editor' : body?.source === 'dashboard' ? 'dashboard' : null;
+      const rawTitle = typeof body?.title === 'string' ? body.title : '';
+      const workspaceId = typeof body?.workspaceId === 'string' ? body.workspaceId : null;
+      if (!source || !rawTitle) return json(res, 400, { error: 'invalid problem' });
+      if (workspaceId && !UUID_PATTERN.test(workspaceId)) {
+        return json(res, 400, { error: 'invalid problem' });
+      }
+      if (workspaceId && !(await roleFor(pool, user.id, workspaceId))) return notFound(res);
+      const documentId = typeof body?.documentId === 'string' ? body.documentId : null;
+      if ((documentId && !workspaceId) || (documentId && !DOCUMENT_ID_PATTERN.test(documentId))) {
+        return json(res, 400, { error: 'invalid problem' });
+      }
+      if (workspaceId && documentId) {
+        const document = await pool.query(
+          `SELECT 1 FROM documents
+           WHERE id = $1 AND workspace_id = $2 AND deleted_at IS NULL`,
+          [documentId, workspaceId],
+        );
+        if (document.rowCount === 0) return notFound(res);
+      }
+      markRequestProblemContext(req, {
+        workspaceId: workspaceId ?? undefined,
+        documentId: documentId ?? undefined,
+      });
+      await recordProblem(pool, {
+        source,
+        title: safeClientProblemTitle(rawTitle),
+        stack: safeClientProblemStack(body?.stack) ?? undefined,
+        route: typeof body?.route === 'string' ? body.route : undefined,
+        release: typeof body?.release === 'string' ? body.release.slice(0, 100) : undefined,
+        userId: user.id,
+        workspaceId,
+        documentId,
+        context:
+          body?.context && typeof body.context === 'object' && !Array.isArray(body.context)
+            ? (body.context as Record<string, unknown>)
+            : undefined,
+      });
+      return json(res, 202, { ok: true });
+    }
+    notFound(res);
+  }
+
+  async function handleAdminApi(
+    req: http.IncomingMessage,
+    res: http.ServerResponse,
+    url: URL,
+    pathname: string,
+    user: SessionUser,
+  ): Promise<void> {
+    if (pathname === '/api/admin/overview') {
+      if (req.method !== 'GET') return json(res, 405, { error: 'method not allowed' });
+      const start = performance.now();
+      await pool.query('SELECT 1');
+      const databaseResponseMs = Math.max(0, Math.round((performance.now() - start) * 10) / 10);
+      const health = {
+        ...collectMetrics(manager, pool),
+        databaseResponseMs,
+        release: process.env.PITOLET_RELEASE ?? 'development',
+      };
+      return json(
+        res,
+        200,
+        await ownerOverview(pool, analyticsRange(url.searchParams.get('days')), health),
+      );
+    }
+
+    if (pathname === '/api/admin/users') {
+      if (req.method !== 'GET') return json(res, 405, { error: 'method not allowed' });
+      return json(res, 200, { users: await listOwnerUsers(pool, url.searchParams.get('q')) });
+    }
+    const userMatch = /^\/api\/admin\/users\/([^/]+)$/.exec(pathname);
+    if (userMatch) {
+      if (req.method !== 'GET') return json(res, 405, { error: 'method not allowed' });
+      const detail = await ownerUserDetail(pool, decodeURIComponent(userMatch[1]!));
+      return detail ? json(res, 200, detail) : notFound(res);
+    }
+
+    if (pathname === '/api/admin/feedback') {
+      if (req.method !== 'GET') return json(res, 405, { error: 'method not allowed' });
+      const [feedback, unreadCount] = await Promise.all([
+        listFeedback(pool, {
+          status: url.searchParams.get('status'),
+          category: url.searchParams.get('category'),
+          query: url.searchParams.get('q'),
+        }),
+        unreadFeedbackCount(pool),
+      ]);
+      return json(res, 200, {
+        feedback,
+        unreadCount,
+      });
+    }
+    const replyMatch = /^\/api\/admin\/feedback\/([0-9a-f-]{36})\/replies$/.exec(pathname);
+    if (replyMatch) {
+      if (req.method !== 'POST') return json(res, 405, { error: 'method not allowed' });
+      try {
+        const body = await readJson(req);
+        const reply = await replyToFeedback(
+          pool,
+          replyMatch[1]!,
+          user,
+          typeof body?.body === 'string' ? body.body : '',
+        );
+        return reply ? json(res, 201, reply) : notFound(res);
+      } catch (error) {
+        if (error instanceof FeedbackInputError)
+          return json(res, error.status, { error: error.message });
+        throw error;
+      }
+    }
+    const feedbackMatch = /^\/api\/admin\/feedback\/([0-9a-f-]{36})$/.exec(pathname);
+    if (feedbackMatch) {
+      if (req.method === 'GET') {
+        const item = await getFeedback(pool, feedbackMatch[1]!);
+        return item ? json(res, 200, { feedback: item }) : notFound(res);
+      }
+      if (req.method === 'PATCH') {
+        const body = await readJson(req);
+        try {
+          const updated = await updateFeedbackStatus(
+            pool,
+            feedbackMatch[1]!,
+            typeof body?.status === 'string' ? body.status : '',
+          );
+          return updated ? json(res, 200, { status: body?.status }) : notFound(res);
+        } catch (error) {
+          if (error instanceof FeedbackInputError)
+            return json(res, error.status, { error: error.message });
+          throw error;
+        }
+      }
+      return json(res, 405, { error: 'method not allowed' });
+    }
+
+    if (pathname === '/api/admin/problems') {
+      if (req.method !== 'GET') return json(res, 405, { error: 'method not allowed' });
+      return json(res, 200, {
+        problems: await listProblems(pool, {
+          status: url.searchParams.get('status'),
+          source: url.searchParams.get('source'),
+          query: url.searchParams.get('q'),
+        }),
+      });
+    }
+    const problemMatch = /^\/api\/admin\/problems\/([0-9a-f]{64})$/.exec(pathname);
+    if (problemMatch) {
+      if (req.method !== 'PATCH') return json(res, 405, { error: 'method not allowed' });
+      const body = await readJson(req);
+      try {
+        const updated = await updateProblemStatus(
+          pool,
+          problemMatch[1]!,
+          typeof body?.status === 'string' ? body.status : '',
+        );
+        return updated ? json(res, 200, { status: body?.status }) : notFound(res);
+      } catch (error) {
+        return json(res, 400, { error: error instanceof Error ? error.message : 'invalid status' });
+      }
+    }
     notFound(res);
   }
 
@@ -992,6 +1315,10 @@ export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
     }
     const ws = workspace!; // non-null: authenticateWorkspace rejected null above
     const { ctx, role } = principal;
+    markRequestProblemContext(req, {
+      workspaceId: ws.id,
+      documentId: ctx.kind === 'share' ? ctx.docId : undefined,
+    });
     if (ctx.kind === 'share' || role === 'viewer') {
       res.setHeader('x-pitolet-read-only', 'true');
     }
@@ -1034,6 +1361,7 @@ export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
 
     if (rest === '/api/session' && req.method === 'GET') {
       return json(res, 200, {
+        kind: ctx.kind,
         user: { id: ctx.userId, name: ctx.displayName },
         workspace: { id: ws.id, slug: ws.slug, name: ws.name },
         role: role ?? 'agent',
@@ -1237,16 +1565,19 @@ function serveStatic(
   stream.pipe(res);
 }
 
-async function readJson(req: http.IncomingMessage): Promise<Record<string, unknown> | null> {
+async function readJson(
+  req: http.IncomingMessage,
+  limit = 1_000_000,
+): Promise<Record<string, unknown> | null> {
   const declared = Number(req.headers['content-length'] ?? 0);
-  if (Number.isFinite(declared) && declared > 1_000_000) {
+  if (Number.isFinite(declared) && declared > limit) {
     throw new CloudHttpError(413, 'body too large');
   }
   const chunks: Buffer[] = [];
   let size = 0;
   for await (const chunk of req) {
     size += (chunk as Buffer).length;
-    if (size > 1_000_000) throw new CloudHttpError(413, 'body too large');
+    if (size > limit) throw new CloudHttpError(413, 'body too large');
     chunks.push(chunk as Buffer);
   }
   const raw = Buffer.concat(chunks).toString('utf8');

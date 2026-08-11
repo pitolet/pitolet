@@ -5,6 +5,7 @@ import type { Socket } from 'node:net';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import type { Pool } from 'pg';
+import { recordProblem, recordProductEvent, startTelemetryRetention } from './admin/telemetry.js';
 import {
   createAuth,
   ensureAuthSchema,
@@ -25,7 +26,7 @@ import { createPool } from './db/pool.js';
 import { captureException, flushErrorTracking, initErrorTracking } from './ops/errorTracking.js';
 import { logGauges, startGaugeLogger } from './ops/gaugeLog.js';
 import { handleMetricsRequest } from './ops/metrics.js';
-import { CloudHttpError, createCloudRouter } from './router.js';
+import { CloudHttpError, createCloudRouter, requestProblemContext } from './router.js';
 
 /**
  * Pitolet Cloud — one http.Server hosting auth, the dashboard API, and
@@ -87,9 +88,44 @@ export function resolveDashboardDist(): string | null {
 }
 
 export function createCloudServer(options: CloudServerOptions): CloudServer {
+  const reportWorkspaceProblem =
+    options.manager?.reportProblem ??
+    ((input: Parameters<NonNullable<WorkspaceManagerOptions['reportProblem']>>[0]) => {
+      void recordProblem(options.pool, {
+        source: input.source,
+        title: input.title,
+        stack: input.error instanceof Error ? input.error.stack : input.error,
+        workspaceId: input.workspaceId,
+        release: process.env.PITOLET_RELEASE,
+        context: input.operation ? { operation: input.operation } : undefined,
+      }).catch(() => {});
+    });
+  const recordWorkspaceImport =
+    options.manager?.recordImport ??
+    (async (input: Parameters<NonNullable<WorkspaceManagerOptions['recordImport']>>[0]) => {
+      let userId = input.actor.kind === 'user' ? (input.actor.userId ?? null) : null;
+      if (input.actor.kind === 'agent' && input.actor.userId?.startsWith('token:')) {
+        const tokenId = input.actor.userId.slice('token:'.length);
+        const token = await options.pool.query<{ created_by: string }>(
+          'SELECT created_by FROM agent_tokens WHERE id = $1 AND workspace_id = $2',
+          [tokenId, input.workspaceId],
+        );
+        userId = token.rows[0]?.created_by ?? null;
+      }
+      if (!userId) return;
+      await recordProductEvent(options.pool, {
+        name: 'document_imported',
+        source: 'server',
+        userId,
+        workspaceId: input.workspaceId,
+        documentId: input.documentId,
+      });
+    });
   const manager = new WorkspaceManager(options.pool, options.dataRoot, {
     clock: options.clock,
     ...options.manager,
+    reportProblem: reportWorkspaceProblem,
+    recordImport: recordWorkspaceImport,
   });
   const router = createCloudRouter({
     pool: options.pool,
@@ -105,6 +141,7 @@ export function createCloudServer(options: CloudServerOptions): CloudServer {
       (process.env.NODE_ENV === 'production' ||
         process.env.BETTER_AUTH_URL?.startsWith('https://') === true),
   });
+  const telemetryRetention = startTelemetryRetention(options.pool);
 
   let closing = false;
   let activeRequests = 0;
@@ -160,7 +197,24 @@ export function createCloudServer(options: CloudServerOptions): CloudServer {
         res.end(JSON.stringify({ error: err.message }));
         return;
       }
+      if (isOrdinaryAbort(err)) {
+        if (!res.destroyed) res.destroy();
+        return;
+      }
       console.error('[pitolet-cloud] request failed:', err);
+      captureException(err);
+      const problemContext = requestProblemContext(req);
+      void recordProblem(options.pool, {
+        source: 'server',
+        title: err,
+        stack: err instanceof Error ? err.stack : undefined,
+        route: req.url,
+        release: process.env.PITOLET_RELEASE,
+        userId: problemContext.userId,
+        workspaceId: problemContext.workspaceId,
+        documentId: problemContext.documentId,
+        context: { method: req.method ?? 'UNKNOWN' },
+      }).catch(() => {});
       if (!res.headersSent) {
         res.writeHead(500, { 'content-type': 'application/json' });
         res.end(JSON.stringify({ error: 'internal error' }));
@@ -191,6 +245,7 @@ export function createCloudServer(options: CloudServerOptions): CloudServer {
     async close() {
       closePromise ??= (async () => {
         closing = true;
+        telemetryRetention.stop();
         const failures: Error[] = [];
 
         // Quiesce ingress synchronously. Do not await the close callback yet:
@@ -232,6 +287,16 @@ export function createCloudServer(options: CloudServerOptions): CloudServer {
 
 function asError(error: unknown): Error {
   return error instanceof Error ? error : new Error(String(error));
+}
+
+function isOrdinaryAbort(error: unknown): boolean {
+  const value = error as { code?: string; name?: string } | null;
+  return (
+    value?.code === 'ECONNRESET' ||
+    value?.code === 'ERR_STREAM_PREMATURE_CLOSE' ||
+    value?.code === 'ABORT_ERR' ||
+    value?.name === 'AbortError'
+  );
 }
 
 /**

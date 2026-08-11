@@ -615,5 +615,16 @@ describe('bulk website import authorization', () => {
       document.id,
     ]);
     expect(row.rows[0]).toMatchObject({ workspace_id: acme.id, name: 'Imported cloud page' });
+    let event: { document_id: string; workspace_id: string } | undefined;
+    for (let attempt = 0; attempt < 20 && !event; attempt += 1) {
+      const recorded = await pgi.pool.query<{ document_id: string; workspace_id: string }>(
+        `SELECT document_id, workspace_id FROM product_events
+         WHERE name = 'document_imported' AND document_id = $1`,
+        [document.id],
+      );
+      event = recorded.rows[0];
+      if (!event) await new Promise((resolve) => setTimeout(resolve, 10));
+    }
+    expect(event).toEqual({ document_id: document.id, workspace_id: acme.id });
   });
 });

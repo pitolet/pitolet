@@ -33,6 +33,7 @@ import { apiUrl } from '../sync/serverBase.js';
 import { filterDocuments, parseZoomPercent, type DocumentSummary } from './navigation.js';
 import { ActivityButton, AgentBadge } from './ActivityFeed.js';
 import { ContextCoach, hasSeenCoach, markCoachSeen, type CoachVariant } from './ContextCoach.js';
+import { CloudHelp } from './CloudHelp.js';
 import './TopBar.css';
 
 export interface TopBarProps {
@@ -131,6 +132,7 @@ export function TopBar({
             <Search size={15} />
           </IconButton>
         </Tooltip>
+        <CloudHelp />
         <CommentsToggle />
         <ActivityButton />
         <CodeToggle />

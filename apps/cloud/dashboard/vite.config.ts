@@ -10,6 +10,11 @@ const root = fileURLToPath(new URL('.', import.meta.url));
 
 export default defineConfig({
   root,
+  define: {
+    'import.meta.env.VITE_PITOLET_RELEASE': JSON.stringify(
+      process.env.PITOLET_RELEASE ?? process.env.npm_package_version ?? 'development',
+    ),
+  },
   // Absolute base: the dashboard is always served from the domain root `/`, and
   // its index.html is the fallback for nested client routes like /settings/:id.
   // Relative ('./') asset URLs would resolve against /settings/ and 404 — so

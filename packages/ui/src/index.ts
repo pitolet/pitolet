@@ -15,3 +15,8 @@ export {
 export { Tabs, TabPanel, type TabDef, type TabsProps } from './primitives/Tabs.js';
 export { Popover, type PopoverProps } from './primitives/Popover.js';
 export { NumberScrubInput, type NumberScrubInputProps } from './primitives/NumberScrubInput.js';
+export {
+  CloudFeedbackDialog,
+  type CloudFeedbackCategory,
+  type CloudFeedbackDialogProps,
+} from './CloudFeedbackDialog.js';

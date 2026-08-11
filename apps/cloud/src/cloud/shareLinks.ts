@@ -37,6 +37,7 @@ export interface ShareLinkSummary {
   createdAt: string;
   expiresAt: string | null;
   revokedAt: string | null;
+  purpose: 'public' | 'support';
 }
 
 /** nanoid default alphabet, fixed length — reject anything else before SQL. */
@@ -64,9 +65,11 @@ export async function createShareLink(
     workspaceId: string;
     createdBy: string;
     expiresInDays?: number;
+    purpose?: 'public' | 'support';
   },
 ): Promise<{ token: string; url: string; docId: string; expiresAt: string | null }> {
   const token = `pshare_${nanoid(24)}`;
+  const purpose = input.purpose ?? 'public';
   const days =
     input.expiresInDays !== undefined &&
     Number.isInteger(input.expiresInDays) &&
@@ -92,22 +95,26 @@ export async function createShareLink(
     const count = await client.query(
       `SELECT count(*)::int AS n FROM share_links
        WHERE workspace_id = $1 AND doc_id = $2
+         AND purpose = 'public'
          AND revoked_at IS NULL
          AND (expires_at IS NULL OR expires_at > now())`,
       [input.workspaceId, input.docId],
     );
-    const denial = shareLinkLimitDenial(
-      planOf(workspace.rows[0]?.plan),
-      Number(count.rows[0]?.n ?? 0),
-    );
-    if (denial) throw new PlanLimitError(denial);
+    if (purpose === 'public') {
+      const denial = shareLinkLimitDenial(
+        planOf(workspace.rows[0]?.plan),
+        Number(count.rows[0]?.n ?? 0),
+      );
+      if (denial) throw new PlanLimitError(denial);
+    }
     const res = await client.query(
-      `INSERT INTO share_links (token, doc_id, workspace_id, created_by, expires_at)
+      `INSERT INTO share_links (token, doc_id, workspace_id, created_by, expires_at, purpose)
        VALUES ($1, $2, $3, $4,
                CASE WHEN $5::int IS NULL THEN NULL
-                    ELSE now() + make_interval(days => $5::int) END)
+                    ELSE now() + make_interval(days => $5::int) END,
+               $6)
        RETURNING expires_at`,
-      [token, input.docId, input.workspaceId, input.createdBy, days],
+      [token, input.docId, input.workspaceId, input.createdBy, days, purpose],
     );
     await client.query('COMMIT');
     const expiresAt = res.rows[0]?.expires_at as Date | null;
@@ -243,7 +250,7 @@ export async function listShareLinks(
   docId: string,
 ): Promise<ShareLinkSummary[]> {
   const res = await pool.query(
-    `SELECT token, doc_id, created_by, created_at, expires_at, revoked_at
+    `SELECT token, doc_id, created_by, created_at, expires_at, revoked_at, purpose
      FROM share_links
      WHERE workspace_id = $1 AND doc_id = $2
      ORDER BY created_at DESC`,
@@ -257,6 +264,7 @@ export async function listShareLinks(
     createdAt: new Date(row.created_at as string).toISOString(),
     expiresAt: row.expires_at ? new Date(row.expires_at as string).toISOString() : null,
     revokedAt: row.revoked_at ? new Date(row.revoked_at as string).toISOString() : null,
+    purpose: row.purpose as 'public' | 'support',
   }));
 }
 
@@ -269,6 +277,7 @@ export async function countActiveShareLinks(
   const res = await pool.query(
     `SELECT count(*)::int AS n FROM share_links
      WHERE workspace_id = $1 AND doc_id = $2
+       AND purpose = 'public'
        AND revoked_at IS NULL
        AND (expires_at IS NULL OR expires_at > now())`,
     [workspaceId, docId],

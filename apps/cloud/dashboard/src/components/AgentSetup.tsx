@@ -29,6 +29,7 @@ import {
   type WorkspaceSummary,
 } from '../api.js';
 import { relativeTime } from '../time.js';
+import { trackProductEvent } from '../analytics.js';
 import { CopyButton } from './CopyButton.js';
 
 export function AgentSetup({
@@ -182,7 +183,18 @@ export function AgentSetup({
 
       <Tabs
         value={mode}
-        onValueChange={(value) => setMode(value as SetupMode)}
+        onValueChange={(value) => {
+          const next = value as SetupMode;
+          setMode(next);
+          if (next === 'manual') {
+            trackProductEvent({
+              name: 'manual_setup_opened',
+              source: 'dashboard',
+              workspaceId: workspace.id,
+              properties: { client },
+            });
+          }
+        }}
         tabs={[
           { value: 'ask-agent', label: 'Ask my agent' },
           { value: 'manual', label: 'Manual setup' },

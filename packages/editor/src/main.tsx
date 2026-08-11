@@ -1,7 +1,9 @@
 import '@pitolet/ui/tokens.css';
 import '@pitolet/ui/base.css';
+import '@pitolet/ui/feedback.css';
 import { createRoot } from 'react-dom/client';
 import { App } from './App.js';
+import { initializeCloudDiagnostics } from './cloudDiagnostics.js';
 import { ErrorBoundary } from './ErrorBoundary.js';
 import { useEditor } from './store/index.js';
 
@@ -10,8 +12,10 @@ if (import.meta.env.DEV) {
   (window as unknown as Record<string, unknown>).__pitolet = useEditor;
 }
 
-createRoot(document.getElementById('root')!).render(
-  <ErrorBoundary name="Pitolet">
-    <App />
-  </ErrorBoundary>,
-);
+void initializeCloudDiagnostics().finally(() => {
+  createRoot(document.getElementById('root')!).render(
+    <ErrorBoundary name="Pitolet">
+      <App />
+    </ErrorBoundary>,
+  );
+});

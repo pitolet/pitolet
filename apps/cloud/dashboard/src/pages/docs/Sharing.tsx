@@ -93,6 +93,9 @@ function SharingManager({ ws, docId }: { ws: WorkspaceSummary; docId: string }) 
           {links.map((l) => (
             <div className="ptl-dash-row" key={l.token}>
               <div className="ptl-dash-row-main">
+                {l.purpose === 'support' && (
+                  <span className="ptl-badge ptl-badge--scope">Temporary support access</span>
+                )}
                 <ShareUrl url={l.url} />
                 <span className="ptl-dash-row-meta">
                   Created {formatDate(l.createdAt)},{' '}

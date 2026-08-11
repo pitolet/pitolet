@@ -111,6 +111,12 @@ describe('dashboard SPA serving', () => {
       '/workspace/some-workspace-id/documents/doc-1',
       '/workspace/some-workspace-id/people',
       '/workspace/some-workspace-id/settings',
+      '/admin',
+      '/admin/users',
+      '/admin/users/user-1',
+      '/admin/feedback',
+      '/admin/feedback/00000000-0000-0000-0000-000000000001',
+      '/admin/problems',
     ]) {
       const res = await fetch(`${base}${path}`);
       expect(res.status).toBe(200);

@@ -44,7 +44,7 @@ export default defineConfig({
       {
         test: {
           name: 'editor',
-          include: ['packages/editor/tests/**/*.test.ts'],
+          include: ['packages/editor/tests/**/*.test.{ts,tsx}'],
           environment: 'jsdom',
         },
       },

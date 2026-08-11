@@ -142,6 +142,27 @@ seconds. If a cert fails, re-check DNS (step 1) and `docker compose logs caddy`.
 
 Operational monitoring is in-process; there's no separate metrics stack.
 
+### Owner console
+
+Set `PITOLET_ADMIN_EMAILS` to the verified Pitolet account emails that may open
+`https://app.pitolet.com/admin`. Separate multiple addresses with commas. A
+workspace owner is not automatically a platform admin.
+
+The owner console shows product milestones, user activity, feedback, grouped
+application problems, and current process health. It never shows document
+contents or prompts. Set `PITOLET_FEEDBACK_NOTIFY_EMAILS` if feedback alerts
+should go somewhere other than the admin addresses. Replies are sent through
+Resend using `PITOLET_SUPPORT_FROM`.
+
+Backup status is not shown in the owner console. The backup container runs
+separately, so keep monitoring it with the external check described below.
+
+After changing any of these values, restart only the app container:
+
+```sh
+docker compose up -d --force-recreate app
+```
+
 **Metrics endpoint.** `GET /internal/metrics` returns a JSON gauge snapshot.
 It is gated by a shared secret. Caddy proxies everything, so binding to
 loopback would not restrict access. Set `PITOLET_METRICS_TOKEN` in `.env`

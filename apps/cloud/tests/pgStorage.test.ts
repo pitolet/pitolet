@@ -89,6 +89,7 @@ describe('migrations', () => {
       '002_better_auth_users.sql',
       '003_billing_limits.sql',
       '004_production_hardening.sql',
+      '005_owner_console.sql',
     ]);
   });
 

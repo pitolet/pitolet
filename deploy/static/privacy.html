@@ -1,10 +1,4 @@
 <!doctype html>
-<!--
-  TEMPLATE — NOT LEGAL ADVICE.
-  This is a plain-language starting point for Pitolet's Privacy Policy and MUST
-  be reviewed by a qualified lawyer (and checked against GDPR/CCPA and your
-  actual data flows) before it is relied upon.
--->
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -180,13 +174,7 @@
 
     <main class="wrap">
       <h1>Privacy Policy</h1>
-      <p class="updated">Last updated: 2026.</p>
-
-      <div class="note">
-        <strong>Template notice.</strong> This document is a plain-language template and is not
-        legal advice. It must be reviewed by a qualified lawyer and checked against your actual data
-        flows and applicable law (GDPR, UK GDPR, CCPA, etc.) before it is relied upon.
-      </div>
+      <p class="updated">Last updated: August 2026.</p>
 
       <p>
         This policy explains what Pitolet (the "Service"), operated by a sole proprietor ("we",
@@ -225,9 +213,28 @@
             </td>
           </tr>
           <tr>
-            <td>Usage logs</td>
-            <td>Technical logs (e.g. IP address, timestamps, actions, error diagnostics)</td>
-            <td>To keep the Service secure, reliable, and debuggable</td>
+            <td>Product activity</td>
+            <td>
+              A small set of milestones: opening the dashboard, workspace, or editor; copying an
+              agent prompt; opening manual MCP setup; and completing a website import
+            </td>
+            <td>To understand whether setup works and where users get stuck</td>
+          </tr>
+          <tr>
+            <td>Feedback</td>
+            <td>
+              Your message and, only when you choose to include them, a screenshot, technical
+              details, and a seven-day read-only support link
+            </td>
+            <td>To answer feedback and investigate a problem you report</td>
+          </tr>
+          <tr>
+            <td>Problem reports</td>
+            <td>
+              Error type, safe code location, source, release, page route, occurrence count, and the
+              last affected account or workspace
+            </td>
+            <td>To find and fix application failures</td>
           </tr>
           <tr>
             <td>Billing data</td>
@@ -279,14 +286,25 @@
       <ul>
         <li>No advertising trackers, no ad networks, no selling of personal data.</li>
         <li>No profiling of you for marketing to third parties.</li>
+        <li>No session replay or recording of arbitrary clicks.</li>
+        <li>
+          Product analytics and problem reports do not contain design content, prompts, tokens,
+          request bodies, entered text, or raw IP addresses.
+        </li>
       </ul>
 
       <h2>Retention</h2>
+      <ul>
+        <li>Product activity milestones are kept for 90 days.</li>
+        <li>Grouped problem reports are kept for 90 days after their last occurrence.</li>
+        <li>Feedback screenshots are removed after 30 days.</li>
+        <li>Resolved feedback and its successful outbound replies are kept for one year.</li>
+        <li>Support links expire after seven days and can be revoked sooner from Sharing.</li>
+      </ul>
       <p>
-        We keep account data and designs while your account is active. Usage logs are kept for a
-        limited period for security and debugging. When you delete your account (or request
-        deletion), we delete or anonymize your personal data within a reasonable period, except
-        where we must retain limited records to meet legal obligations.
+        Account data and designs remain while your account is active. When you request account
+        deletion, we delete or anonymize personal data unless limited records must be retained by
+        law.
       </p>
 
       <h2>Your rights</h2>
@@ -302,7 +320,9 @@
       <h2>Self-hosting</h2>
       <p>
         If you self-host the open-source (AGPL-3.0) build, you operate the software and you are the
-        controller of the data it processes. This policy covers only the hosted Service we operate.
+        controller of the data it processes. The self-hosted build does not send feedback,
+        analytics, or diagnostics to Pitolet Cloud. This policy covers only the hosted Service we
+        operate.
       </p>
 
       <h2>Cookies</h2>

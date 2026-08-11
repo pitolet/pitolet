@@ -17,6 +17,7 @@ import { AgentSetup } from '../components/AgentSetup.js';
 import { CopyButton } from '../components/CopyButton.js';
 import { WorkspaceShell } from '../components/WorkspaceShell.js';
 import { navigate, workspacePath } from '../router.js';
+import { trackProductEvent } from '../analytics.js';
 
 export function WorkspaceHome({ workspace }: { workspace: WorkspaceSummary }) {
   const canEdit = workspace.role === 'owner' || workspace.role === 'editor';
@@ -46,6 +47,13 @@ export function WorkspaceHome({ workspace }: { workspace: WorkspaceSummary }) {
   useEffect(() => {
     void loadDocuments();
   }, [loadDocuments]);
+
+  useEffect(() => {
+    trackProductEvent(
+      { name: 'workspace_opened', source: 'dashboard', workspaceId: workspace.id },
+      `workspace-opened.${workspace.id}`,
+    );
+  }, [workspace.id]);
 
   const origin = typeof window === 'undefined' ? 'https://app.pitolet.com' : window.location.origin;
   const endpoint = mcpUrl(origin, workspace);
@@ -115,6 +123,22 @@ export function WorkspaceHome({ workspace }: { workspace: WorkspaceSummary }) {
             importText={importText}
             connected={connected}
             hasDocuments={!!documents?.length}
+            onCopyStart={() =>
+              trackProductEvent({
+                name: 'prompt_copied',
+                source: 'dashboard',
+                workspaceId: workspace.id,
+                properties: { intent: 'scratch', client, includedConnection: !connected },
+              })
+            }
+            onCopyImport={() =>
+              trackProductEvent({
+                name: 'prompt_copied',
+                source: 'dashboard',
+                workspaceId: workspace.id,
+                properties: { intent: 'import', client, includedConnection: !connected },
+              })
+            }
           />
 
           <RecentDocuments
@@ -159,6 +183,8 @@ function IntentSection({
   importText,
   connected,
   hasDocuments,
+  onCopyStart,
+  onCopyImport,
 }: {
   brief: string;
   setBrief: (value: string) => void;
@@ -169,6 +195,8 @@ function IntentSection({
   importText: string;
   connected: boolean;
   hasDocuments: boolean;
+  onCopyStart: () => void;
+  onCopyImport: () => void;
 }) {
   return (
     <section className="ptl-home-intents">
@@ -209,6 +237,7 @@ function IntentSection({
               variant="primary"
               className="ptl-intent-action"
               disabled={!brief.trim()}
+              onCopied={onCopyStart}
             />
           </div>
         </article>
@@ -240,6 +269,7 @@ function IntentSection({
               variant="primary"
               className="ptl-intent-action"
               disabled={!!importError}
+              onCopied={onCopyImport}
             />
           </div>
         </article>

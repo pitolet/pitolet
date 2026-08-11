@@ -9,6 +9,7 @@ export function CopyButton({
   variant = 'outline',
   className,
   disabled = false,
+  onCopied,
 }: {
   value: string;
   label?: string;
@@ -16,6 +17,7 @@ export function CopyButton({
   variant?: 'primary' | 'ghost' | 'outline';
   className?: string;
   disabled?: boolean;
+  onCopied?: () => void;
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -30,6 +32,7 @@ export function CopyButton({
     try {
       await navigator.clipboard.writeText(value);
       setCopied(true);
+      onCopied?.();
     } catch {
       setCopied(false);
     }

@@ -37,6 +37,49 @@
   transform: translateX(-50%);
 }
 
+.ptl-cloud-help-popover {
+  width: 250px;
+}
+
+.ptl-cloud-help-menu {
+  display: grid;
+  gap: var(--ptl-space-1);
+}
+
+.ptl-cloud-help-menu > strong {
+  padding: 2px var(--ptl-space-2) var(--ptl-space-1);
+  color: var(--ptl-text-2);
+  font-size: var(--ptl-text-xs);
+}
+
+.ptl-cloud-help-menu > button {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ptl-space-2);
+  padding: var(--ptl-space-2);
+  border: 0;
+  border-radius: var(--ptl-radius-md);
+  background: transparent;
+  color: var(--ptl-text-2);
+  text-align: left;
+  cursor: pointer;
+}
+
+.ptl-cloud-help-menu > button:hover {
+  background: var(--ptl-bg-3);
+  color: var(--ptl-text-1);
+}
+
+.ptl-cloud-help-menu > button > span {
+  display: grid;
+  gap: 3px;
+}
+
+.ptl-cloud-help-menu small {
+  color: var(--ptl-text-3);
+  font-size: var(--ptl-text-xs);
+}
+
 .ptl-document-context {
   display: inline-flex;
   align-items: center;

@@ -66,6 +66,19 @@ describe('dashboard interactions', () => {
         clear: () => values.clear(),
       },
     });
+    Object.defineProperty(HTMLDialogElement.prototype, 'showModal', {
+      configurable: true,
+      value() {
+        this.setAttribute('open', '');
+      },
+    });
+    Object.defineProperty(HTMLDialogElement.prototype, 'close', {
+      configurable: true,
+      value() {
+        this.removeAttribute('open');
+        this.dispatchEvent(new Event('close'));
+      },
+    });
   });
 
   afterEach(async () => {
@@ -177,7 +190,11 @@ describe('dashboard interactions', () => {
   it('closes the account menu when clicking outside or pressing Escape', async () => {
     await act(async () =>
       root.render(
-        <TopBar user={{ name: 'Jacques', email: 'jacques@example.com' }} onSignOut={vi.fn()} />,
+        <TopBar
+          user={{ name: 'Jacques', email: 'jacques@example.com' }}
+          isPlatformAdmin={false}
+          onSignOut={vi.fn()}
+        />,
       ),
     );
     const menu = container.querySelector<HTMLDetailsElement>('.ptl-account-menu')!;
@@ -194,5 +211,56 @@ describe('dashboard interactions', () => {
     });
     expect(menu.open).toBe(false);
     expect(document.activeElement).toBe(menu.querySelector('summary'));
+  });
+
+  it('shows every owner-console destination only to platform admins', async () => {
+    await act(async () =>
+      root.render(
+        <TopBar
+          user={{ name: 'Jacques', email: 'jacques@example.com' }}
+          isPlatformAdmin
+          onSignOut={vi.fn()}
+        />,
+      ),
+    );
+    expect(container.textContent).toContain('Owner console');
+    expect(container.textContent).toContain('Overview');
+    expect(container.textContent).toContain('Users');
+    expect(container.textContent).toContain('Feedback');
+    expect(container.textContent).toContain('Problems');
+  });
+
+  it('opens dashboard feedback with the current document context', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          workspaceId: '00000000-0000-0000-0000-000000000001',
+          documentId: 'doc-1',
+          canGrantSupportAccess: true,
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      ),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    await act(async () =>
+      root.render(
+        <TopBar
+          user={{ name: 'Jacques', email: 'jacques@example.com' }}
+          isPlatformAdmin={false}
+          workspaceId="00000000-0000-0000-0000-000000000001"
+          documentId="doc-1"
+          onSignOut={vi.fn()}
+        />,
+      ),
+    );
+    container.querySelector<HTMLDetailsElement>('.ptl-account-menu')!.open = true;
+    await act(async () => button(container, 'Send feedback').click());
+    await act(async () => {});
+
+    expect(container.querySelector<HTMLDialogElement>('.ptl-feedback-dialog')?.open).toBe(true);
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/feedback/context?workspaceId=00000000-0000-0000-0000-000000000001&documentId=doc-1',
+    );
+    expect(container.textContent).toContain('Let Pitolet support open this document for 7 days');
   });
 });

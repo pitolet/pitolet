@@ -15,6 +15,12 @@ import { useSyncExternalStore } from 'react';
 
 export type Route =
   | { name: 'home' }
+  | { name: 'admin-overview' }
+  | { name: 'admin-users' }
+  | { name: 'admin-user'; userId: string }
+  | { name: 'admin-feedback' }
+  | { name: 'admin-feedback-detail'; feedbackId: string }
+  | { name: 'admin-problems' }
   | { name: 'workspace'; workspaceId: string }
   | { name: 'workspace-documents'; workspaceId: string }
   | { name: 'workspace-document'; workspaceId: string; docId: string }
@@ -22,6 +28,15 @@ export type Route =
   | { name: 'workspace-settings'; workspaceId: string };
 
 export function parse(pathname: string): Route {
+  const adminUser = /^\/admin\/users\/([^/]+)\/?$/.exec(pathname);
+  if (adminUser) return { name: 'admin-user', userId: decodeURIComponent(adminUser[1]!) };
+  const adminFeedbackDetail = /^\/admin\/feedback\/([0-9a-f-]{36})\/?$/.exec(pathname);
+  if (adminFeedbackDetail)
+    return { name: 'admin-feedback-detail', feedbackId: adminFeedbackDetail[1]! };
+  if (/^\/admin\/users\/?$/.test(pathname)) return { name: 'admin-users' };
+  if (/^\/admin\/feedback\/?$/.test(pathname)) return { name: 'admin-feedback' };
+  if (/^\/admin\/problems\/?$/.test(pathname)) return { name: 'admin-problems' };
+  if (/^\/admin\/?$/.test(pathname)) return { name: 'admin-overview' };
   const detail = /^\/workspace\/([^/]+)\/documents\/([^/]+)\/?$/.exec(pathname);
   if (detail) {
     return {
@@ -71,7 +86,13 @@ export function workspacePath(
 }
 
 export function workspaceIdFromRoute(route: Route): string | null {
-  return route.name === 'home' ? null : route.workspaceId;
+  return 'workspaceId' in route ? route.workspaceId : null;
+}
+
+export function adminPath(
+  page: 'overview' | 'users' | 'feedback' | 'problems' = 'overview',
+): string {
+  return page === 'overview' ? '/admin' : `/admin/${page}`;
 }
 
 export function navigate(path: string): void {

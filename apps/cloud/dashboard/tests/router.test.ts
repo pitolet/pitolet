@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parse, workspacePath } from '../src/router.js';
+import { adminPath, parse, workspacePath } from '../src/router.js';
 
 describe('dashboard routes', () => {
   it('parses workspace pages and document detail links', () => {
@@ -37,5 +37,19 @@ describe('dashboard routes', () => {
   it('builds workspace paths safely', () => {
     expect(workspacePath('workspace / one')).toBe('/workspace/workspace%20%2F%20one');
     expect(workspacePath('ws-1', 'people')).toBe('/workspace/ws-1/people');
+  });
+
+  it('parses owner-console routes and builds their paths', () => {
+    expect(parse('/admin')).toEqual({ name: 'admin-overview' });
+    expect(parse('/admin/users')).toEqual({ name: 'admin-users' });
+    expect(parse('/admin/users/user%201')).toEqual({ name: 'admin-user', userId: 'user 1' });
+    expect(parse('/admin/feedback')).toEqual({ name: 'admin-feedback' });
+    expect(parse('/admin/feedback/00000000-0000-0000-0000-000000000001')).toEqual({
+      name: 'admin-feedback-detail',
+      feedbackId: '00000000-0000-0000-0000-000000000001',
+    });
+    expect(parse('/admin/problems')).toEqual({ name: 'admin-problems' });
+    expect(adminPath('overview')).toBe('/admin');
+    expect(adminPath('feedback')).toBe('/admin/feedback');
   });
 });

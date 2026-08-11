@@ -6,7 +6,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./tokens.css": "./src/tokens.css",
-    "./base.css": "./src/base.css"
+    "./base.css": "./src/base.css",
+    "./feedback.css": "./src/feedback.css"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"

@@ -2,6 +2,11 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  define: {
+    'import.meta.env.VITE_PITOLET_RELEASE': JSON.stringify(
+      process.env.PITOLET_RELEASE ?? process.env.npm_package_version ?? 'development',
+    ),
+  },
   // Relative asset paths so the built SPA works when mounted under any base
   // path (e.g. a future hosted deployment at /w/:workspaceSlug/). Does not
   // affect the dev server proxy below.

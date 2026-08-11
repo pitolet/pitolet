@@ -24,6 +24,18 @@ export interface WorkspaceManagerOptions {
   /** Hard cap on loaded runtimes (default 100) — oldest idle evicted over cap. */
   maxLoaded?: number;
   logError?: (message: string, err?: unknown) => void;
+  reportProblem?: (input: {
+    source: 'runtime' | 'storage';
+    title: string;
+    error?: unknown;
+    workspaceId?: string;
+    operation?: string;
+  }) => void;
+  recordImport?: (input: {
+    workspaceId: string;
+    documentId: string;
+    actor: { kind: string; userId?: string };
+  }) => void | Promise<void>;
   /** Injectable clock for plan-gate rate buckets (tests). */
   clock?: () => number;
   /**
@@ -63,6 +75,8 @@ export class WorkspaceManager {
   private readonly maxLoaded: number;
   private readonly sweepTimer: NodeJS.Timeout;
   private readonly logError: (message: string, err?: unknown) => void;
+  private readonly reportProblem?: WorkspaceManagerOptions['reportProblem'];
+  private readonly recordImport?: WorkspaceManagerOptions['recordImport'];
   private readonly clock?: () => number;
   private readonly storageOptions: WorkspaceManagerOptions['storage'];
   private stopped = false;
@@ -76,6 +90,8 @@ export class WorkspaceManager {
     this.maxLoaded = options.maxLoaded ?? 100;
     this.clock = options.clock;
     this.storageOptions = options.storage;
+    this.reportProblem = options.reportProblem;
+    this.recordImport = options.recordImport;
     this.logError =
       options.logError ??
       ((message, err) => console.error(`[pitolet-cloud] ${message}`, err ?? ''));
@@ -199,6 +215,10 @@ export class WorkspaceManager {
 
     const adapter = new PgStorageAdapter(this.pool, workspaceId, this.dataRoot, {
       ...this.storageOptions,
+      logError: (message, error) => {
+        this.logError(message, error);
+        this.reportProblem?.({ source: 'storage', title: message, error, workspaceId });
+      },
       quota: {
         maxAssetBytes: () => limits().assetBytesPerWorkspace,
         assetLimitMessage: () => assetLimitMessage(planRef.plan),
@@ -215,6 +235,17 @@ export class WorkspaceManager {
         getDocCount: () => getDocCount(),
         clock: this.clock,
       }),
+      reportError: ({ label, error, operation }) => {
+        this.reportProblem?.({
+          source: 'runtime',
+          title: label,
+          error,
+          workspaceId,
+          operation,
+        });
+      },
+      onDocumentImported: ({ documentId, actor }) =>
+        this.recordImport?.({ workspaceId, documentId, actor }),
     });
     getDocCount = () => runtime.store.list().length;
     // The OSS create_document tool persists via adapter.saveNow without

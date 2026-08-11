@@ -1,4 +1,5 @@
 import { Component, type ReactNode } from 'react';
+import { reportCloudEditorProblem } from './cloudDiagnostics.js';
 
 interface Props {
   /** Panel name shown in the fallback. */
@@ -20,6 +21,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   override componentDidCatch(error: Error): void {
     console.error(`[pitolet] ${this.props.name} crashed:`, error);
+    reportCloudEditorProblem(error, this.props.name);
   }
 
   override render(): ReactNode {
