@@ -711,6 +711,51 @@ a {
   font-size: 13px;
 }
 
+.ptl-auth-verification {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 11px;
+  margin-bottom: 18px;
+  padding: 13px;
+  border: 1px solid var(--ptl-border-active);
+  border-radius: 10px;
+  background: var(--ptl-accent-muted);
+  color: var(--ptl-text-1);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.ptl-auth-verification > svg {
+  margin-top: 1px;
+  color: var(--ptl-accent);
+}
+
+.ptl-auth-verification strong {
+  display: block;
+  margin-bottom: 3px;
+}
+
+.ptl-auth-verification p {
+  margin: 0;
+  color: var(--ptl-text-2);
+}
+
+.ptl-auth-verification b {
+  color: var(--ptl-text-1);
+  font-weight: 550;
+  overflow-wrap: anywhere;
+}
+
+.ptl-auth-resend {
+  margin-top: 9px;
+  font-weight: 550;
+}
+
+.ptl-auth-resend:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
 .ptl-dash-divider {
   display: flex;
   align-items: center;

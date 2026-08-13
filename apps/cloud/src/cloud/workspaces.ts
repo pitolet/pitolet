@@ -89,11 +89,22 @@ export async function createWorkspace(
        WHERE m.user_id = $1 AND m.role = 'owner'`,
       [input.ownerUserId],
     );
-    const denial = workspaceCreateDenial(owned.rows.map((row) => row.plan as string));
+    const entitlement = await client.query(
+      `SELECT 1 FROM account_entitlements
+       WHERE user_id = $1 AND plan = 'unlimited'`,
+      [input.ownerUserId],
+    );
+    const hasUnlimitedEntitlement = Boolean(entitlement.rowCount);
+    const denial = workspaceCreateDenial(
+      owned.rows.map((row) => row.plan as string),
+      hasUnlimitedEntitlement,
+    );
     if (denial) throw new PlanLimitError(denial);
     const ws = await client.query(
-      'INSERT INTO workspaces (slug, name) VALUES ($1, $2) RETURNING id, slug, name, plan',
-      [input.slug, input.name],
+      `INSERT INTO workspaces (slug, name, plan)
+       VALUES ($1, $2, $3)
+       RETURNING id, slug, name, plan`,
+      [input.slug, input.name, hasUnlimitedEntitlement ? 'unlimited' : 'free'],
     );
     const row = ws.rows[0] as Workspace;
     await client.query(

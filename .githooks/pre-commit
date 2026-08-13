@@ -1,0 +1,10 @@
+#!/bin/sh
+set -eu
+
+hour=$(TZ=Africa/Johannesburg date +%H)
+
+if [ "$hour" -lt 17 ]; then
+  echo "Commits are blocked before 17:00 SAST." >&2
+  echo "Current time: $(TZ=Africa/Johannesburg date '+%Y-%m-%d %H:%M:%S SAST')" >&2
+  exit 1
+fi

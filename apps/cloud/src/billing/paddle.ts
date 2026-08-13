@@ -348,7 +348,7 @@ export async function processPaddleWebhook(
       return await commitNoop({ status: 'invalid-workspace-binding' });
     }
 
-    const ws = await client.query('SELECT id FROM workspaces WHERE id = $1 FOR UPDATE', [
+    const ws = await client.query('SELECT id, plan FROM workspaces WHERE id = $1 FOR UPDATE', [
       workspaceId,
     ]);
     if (ws.rowCount === 0) {
@@ -372,7 +372,8 @@ export async function processPaddleWebhook(
       return await commitNoop({ status: 'stale' });
     }
 
-    const plan: Plan = ACTIVE_STATUSES.has(event.status) ? 'pro' : 'free';
+    const billedPlan: Plan = ACTIVE_STATUSES.has(event.status) ? 'pro' : 'free';
+    const plan: Plan = planOf(ws.rows[0]?.plan) === 'unlimited' ? 'unlimited' : billedPlan;
     await client.query(
       `INSERT INTO subscriptions
          (workspace_id, paddle_subscription_id, paddle_customer_id, plan, status, current_period_end, updated_at)
@@ -388,7 +389,7 @@ export async function processPaddleWebhook(
         workspaceId,
         event.subscriptionId,
         event.customerId,
-        plan,
+        billedPlan,
         event.status,
         event.currentPeriodEnd,
         event.occurredAt,
@@ -429,7 +430,8 @@ export async function reconcilePaddleSubscriptions(
   fetchImpl: typeof fetch = fetch,
 ): Promise<void> {
   const rows = await pool.query(
-    `SELECT s.workspace_id, s.paddle_subscription_id, s.status, w.plan
+    `SELECT s.workspace_id, s.paddle_subscription_id, s.status,
+            s.plan AS subscription_plan, w.plan AS workspace_plan
      FROM subscriptions s JOIN workspaces w ON w.id = s.workspace_id
      WHERE s.paddle_subscription_id IS NOT NULL`,
   );
@@ -471,11 +473,14 @@ export async function reconcilePaddleSubscriptions(
         );
       }
       const statusDrift = liveStatus !== (row.status as string);
-      const planDrift = livePlan !== planOf(row.plan);
-      if (!statusDrift && !planDrift) continue;
+      const planDrift = livePlan !== planOf(row.subscription_plan);
+      const workspacePlan: Plan =
+        planOf(row.workspace_plan) === 'unlimited' ? 'unlimited' : livePlan;
+      const workspacePlanDrift = workspacePlan !== planOf(row.workspace_plan);
+      if (!statusDrift && !planDrift && !workspacePlanDrift) continue;
       console.warn(
         `[pitolet-cloud] paddle reconcile: correcting workspace ${workspaceId} ` +
-          `(status ${row.status} → ${liveStatus}, plan ${row.plan} → ${livePlan})`,
+          `(status ${row.status} → ${liveStatus}, plan ${row.workspace_plan} → ${workspacePlan})`,
       );
       const client = await pool.connect();
       try {
@@ -489,7 +494,7 @@ export async function reconcilePaddleSubscriptions(
         );
         await client.query('UPDATE workspaces SET plan = $2 WHERE id = $1', [
           workspaceId,
-          livePlan,
+          workspacePlan,
         ]);
         await client.query('COMMIT');
       } catch (err) {
@@ -498,7 +503,7 @@ export async function reconcilePaddleSubscriptions(
       } finally {
         client.release();
       }
-      listener?.onPlanChanged(workspaceId, livePlan);
+      listener?.onPlanChanged(workspaceId, workspacePlan);
     } catch (err) {
       console.error(`[pitolet-cloud] paddle reconcile failed for subscription ${subId}:`, err);
     }

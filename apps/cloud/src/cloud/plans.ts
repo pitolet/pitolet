@@ -12,7 +12,7 @@
  * Every denial is a 429 whose reason names the limit AND the upgrade path.
  */
 
-export type Plan = 'free' | 'pro';
+export type Plan = 'free' | 'pro' | 'unlimited';
 
 /** Raised by transactional quota gates and mapped to HTTP 429 by the router. */
 export class PlanLimitError extends Error {}
@@ -50,11 +50,21 @@ export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
     assetBytesPerWorkspace: 5 * 1024 * 1024 * 1024, // 5 GB
     historyDays: 30,
   },
+  unlimited: {
+    workspacesPerUser: Number.POSITIVE_INFINITY,
+    docsPerWorkspace: Number.POSITIVE_INFINITY,
+    membersPerWorkspace: Number.POSITIVE_INFINITY,
+    tokensPerWorkspace: Number.POSITIVE_INFINITY,
+    shareLinksPerDoc: Number.POSITIVE_INFINITY,
+    assetBytesPerWorkspace: Number.POSITIVE_INFINITY,
+    historyDays: Number.POSITIVE_INFINITY,
+  },
 };
 
 /** Coerce a workspaces.plan column value to a Plan — unknown values are free. */
 export function planOf(value: unknown): Plan {
-  return value === 'pro' ? 'pro' : 'free';
+  if (value === 'pro' || value === 'unlimited') return value;
+  return 'free';
 }
 
 /** Denial reason for creating one more document, or null when allowed. */
@@ -96,7 +106,11 @@ export function shareLinkLimitDenial(plan: Plan, activeLinkCount: number): strin
  * Denial reason for creating one more OWNED workspace, or null when allowed.
  * `ownedPlans` = plan column of every workspace the user owns (role='owner').
  */
-export function workspaceCreateDenial(ownedPlans: readonly string[]): string | null {
+export function workspaceCreateDenial(
+  ownedPlans: readonly string[],
+  hasUnlimitedEntitlement = false,
+): string | null {
+  if (hasUnlimitedEntitlement) return null;
   const ownsPro = ownedPlans.some((p) => planOf(p) === 'pro');
   const maxOwned = ownsPro ? PLAN_LIMITS.pro.workspacesPerUser : PLAN_LIMITS.free.workspacesPerUser;
   if (ownedPlans.length < maxOwned) return null;

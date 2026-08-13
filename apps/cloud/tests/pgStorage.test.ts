@@ -90,6 +90,7 @@ describe('migrations', () => {
       '003_billing_limits.sql',
       '004_production_hardening.sql',
       '005_owner_console.sql',
+      '006_account_entitlements.sql',
     ]);
   });
 

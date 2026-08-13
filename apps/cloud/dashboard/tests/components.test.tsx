@@ -2,18 +2,22 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { signInEmail, signUpEmail, getSession, sendMagicLink } = vi.hoisted(() => ({
-  signInEmail: vi.fn(),
-  signUpEmail: vi.fn(),
-  getSession: vi.fn(),
-  sendMagicLink: vi.fn(),
-}));
+const { signInEmail, signUpEmail, getSession, sendMagicLink, sendVerificationEmail } = vi.hoisted(
+  () => ({
+    signInEmail: vi.fn(),
+    signUpEmail: vi.fn(),
+    getSession: vi.fn(),
+    sendMagicLink: vi.fn(),
+    sendVerificationEmail: vi.fn(),
+  }),
+);
 
 vi.mock('../src/authClient.js', () => ({
   authClient: {
     signIn: { email: signInEmail, magicLink: sendMagicLink },
     signUp: { email: signUpEmail },
     getSession,
+    sendVerificationEmail,
   },
 }));
 
@@ -105,6 +109,107 @@ describe('dashboard interactions', () => {
 
     expect(container.textContent).toContain('Email or password is incorrect');
     expect(container.textContent).toContain('Sign in');
+  });
+
+  it('explains that signing in sent another verification email', async () => {
+    signInEmail.mockResolvedValue({
+      error: { code: 'EMAIL_NOT_VERIFIED', message: 'Email not verified', status: 403 },
+    });
+    sendVerificationEmail.mockResolvedValue({ data: { status: true }, error: null });
+
+    await act(async () => root.render(<SignIn onAuthed={vi.fn()} />));
+    await act(async () => {
+      setInput(container.querySelector<HTMLInputElement>('#email')!, 'person@example.com');
+      setInput(container.querySelector<HTMLInputElement>('#password')!, 'correct-password');
+    });
+    await act(async () => {
+      container
+        .querySelector('form')!
+        .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    });
+
+    expect(container.textContent).toContain('Verification email sent again');
+    expect(container.textContent).toContain('person@example.com');
+    expect(container.textContent).toContain('Resend verification email');
+    expect(container.querySelector('[role="alert"]')).toBeNull();
+    expect(sendVerificationEmail).toHaveBeenCalledWith({
+      email: 'person@example.com',
+      callbackURL: '/',
+    });
+  });
+
+  it('reports the first verification email after account creation', async () => {
+    signUpEmail.mockResolvedValue({ data: { user: { id: 'user-1' } } });
+    getSession.mockResolvedValue({ data: null });
+
+    await act(async () => root.render(<SignIn onAuthed={vi.fn()} />));
+    await act(async () => button(container, 'Create an account').click());
+    await act(async () => {
+      setInput(container.querySelector<HTMLInputElement>('#name')!, 'Person');
+      setInput(container.querySelector<HTMLInputElement>('#email')!, 'person@example.com');
+      setInput(container.querySelector<HTMLInputElement>('#password')!, 'new-password');
+    });
+    await act(async () => {
+      container
+        .querySelector('form')!
+        .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    });
+
+    expect(container.textContent).toContain('Verification email sent');
+    expect(container.textContent).not.toContain('Verification email sent again');
+  });
+
+  it('lets an unverified user request another verification email', async () => {
+    signInEmail.mockResolvedValue({
+      error: { code: 'EMAIL_NOT_VERIFIED', message: 'Email not verified', status: 403 },
+    });
+    sendVerificationEmail.mockResolvedValue({ data: { status: true }, error: null });
+
+    await act(async () => root.render(<SignIn onAuthed={vi.fn()} />));
+    await act(async () => {
+      setInput(container.querySelector<HTMLInputElement>('#email')!, 'person@example.com');
+      setInput(container.querySelector<HTMLInputElement>('#password')!, 'correct-password');
+    });
+    await act(async () => {
+      container
+        .querySelector('form')!
+        .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    });
+    sendVerificationEmail.mockClear();
+    await act(async () => button(container, 'Resend verification email').click());
+
+    expect(sendVerificationEmail).toHaveBeenCalledWith({
+      email: 'person@example.com',
+      callbackURL: '/',
+    });
+    expect(container.textContent).toContain('Verification email sent again');
+  });
+
+  it('explains when verification email requests are rate limited', async () => {
+    signInEmail.mockResolvedValue({
+      error: { code: 'EMAIL_NOT_VERIFIED', message: 'Email not verified', status: 403 },
+    });
+    sendVerificationEmail.mockResolvedValue({
+      data: null,
+      error: { code: 'TOO_MANY_REQUESTS', message: 'Too many requests', status: 429 },
+    });
+
+    await act(async () => root.render(<SignIn onAuthed={vi.fn()} />));
+    await act(async () => {
+      setInput(container.querySelector<HTMLInputElement>('#email')!, 'person@example.com');
+      setInput(container.querySelector<HTMLInputElement>('#password')!, 'correct-password');
+    });
+    await act(async () => {
+      container
+        .querySelector('form')!
+        .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    });
+
+    expect(container.textContent).toContain(
+      'Too many verification emails were requested. Wait a minute, then try again.',
+    );
+    expect(container.textContent).toContain('Verify your email');
+    expect(container.textContent).toContain('Resend verification email');
   });
 
   it('creates a workspace from the contextual empty state', async () => {

@@ -152,7 +152,11 @@ function buildOptions(config: CloudAuthConfig) {
     emailVerification: {
       sendVerificationEmail,
       sendOnSignUp: requireEmailVerification,
-      sendOnSignIn: requireEmailVerification,
+      // The dashboard handles an unverified sign-in by calling the dedicated
+      // resend endpoint and showing its result. Letting Better Auth send here
+      // would return EMAIL_NOT_VERIFIED after a quiet side effect, leaving the
+      // user unable to tell whether delivery succeeded.
+      sendOnSignIn: false,
       autoSignInAfterVerification: true,
       expiresIn: 60 * 60,
     },

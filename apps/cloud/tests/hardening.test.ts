@@ -48,6 +48,29 @@ describe('transactional plan and ownership invariants', () => {
     expect(outcomes.filter((outcome) => outcome.status === 'rejected')).toHaveLength(1);
   });
 
+  it('lets an internally entitled account create unlimited workspaces with unlimited plans', async () => {
+    const owner = 'unlimited-workspace-owner';
+    await insertVerifiedUser(owner, 'unlimited@example.test');
+    await pgi.pool.query(
+      `INSERT INTO account_entitlements (user_id, plan, note)
+       VALUES ($1, 'unlimited', 'test')`,
+      [owner],
+    );
+
+    const workspaces = await Promise.all(
+      Array.from({ length: 12 }, (_, index) =>
+        createWorkspace(pgi.pool, {
+          name: `Unlimited ${index}`,
+          slug: `unlimited-${index}`,
+          ownerUserId: owner,
+        }),
+      ),
+    );
+
+    expect(workspaces).toHaveLength(12);
+    expect(workspaces.every((workspace) => workspace.plan === 'unlimited')).toBe(true);
+  });
+
   it('serializes concurrent token and share-link creation', async () => {
     const workspace = await createWorkspace(pgi.pool, {
       name: 'Credential quota',

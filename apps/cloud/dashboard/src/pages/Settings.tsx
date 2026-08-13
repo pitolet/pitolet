@@ -32,6 +32,8 @@ function PlanCard({ workspace }: { workspace: WorkspaceSummary }) {
   const [billing, setBilling] = useState<BillingSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
   const isOwner = workspace.role === 'owner';
+  const plan = billing?.plan ?? workspace.plan;
+  const planLabel = plan === 'unlimited' ? 'Unlimited' : plan === 'pro' ? 'Pro' : 'Free';
 
   async function reload() {
     if (!isOwner) return;
@@ -58,13 +60,15 @@ function PlanCard({ workspace }: { workspace: WorkspaceSummary }) {
       </div>
       <div className="ptl-plan-card">
         <div>
-          <strong className="ptl-plan-name">{billing?.plan ?? workspace.plan}</strong>
+          <strong className="ptl-plan-name">{planLabel}</strong>
           <span className="ptl-plan-role">
-            {workspace.role === 'owner'
-              ? billing?.status
-                ? `Subscription ${billing.status}`
-                : 'Workspace owner'
-              : `Only an owner can manage this plan`}
+            {plan === 'unlimited'
+              ? 'No workspace limits'
+              : workspace.role === 'owner'
+                ? billing?.status
+                  ? `Subscription ${billing.status}`
+                  : 'Workspace owner'
+                : `Only an owner can manage this plan`}
           </span>
         </div>
         {billing?.currentPeriodEnd && (

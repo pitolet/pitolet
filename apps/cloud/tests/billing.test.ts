@@ -191,6 +191,7 @@ function mcpText(result: Awaited<ReturnType<Client['callTool']>>): string {
 const T0 = new Date(Date.now() - 60_000).toISOString();
 const T1 = new Date().toISOString();
 const T2 = new Date(Date.now() + 1_000).toISOString();
+const T3 = new Date(Date.now() + 2_000).toISOString();
 
 beforeAll(async () => {
   dataRoot = mkdtempSync(join(tmpdir(), 'pitolet-cloud-billing-'));
@@ -678,6 +679,38 @@ describe('cancellation', () => {
     const res = await mcp.callTool({ name: 'create_document', arguments: { name: 'Doc 5' } });
     expect(res.isError).toBe(true);
     expect(mcpText(res)).toMatch(/limited to 3 documents/i);
+  });
+});
+
+describe('internal unlimited entitlement', () => {
+  it('survives later billing events and disables checkout', async () => {
+    const user = await pgi.pool.query<{ id: string }>(
+      `SELECT id FROM "user" WHERE email = 'alice@acme.test'`,
+    );
+    await pgi.pool.query(
+      `INSERT INTO account_entitlements (user_id, plan, note)
+       VALUES ($1, 'unlimited', 'billing test')`,
+      [user.rows[0]!.id],
+    );
+    await pgi.pool.query(`UPDATE workspaces SET plan = 'unlimited' WHERE id = $1`, [acme.id]);
+
+    const { body } = subscriptionEvent({
+      workspaceId: acme.id,
+      type: 'subscription.activated',
+      status: 'active',
+      occurredAt: T3,
+      eventId: 'evt_unlimited_activation',
+    });
+    expect((await postWebhook(body)).status).toBe(200);
+    expect(await workspacePlan(acme.id)).toBe('unlimited');
+    expect((await subscriptionRow(acme.id))!.plan).toBe('pro');
+
+    const billing = await api(`/api/workspaces/${acme.id}/billing`, { cookie: alice });
+    expect(await billing.json()).toMatchObject({
+      plan: 'unlimited',
+      checkout: null,
+      billingEnabled: false,
+    });
   });
 });
 

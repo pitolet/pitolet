@@ -883,19 +883,21 @@ export function createCloudRouter(options: CloudRouterOptions): CloudRouter {
     );
     const r = row.rows[0] as
       { plan: string; status: string | null; period_end: Date | null } | undefined;
+    const plan = planOf(r?.plan);
+    const billingEnabled = billing !== null && plan !== 'unlimited';
     return json(res, 200, {
-      plan: planOf(r?.plan),
+      plan,
       status: r?.status ?? null,
       currentPeriodEnd: r?.period_end ? new Date(r.period_end).toISOString() : null,
       priceId: billing?.priceIdPro ?? null,
       productId: billing?.productIdPro ?? null,
-      checkout: billing
+      checkout: billingEnabled
         ? {
             workspaceId,
             workspaceSig: workspaceCheckoutSignature(billing.webhookSecret, workspaceId),
           }
         : null,
-      billingEnabled: billing !== null,
+      billingEnabled,
     });
   }
 
