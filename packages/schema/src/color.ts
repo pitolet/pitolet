@@ -25,7 +25,12 @@ export function parseColor(input: string): Color | null {
   if (!parsed) return null;
   const c = toOklch(parsed);
   if (!c) return null;
-  return oklch(c.l ?? 0, c.c ?? 0, Number.isNaN(c.h) || c.h === undefined ? 0 : c.h, c.alpha);
+  return oklch(
+    clamp(c.l ?? 0, 0, 1),
+    Math.max(0, c.c ?? 0),
+    Number.isNaN(c.h) || c.h === undefined ? 0 : c.h,
+    c.alpha === undefined ? undefined : clamp(c.alpha, 0, 1),
+  );
 }
 
 /** Hex representation for display/input fields (with alpha only when needed). */
@@ -54,4 +59,8 @@ export function colorDistance(a: Color, b: Color): number {
 function round(n: number, places: number): number {
   const f = 10 ** places;
   return Math.round(n * f) / f;
+}
+
+function clamp(value: number, minimum: number, maximum: number): number {
+  return Math.min(maximum, Math.max(minimum, value));
 }

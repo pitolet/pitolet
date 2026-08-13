@@ -9,6 +9,7 @@
   background-size: calc(var(--cam-zoom, 1) * 32px) calc(var(--cam-zoom, 1) * 32px);
   background-position: var(--cam-x, 0px) var(--cam-y, 0px);
   touch-action: none;
+  overscroll-behavior: none;
   contain: strict;
 }
 
@@ -20,6 +21,9 @@
 }
 
 .ptl-canvas-viewport--pan-ready {
+  cursor: grab;
+}
+.ptl-canvas-viewport--tool-hand {
   cursor: grab;
 }
 .ptl-canvas-viewport--pan-dragging {

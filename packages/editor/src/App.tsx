@@ -376,7 +376,7 @@ function Editor() {
                 onContentPointerDown={(e, viewport) => {
                   const tool = useEditor.getState().activeTool;
                   if (tool === 'select') onSelectPointerDown(e, camera, viewport);
-                  else onInsertPointerDown(e, tool, camera, viewport);
+                  else if (tool !== 'hand') onInsertPointerDown(e, tool, camera, viewport);
                 }}
                 onContentPointerMove={(e) => {
                   if (useEditor.getState().activeTool === 'select') {

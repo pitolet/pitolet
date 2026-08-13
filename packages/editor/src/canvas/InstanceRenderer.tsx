@@ -93,7 +93,7 @@ function MasterNode({
     style: css,
     tabIndex: isCanvasFocusableTag(node.tag) ? -1 : undefined,
     draggable: false,
-    ...sanitizeAttrs(node.attrs),
+    ...sanitizeAttrs(node.attrs, node.tag),
   };
 
   switch (node.type) {

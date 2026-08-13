@@ -1,10 +1,10 @@
 # Pitolet fix notes
 
-Items collected for the next implementation pass. Do not implement until the user says the collection is complete.
+Implementation record for the importer, MCP, dashboard, and canvas reliability pass.
 
 ## 1. Codex MCP loader closes on Pitolet's large tool catalog
 
-**Status:** Recorded
+**Status:** Implemented and covered by MCP discovery-size tests
 
 When Pitolet is connected to Codex over MCP, Codex reports that its native MCP loader closes while processing Pitolet's "unusually large tool catalog." Authentication, initialization, and `list_documents` still succeed, but the behavior makes setup look unreliable.
 
@@ -14,7 +14,7 @@ Investigate whether Pitolet exposes too many narrowly scoped tools during MCP in
 
 ## 2. MCP-connected agents do not discover the website import workflow
 
-**Status:** Recorded
+**Status:** Implemented in MCP instructions, dashboard prompts, and documentation
 
 Pitolet already supports importing a website through the local CLI:
 
@@ -28,7 +28,7 @@ Make the import workflow discoverable to MCP clients without pretending the clou
 
 ## 3. Agent connection panel has an awkward outline and stale status
 
-**Status:** Recorded
+**Status:** Implemented with stable foreground polling and restrained focus styling
 
 The expanded Agent connection control shows a large bright cyan rectangular outline around the whole header. It does not fit the surrounding card styling and appears visually detached from the control it is meant to focus. Preserve an accessible keyboard focus state, but make it restrained, correctly inset, and consistent with other interactive cards.
 
@@ -36,7 +36,7 @@ The connection status also remains stale after the agent first uses MCP. The pag
 
 ## 4. Recent documents do not update automatically
 
-**Status:** Recorded
+**Status:** Implemented through the workspace refresh coordinator
 
 When an agent creates or updates a document through MCP, the workspace home's Recent documents section remains stale until the user refreshes the whole page. Refresh the document data automatically so new and recently changed documents appear without a browser reload.
 
@@ -44,7 +44,7 @@ Coordinate this with the connection-status refresh from item 3 rather than addin
 
 ## 5. Workspace header shows unnecessary owner and slug metadata
 
-**Status:** Recorded
+**Status:** Implemented; the workspace URL now lives in Settings
 
 Remove the `Owner` badge and `/pitchdance-site` slug from the main workspace header. They add noise to the most prominent part of the page without helping with the usual workspace workflow.
 
@@ -52,7 +52,7 @@ Keep the workspace name as the header's focus. Move the slug to Workspace Settin
 
 ## 6. Website import can flatten the entire page into three screenshots
 
-**Status:** Recorded — high priority
+**Status:** Implemented with root safeguards, native layered gradients, and editability gates
 
 The website importer encountered effects on the page root and rasterized the entire page once at each captured viewport. The resulting document contains three responsive image layers rather than an editable page. This defeats the main purpose of importing into Pitolet and violates the intended rule that unsupported regions may be rasterized but the whole page must never be flattened.
 
@@ -86,7 +86,7 @@ Those may require additional native effect support or isolated decorative fallba
 
 ## 7. Build a representative website-import compatibility audit
 
-**Status:** Recorded
+**Status:** Implemented as a deterministic real-browser compatibility fixture; broader public-site runs remain a release audit
 
 Run a deliberately varied set of public and locally controlled websites through the importer at mobile, tablet, and desktop widths. Use this to find both importer defects and gaps in Pitolet's underlying document/style model before presenting website import as production-ready.
 
@@ -119,7 +119,7 @@ Use only publicly accessible pages or pages under the user's control, respect re
 
 ## 8. Editor logo should return to the workspace list
 
-**Status:** Recorded
+**Status:** Implemented for private cloud editor sessions
 
 In Pitolet Cloud, clicking the Pitolet logo/wordmark in the editor's top-left navigation should return the user to the workspace list/home screen. Implement it as a real keyboard-accessible link with an appropriate accessible name, visible hover/focus treatment, and no loss of unsaved work without the existing navigation warning or save behavior.
 
@@ -127,7 +127,7 @@ Keep environment behavior explicit: the cloud editor should navigate to the clou
 
 ## 9. Detailed importer, model, CLI, and MCP limitation inventory
 
-**Status:** Recorded — independently reproduce before implementation
+**Status:** Reproduced and addressed where representable; intentional product boundaries remain documented below
 
 Another AI agent reported the following while importing and then manually recreating PitchDance. Treat this as a test backlog rather than proven fact. Record the source code path, minimal reproduction, expected behavior, actual behavior, severity, and whether the limitation belongs to capture, conversion, the Pitolet schema, rendering/code generation, cloud packaging, or MCP.
 
@@ -212,7 +212,7 @@ Test the screenshot tool in the actual production image. Either package its requ
 
 ## 10. Visual feedback exists but is not a reliable or encouraged agent workflow
 
-**Status:** Recorded
+**Status:** Implemented with MCP guidance, responsive/state capture, and a browser-equipped cloud image
 
 Pitolet currently exposes an MCP `get_screenshot` tool for a frame. When an editor is open for the document, the server asks that editor to render the frame and returns a JPEG to the agent. Without an open editor, the implementation falls back to headless Chromium. The README documents the tool, but the MCP server supplies no workflow instructions telling agents to inspect their work visually, and the write-tool descriptions do not prompt agents to use it after meaningful changes.
 
@@ -237,7 +237,7 @@ Treat this as a Cloud packaging/runtime defect and a documentation defect. Remov
 
 ## 11. Horizontal canvas panning triggers browser back navigation
 
-**Status:** Recorded
+**Status:** Implemented with contained trackpad gestures and a Hand tool
 
 On Chrome/macOS, attempting to pan the canvas left with a two-finger horizontal trackpad gesture can trigger the browser's swipe-to-go-back navigation. This makes part of the infinite canvas difficult or unsafe to reach and can unexpectedly leave the editor.
 
@@ -246,3 +246,13 @@ Contain horizontal overscroll within the editor canvas using the appropriate `ov
 Test genuine trackpad-style wheel sequences as well as mouse wheels on Chrome/macOS where possible. Cover panning in every direction, gestures beginning near the viewport edge, zoom modifiers, Space-drag panning, nested scrollable panels, and the editor's own back/navigation behavior. Verify that preventing browser history navigation does not trap users or break keyboard-accessible navigation.
 
 Add a dedicated Hand/Pan tool to the editor toolbar so canvas navigation is discoverable without knowing a shortcut. While active, dragging anywhere on the canvas pans and uses clear open-hand/closed-hand cursor feedback without selecting or moving layers. Keep hold-Space as a temporary Hand tool from any other tool, restoring the previous tool on release. Give the Hand tool a visible tooltip and a conventional shortcut such as `H`, ensure Escape returns to Select consistently with the existing tool behavior, and include it in keyboard-help/onboarding copy. Avoid making the toolbar cramped at narrower editor widths.
+
+## 12. Drag-selection does not auto-pan at canvas edges
+
+**Status:** Implemented for all edges and corners with frame-rate-independent camera updates
+
+When a user drags a selection marquee to the edge of the visible canvas, the viewport remains fixed. This prevents a single drag from selecting content beyond the current viewport and makes large or zoomed-in documents awkward to work with.
+
+Add edge-triggered auto-pan while marquee selection is active. As the pointer approaches or moves beyond a canvas edge, move the camera in that direction and continue updating the marquee in canvas coordinates. The speed should increase gradually near the edge, remain stable across zoom levels and display refresh rates, and stop immediately when the pointer returns to the safe area or the drag ends.
+
+Keep the behavior limited to canvas operations that need it. Test all four edges and corners, low and high zoom levels, pointer capture outside the editor window, browser resizing during a drag, locked or hidden layers, and cancellation with Escape. Verify that selection results remain correct while the camera moves and that auto-pan does not fight the Hand tool, Space-drag panning, layer dragging, resizing, or ordinary trackpad scrolling. Consider using the same well-tested edge-scroll primitive for moving and resizing layers where continuing beyond the viewport is also expected, while keeping each interaction's activation rules explicit.

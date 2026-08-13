@@ -21,8 +21,11 @@ export interface CapturedNode {
   attrs: Record<string, string>;
   rect: CaptureRect;
   styles: CapturedStyles;
+  stateStyles?: Partial<Record<'hover' | 'focus' | 'active', CapturedStyles>>;
   assetUrl?: string;
   unsupportedReason?: string;
+  /** CSS or browser behavior kept structurally but approximated or omitted. */
+  approximations?: string[];
 }
 
 export interface CaptureSnapshot {
@@ -72,9 +75,24 @@ export interface ImportConversion {
   nodeCount: number;
   assetCount: number;
   rasterizedRegions: number;
+  rasterizedNodeCount: number;
+  editableNodeCount: number;
+  editabilityScore: number;
+  editableAreaScore: number;
+  rasterizedAreaRatio: number;
+  status: 'editable' | 'degraded' | 'failed';
   unsupportedCss: string[];
+  compatibilityIssues: ImportCompatibilityIssue[];
   unmatchedResponsiveNodes: number;
   warnings: string[];
+}
+
+export interface ImportCompatibilityIssue {
+  nodeKey: string;
+  nodeName: string;
+  kind: 'rasterized' | 'approximated';
+  reason: string;
+  viewports: number[];
 }
 
 export interface SimilarityResult {
@@ -90,11 +108,19 @@ export interface ImportReport {
   destination: string;
   documentId: string;
   documentName: string;
-  documentUrl: string;
+  documentUrl?: string;
+  uploaded: boolean;
   nodeCount: number;
   assetCount: number;
   rasterizedRegions: number;
+  rasterizedNodeCount: number;
+  editableNodeCount: number;
+  editabilityScore: number;
+  editableAreaScore: number;
+  rasterizedAreaRatio: number;
+  status: 'editable' | 'degraded' | 'failed';
   unsupportedCss: string[];
+  compatibilityIssues: ImportCompatibilityIssue[];
   unmatchedResponsiveNodes: number;
   similarities: SimilarityResult[];
   warnings: string[];
@@ -110,4 +136,7 @@ export interface CaptureOptions {
   /** Explicit opt-in for plaintext public source pages and resources. */
   allowInsecureHttp?: boolean;
   onBrowserInstall?: () => void;
+  hideSelectors?: string[];
+  captureCss?: string;
+  beforeCaptureScript?: string;
 }

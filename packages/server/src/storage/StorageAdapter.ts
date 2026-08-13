@@ -57,9 +57,12 @@ export const ASSET_EXT_BY_MIME: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/gif': 'gif',
   'image/webp': 'webp',
+  'image/avif': 'avif',
   'image/svg+xml': 'svg',
   'font/woff': 'woff',
   'font/woff2': 'woff2',
+  'font/ttf': 'ttf',
+  'font/otf': 'otf',
 };
 
 /**

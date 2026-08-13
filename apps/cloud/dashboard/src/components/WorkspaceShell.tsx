@@ -42,11 +42,8 @@ export function WorkspaceShell({
 
       <div className="ptl-workspace-head">
         <div className="ptl-workspace-head-copy">
-          <div className="ptl-workspace-name-row">
-            <h1 className="ptl-dash-title">{title ?? workspace.name}</h1>
-            <span className="ptl-badge ptl-badge--role">{workspace.role}</span>
-          </div>
-          <p className="ptl-dash-subtitle">{description ?? `/${workspace.slug}`}</p>
+          <h1 className="ptl-dash-title">{title ?? workspace.name}</h1>
+          {description && <p className="ptl-dash-subtitle">{description}</p>}
         </div>
         {(actions || showEditorAction) && (
           <div className="ptl-workspace-head-actions">

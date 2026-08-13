@@ -40,12 +40,18 @@ describe('MCP end-to-end (real client over streamable HTTP)', () => {
 
   it('lists tools', async () => {
     const { tools } = await client.listTools();
+    const serialized = JSON.stringify(tools);
+    expect(serialized.length).toBeLessThan(100_000);
+    expect(JSON.stringify(tools.find((tool) => tool.name === 'insert_nodes')).length).toBeLessThan(
+      20_000,
+    );
     const names = tools.map((t) => t.name).sort();
     expect(names).toEqual([
       'add_comment',
       'check_drift',
       'create_document',
       'create_frame',
+      'delete_document',
       'delete_nodes',
       'export_project',
       'get_comments',
@@ -58,11 +64,19 @@ describe('MCP end-to-end (real client over streamable HTTP)', () => {
       'insert_nodes',
       'list_documents',
       'list_frames',
+      'rename_document',
       'resolve_comment',
       'set_selection',
       'set_tokens',
       'update_node',
     ]);
+  });
+
+  it('advertises website import and visual verification in MCP instructions', () => {
+    const instructions = client.getInstructions();
+    expect(instructions).toContain('npx pitolet import');
+    expect(instructions).toContain('get_screenshot');
+    expect(instructions).toContain('does not import a website');
   });
 
   it('reads frames and nodes as compact summaries', async () => {
@@ -201,14 +215,16 @@ describe('MCP end-to-end (real client over streamable HTTP)', () => {
     );
     const result = await client.callTool({
       name: 'get_screenshot',
-      arguments: { frameId: frames.frames[0].id },
+      arguments: { frameId: frames.frames[0].id, viewportWidth: 375, state: 'hover' },
     });
     if (result.isError) {
       expect(textOf(result)).toContain('Playwright Chromium is not installed');
     } else {
-      expect(result.content).toEqual([
+      expect(textOf(result)).toContain('375');
+      expect(textOf(result)).toContain(':hover');
+      expect(result.content).toContainEqual(
         expect.objectContaining({ type: 'image', mimeType: 'image/jpeg' }),
-      ]);
+      );
     }
   });
 
@@ -276,6 +292,36 @@ describe('MCP end-to-end (real client over streamable HTTP)', () => {
     const entry = app.store.get(result.docId);
     expect(entry?.doc.name).toBe('Fresh');
     expect(entry?.doc.rootOrder).toHaveLength(0);
+  });
+
+  it('renames and safely deletes a document', async () => {
+    const created = JSON.parse(
+      textOf(await client.callTool({ name: 'create_document', arguments: { name: 'Temporary' } })),
+    ) as { docId: string };
+    const renamed = JSON.parse(
+      textOf(
+        await client.callTool({
+          name: 'rename_document',
+          arguments: { docId: created.docId, name: 'Failed import' },
+        }),
+      ),
+    ) as { name: string };
+    expect(renamed.name).toBe('Failed import');
+    expect(app.store.get(created.docId)?.doc.name).toBe('Failed import');
+
+    const refused = await client.callTool({
+      name: 'delete_document',
+      arguments: { docId: created.docId, confirmName: 'Temporary' },
+    });
+    expect(refused.isError).toBe(true);
+    expect(app.store.get(created.docId)).toBeDefined();
+
+    const deleted = await client.callTool({
+      name: 'delete_document',
+      arguments: { docId: created.docId, confirmName: 'Failed import' },
+    });
+    expect(deleted.isError).not.toBe(true);
+    expect(app.store.get(created.docId)).toBeUndefined();
   });
 
   it('protects component roots and prunes variant patches when deleting component children', async () => {

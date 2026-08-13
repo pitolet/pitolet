@@ -62,13 +62,13 @@ Use a write token as the bearer token. Ask me for the token when you need it. Ke
 export function scratchPrompt(brief: string): string {
   return `Use Pitolet for this page: ${brief.trim()}
 
-Create a new Pitolet document with a clear name and build the page there. Keep it responsive. I want to edit it in Pitolet while you work.`;
+Create a new Pitolet document with a clear name and build the page there. Keep it responsive. I want to edit it in Pitolet while you work. After substantial visual changes, use the Pitolet MCP get_screenshot tool to inspect the result and refine it.`;
 }
 
 export function importPrompt(sourceUrl: string, destination: string): string {
   return `Import ${sourceUrl.trim()} into this Pitolet workspace: ${destination}
 
-Use npx pitolet import and the PITOLET_TOKEN environment variable. Ask me for the token if it is not already set. When the import finishes, give me the document link and list any parts that were imported as images.`;
+Use npx pitolet import and the PITOLET_TOKEN environment variable. Ask me for the token if it is not already set. When the import finishes, give me the document link, the editability result, and any compatibility issues. Then use the Pitolet MCP get_screenshot tool to inspect the imported document.`;
 }
 
 export function taskPrompt(input: {

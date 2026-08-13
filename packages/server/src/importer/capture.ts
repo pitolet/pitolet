@@ -34,8 +34,12 @@ const SUPPORTED_ASSET_MIMES = new Set([
   'image/jpeg',
   'image/gif',
   'image/webp',
+  'image/avif',
+  'image/svg+xml',
   'font/woff',
   'font/woff2',
+  'font/ttf',
+  'font/otf',
 ]);
 const SUPPORTED_IMAGE_MIMES = new Set(
   [...SUPPORTED_ASSET_MIMES].filter((mime) => mime.startsWith('image/')),
@@ -53,6 +57,88 @@ const CHROMIUM_CAPTURE_ARGS = [
   // URL/DNS policy with a peer connection.
   '--force-webrtc-ip-handling-policy=disable_non_proxied_udp',
 ] as const;
+const CAPTURE_STYLE_PROPERTIES = [
+  'display',
+  'flexDirection',
+  'flexWrap',
+  'alignItems',
+  'justifyContent',
+  'rowGap',
+  'columnGap',
+  'gridTemplateColumns',
+  'gridTemplateRows',
+  'gridColumn',
+  'gridRow',
+  'alignSelf',
+  'flexGrow',
+  'paddingTop',
+  'paddingRight',
+  'paddingBottom',
+  'paddingLeft',
+  'marginTop',
+  'marginRight',
+  'marginBottom',
+  'marginLeft',
+  'width',
+  'height',
+  'minWidth',
+  'maxWidth',
+  'minHeight',
+  'maxHeight',
+  'position',
+  'top',
+  'right',
+  'bottom',
+  'left',
+  'zIndex',
+  'fontFamily',
+  'fontSize',
+  'fontWeight',
+  'lineHeight',
+  'letterSpacing',
+  'textAlign',
+  'textTransform',
+  'whiteSpace',
+  'fontStyle',
+  'fontOpticalSizing',
+  'color',
+  'backgroundColor',
+  'backgroundImage',
+  'borderTopWidth',
+  'borderTopStyle',
+  'borderTopColor',
+  'borderRightWidth',
+  'borderRightStyle',
+  'borderRightColor',
+  'borderBottomWidth',
+  'borderBottomStyle',
+  'borderBottomColor',
+  'borderLeftWidth',
+  'borderLeftStyle',
+  'borderLeftColor',
+  'borderTopLeftRadius',
+  'borderTopRightRadius',
+  'borderBottomRightRadius',
+  'borderBottomLeftRadius',
+  'boxShadow',
+  'opacity',
+  'overflow',
+  'cursor',
+  'objectFit',
+  'transform',
+  'transformOrigin',
+  'filter',
+  'visibility',
+  'mixBlendMode',
+  'fill',
+  'stroke',
+  'strokeWidth',
+  'strokeLinecap',
+  'strokeLinejoin',
+  'fillRule',
+  'clipRule',
+] as const;
+const MAX_PSEUDO_STATE_CAPTURES = 250;
 
 interface CaptureAssetRequest {
   width: number;
@@ -88,7 +174,7 @@ export async function captureWebPage(options: CaptureOptions): Promise<WebCaptur
     let cssVariables: Record<string, string> = {};
     const requestedWidths = [...options.viewports].sort((a, b) => a - b);
     const captureWidths = [...requestedWidths];
-    const breakpointWidths = requestedWidths.slice(1);
+    let breakpointWidths = requestedWidths.slice(1);
 
     for (let viewportIndex = 0; viewportIndex < captureWidths.length; viewportIndex++) {
       const width = captureWidths[viewportIndex]!;
@@ -107,6 +193,22 @@ export async function captureWebPage(options: CaptureOptions): Promise<WebCaptur
       } else {
         await page.waitForLoadState('networkidle', { timeout: 5_000 }).catch(() => {});
       }
+      const stabilizationCss = `*, *::before, *::after { animation-play-state: paused !important; transition: none !important; caret-color: transparent !important; }`;
+      const hiddenCss = (options.hideSelectors ?? [])
+        .map((selector) => `${selector} { display: none !important; }`)
+        .join('\n');
+      await page.addStyleTag({
+        content: [stabilizationCss, hiddenCss, options.captureCss ?? ''].join('\n'),
+      });
+      if (options.beforeCaptureScript) {
+        await page.addScriptTag({ content: options.beforeCaptureScript });
+      }
+      await page.evaluate(async () => {
+        const fonts = (
+          globalThis as unknown as { document?: { fonts?: { ready?: Promise<unknown> } } }
+        ).document?.fonts;
+        await fonts?.ready?.catch(() => {});
+      });
 
       const roots = page.locator(options.selector ?? 'body');
       const rootCount = await roots.count();
@@ -117,6 +219,7 @@ export async function captureWebPage(options: CaptureOptions): Promise<WebCaptur
       }
 
       const captured = await captureDom(page, options.selector ?? 'body');
+      await capturePseudoStateStyles(page, captured, warnings);
       if (viewportIndex === 0) {
         const minWidth = requestedWidths[0]!;
         const maxWidth = requestedWidths.at(-1)!;
@@ -127,14 +230,24 @@ export async function captureWebPage(options: CaptureOptions): Promise<WebCaptur
         if (discovered.length > 0) {
           const reported = discovered.slice(0, MAX_DISCOVERED_BREAKPOINTS);
           warnings.push(
-            `source media-query breakpoints detected at ${reported.map((value) => `${value}px`).join(', ')}; the requested capture widths remain the editable Pitolet breakpoints`,
+            `source media-query breakpoints detected at ${reported.map((value) => `${value}px`).join(', ')}; they were added to the captured Pitolet breakpoints`,
           );
           if (discovered.length > MAX_DISCOVERED_BREAKPOINTS) {
             warnings.push(
               `only the first ${MAX_DISCOVERED_BREAKPOINTS} source breakpoints were imported`,
             );
           }
+          const expanded = [...new Set([...captureWidths, ...reported])]
+            .sort((left, right) => left - right)
+            .slice(0, 12);
+          captureWidths.splice(0, captureWidths.length, ...expanded);
+          breakpointWidths = captureWidths.slice(1);
         }
+      }
+      for (const stylesheet of captured.opaqueStylesheets) {
+        warnings.push(
+          `could not inspect ${stylesheet} for media queries or font files because the stylesheet is cross-origin`,
+        );
       }
       title ||= captured.title;
       if (Object.keys(cssVariables).length === 0) cssVariables = captured.cssVariables;
@@ -311,6 +424,8 @@ interface DomCaptureResult {
   mediaQueries: string[];
   fontFaces: CapturedFontFace[];
   rootFontSize: number;
+  opaqueStylesheets: string[];
+  pseudoCandidates: Record<'hover' | 'focus' | 'active', string[]>;
 }
 
 interface CaptureAssetBudget {
@@ -320,7 +435,7 @@ interface CaptureAssetBudget {
 
 async function captureDom(page: Page, selector: string): Promise<DomCaptureResult> {
   return page.evaluate(
-    ({ selector: rootSelector, captureAttribute, limits }) => {
+    ({ selector: rootSelector, captureAttribute, limits, styleProperties }) => {
       const g = globalThis as unknown as {
         document: any;
         getComputedStyle: (element: any, pseudo?: string) => any;
@@ -330,7 +445,7 @@ async function captureDom(page: Page, selector: string): Promise<DomCaptureResul
       if (!root) throw new Error(`capture root ${rootSelector} disappeared`);
 
       const ignored = new Set(['SCRIPT', 'STYLE', 'LINK', 'META', 'NOSCRIPT', 'TEMPLATE']);
-      const unsupportedTags = new Set(['SVG', 'CANVAS', 'IFRAME', 'VIDEO', 'OBJECT', 'EMBED']);
+      const unsupportedTags = new Set(['CANVAS', 'IFRAME', 'VIDEO', 'OBJECT', 'EMBED']);
       const idCounts = new Map<string, number>();
       const testIdCounts = new Map<string, number>();
       for (const element of Array.from(root.querySelectorAll('*')) as any[]) {
@@ -340,96 +455,31 @@ async function captureDom(page: Page, selector: string): Promise<DomCaptureResul
       }
       if (root.id) idCounts.set(root.id, (idCounts.get(root.id) ?? 0) + 1);
 
-      const styleProperties = [
-        'display',
-        'flexDirection',
-        'flexWrap',
-        'alignItems',
-        'justifyContent',
-        'rowGap',
-        'columnGap',
-        'gridTemplateColumns',
-        'gridTemplateRows',
-        'gridColumn',
-        'gridRow',
-        'alignSelf',
-        'flexGrow',
-        'paddingTop',
-        'paddingRight',
-        'paddingBottom',
-        'paddingLeft',
-        'marginTop',
-        'marginRight',
-        'marginBottom',
-        'marginLeft',
-        'width',
-        'height',
-        'minWidth',
-        'maxWidth',
-        'minHeight',
-        'maxHeight',
-        'position',
-        'top',
-        'right',
-        'bottom',
-        'left',
-        'zIndex',
-        'fontFamily',
-        'fontSize',
-        'fontWeight',
-        'lineHeight',
-        'letterSpacing',
-        'textAlign',
-        'color',
-        'backgroundColor',
-        'backgroundImage',
-        'borderTopWidth',
-        'borderTopStyle',
-        'borderTopColor',
-        'borderRightWidth',
-        'borderRightStyle',
-        'borderRightColor',
-        'borderBottomWidth',
-        'borderBottomStyle',
-        'borderBottomColor',
-        'borderLeftWidth',
-        'borderLeftStyle',
-        'borderLeftColor',
-        'borderTopLeftRadius',
-        'borderTopRightRadius',
-        'borderBottomRightRadius',
-        'borderBottomLeftRadius',
-        'boxShadow',
-        'opacity',
-        'overflow',
-        'cursor',
-        'objectFit',
-        'transform',
-        'filter',
-        'mixBlendMode',
-      ];
       const nodes: Record<string, CapturedNode> = {};
       const usedKeys = new Set<string>();
       let nodeCount = 0;
       let textLength = 0;
 
-      const isSingleSupportedGradient = (value: string): boolean => {
-        const input = value.trim().toLowerCase();
-        if (!input.startsWith('linear-gradient(') && !input.startsWith('radial-gradient(')) {
-          return false;
-        }
+      const splitLayers = (value: string): string[] => {
+        const result: string[] = [];
         let depth = 0;
-        for (const character of input) {
+        let start = 0;
+        for (let index = 0; index < value.length; index++) {
+          const character = value[index];
           if (character === '(') depth += 1;
-          else if (character === ')') {
-            depth -= 1;
-            if (depth < 0) return false;
-          } else if (character === ',' && depth === 0) {
-            // Multiple background layers cannot yet be represented faithfully.
-            return false;
+          else if (character === ')') depth -= 1;
+          else if (character === ',' && depth === 0) {
+            result.push(value.slice(start, index).trim());
+            start = index + 1;
           }
         }
-        return depth === 0;
+        result.push(value.slice(start).trim());
+        return result.filter(Boolean);
+      };
+      const hasOnlySupportedGradients = (value: string): boolean => {
+        return splitLayers(value).every(
+          (layer) => layer.toLowerCase() === 'none' || /^(?:linear|radial)-gradient\(/i.test(layer),
+        );
       };
 
       const stableKey = (element: any, path: string): string => {
@@ -473,18 +523,15 @@ async function captureDom(page: Page, selector: string): Promise<DomCaptureResul
         const before = g.getComputedStyle(element, '::before')?.content;
         const after = g.getComputedStyle(element, '::after')?.content;
         let unsupportedReason: string | undefined;
+        const approximations: string[] = [];
         if (unsupportedTags.has(element.tagName)) unsupportedReason = element.tagName.toLowerCase();
         else if (
           styles.backgroundImage &&
           styles.backgroundImage !== 'none' &&
-          !isSingleSupportedGradient(styles.backgroundImage)
+          !hasOnlySupportedGradients(styles.backgroundImage)
         )
-          unsupportedReason = 'background image';
-        else if (styles.transform && styles.transform !== 'none')
-          unsupportedReason = 'CSS transform';
-        else if (styles.filter && styles.filter !== 'none') unsupportedReason = 'CSS filter';
-        else if (styles.position === 'fixed') unsupportedReason = 'fixed positioning';
-        else if (
+          approximations.push('background-image');
+        if (
           (() => {
             const sides = ['Top', 'Right', 'Bottom', 'Left']
               .map((side) => ({
@@ -502,19 +549,12 @@ async function captureDom(page: Page, selector: string): Promise<DomCaptureResul
             );
           })()
         )
-          unsupportedReason = 'asymmetric border';
-        else if (
-          element.tagName === 'IMG' &&
-          /(?:^data:image\/svg\+xml|\.svg(?:$|[?#]))/i.test(
-            String(element.currentSrc || element.src || ''),
-          )
-        )
-          unsupportedReason = 'SVG image';
-        else if (
+          approximations.push('asymmetric border');
+        if (
           (before && before !== 'none' && before !== 'normal') ||
           (after && after !== 'none' && after !== 'normal')
         ) {
-          unsupportedReason = 'pseudo-element content';
+          approximations.push('pseudo-element content');
         }
 
         const attrs: Record<string, string> = {};
@@ -548,9 +588,54 @@ async function captureDom(page: Page, selector: string): Promise<DomCaptureResul
               'checked',
               'disabled',
               'selected',
+              'id',
+              'viewbox',
+              'preserveaspectratio',
+              'xmlns',
+              'd',
+              'fill',
+              'fill-rule',
+              'stroke',
+              'stroke-width',
+              'stroke-linecap',
+              'stroke-linejoin',
+              'clip-rule',
+              'clip-path',
+              'mask',
+              'cx',
+              'cy',
+              'r',
+              'rx',
+              'ry',
+              'x',
+              'y',
+              'x1',
+              'y1',
+              'x2',
+              'y2',
+              'width',
+              'height',
+              'points',
+              'offset',
+              'stop-color',
+              'stop-opacity',
             ].includes(attrName)
           )
             attrs[attrName] = String(attr.value);
+          if (element.namespaceURI === 'http://www.w3.org/2000/svg') {
+            const svgComputedAttrs = {
+              fill: styles.fill,
+              stroke: styles.stroke,
+              'stroke-width': styles.strokeWidth,
+              'stroke-linecap': styles.strokeLinecap,
+              'stroke-linejoin': styles.strokeLinejoin,
+              'fill-rule': styles.fillRule,
+              'clip-rule': styles.clipRule,
+            };
+            for (const [attribute, value] of Object.entries(svgComputedAttrs)) {
+              if (value && value !== 'none' && !attrs[attribute]) attrs[attribute] = value;
+            }
+          }
         }
         if ('value' in element && typeof element.value === 'string' && element.value) {
           attrs.value = String(element.value);
@@ -602,7 +687,9 @@ async function captureDom(page: Page, selector: string): Promise<DomCaptureResul
             }
           }
         }
-        const tag = String(element.tagName).toLowerCase();
+        // SVG local names are case-sensitive (`linearGradient`, `clipPath`).
+        // HTML local names are already lowercase.
+        const tag = String(element.localName ?? element.tagName);
         const semanticTextTags = new Set([
           'h1',
           'h2',
@@ -664,6 +751,7 @@ async function captureDom(page: Page, selector: string): Promise<DomCaptureResul
             ? { assetUrl: String(element.currentSrc || element.src) }
             : {}),
           ...(unsupportedReason ? { unsupportedReason } : {}),
+          ...(approximations.length > 0 ? { approximations } : {}),
         };
         return key;
       };
@@ -678,6 +766,12 @@ async function captureDom(page: Page, selector: string): Promise<DomCaptureResul
       }
       const mediaQueries = new Set<string>();
       const fontFaces: CapturedFontFace[] = [];
+      const opaqueStylesheets: string[] = [];
+      const pseudoCandidates = {
+        hover: new Set<string>(),
+        focus: new Set<string>(),
+        active: new Set<string>(),
+      };
       const collectMediaQueries = (rules: any, stylesheetUrl: string): void => {
         for (const rule of Array.from(rules ?? []) as any[]) {
           const condition = String(rule.conditionText ?? rule.media?.mediaText ?? '').trim();
@@ -709,6 +803,29 @@ async function captureDom(page: Page, selector: string): Promise<DomCaptureResul
               }
             }
           }
+          const selectorText = String(rule.selectorText ?? '');
+          for (const selector of splitLayers(selectorText)) {
+            for (const state of ['hover', 'focus', 'active'] as const) {
+              const matcher =
+                state === 'focus'
+                  ? /:focus(?:-visible|-within)?(?![\w-])/gi
+                  : new RegExp(`:${state}(?![\\w-])`, 'gi');
+              if (!matcher.test(selector)) continue;
+              matcher.lastIndex = 0;
+              const baseSelector = selector.replace(matcher, '').trim();
+              if (!baseSelector || baseSelector.includes('::')) continue;
+              try {
+                for (const element of Array.from(
+                  document.querySelectorAll(baseSelector),
+                ) as any[]) {
+                  const key = element.getAttribute(captureAttribute);
+                  if (key) pseudoCandidates[state].add(String(key));
+                }
+              } catch {
+                // Complex selectors that cannot be reduced safely remain reported by CSS warnings.
+              }
+            }
+          }
           try {
             if (rule.cssRules) collectMediaQueries(rule.cssRules, stylesheetUrl);
           } catch {
@@ -720,7 +837,13 @@ async function captureDom(page: Page, selector: string): Promise<DomCaptureResul
         try {
           collectMediaQueries(sheet.cssRules, String(sheet.href || document.baseURI));
         } catch {
-          // A cross-origin stylesheet can still be rendered even when its rules cannot be read.
+          if (sheet.href) {
+            try {
+              opaqueStylesheets.push(new URL(String(sheet.href)).origin);
+            } catch {
+              opaqueStylesheets.push('a cross-origin stylesheet');
+            }
+          }
         }
       }
       return {
@@ -732,6 +855,12 @@ async function captureDom(page: Page, selector: string): Promise<DomCaptureResul
         mediaQueries: [...mediaQueries],
         fontFaces,
         rootFontSize: Number.parseFloat(rootStyle.fontSize) || 16,
+        opaqueStylesheets: [...new Set(opaqueStylesheets)],
+        pseudoCandidates: {
+          hover: [...pseudoCandidates.hover],
+          focus: [...pseudoCandidates.focus],
+          active: [...pseudoCandidates.active],
+        },
       };
     },
     {
@@ -742,8 +871,60 @@ async function captureDom(page: Page, selector: string): Promise<DomCaptureResul
         maxDepth: MAX_CAPTURE_DEPTH,
         maxText: MAX_CAPTURE_TEXT,
       },
+      styleProperties: CAPTURE_STYLE_PROPERTIES,
     },
   );
+}
+
+async function capturePseudoStateStyles(
+  page: Page,
+  captured: DomCaptureResult,
+  warnings: string[],
+): Promise<void> {
+  const candidates = (['hover', 'focus', 'active'] as const).flatMap((state) =>
+    captured.pseudoCandidates[state].map((key) => ({ state, key })),
+  );
+  if (candidates.length > MAX_PSEUDO_STATE_CAPTURES) {
+    warnings.push(
+      `only the first ${MAX_PSEUDO_STATE_CAPTURES} CSS interaction-state matches were imported`,
+    );
+  }
+  const session = await page.context().newCDPSession(page);
+  try {
+    await session.send('DOM.enable');
+    await session.send('CSS.enable');
+    const { root } = await session.send('DOM.getDocument', { depth: 0 });
+    for (const { state, key } of candidates.slice(0, MAX_PSEUDO_STATE_CAPTURES)) {
+      const selector = `[${CAPTURE_ATTRIBUTE}=${JSON.stringify(key)}]`;
+      const { nodeId } = await session.send('DOM.querySelector', {
+        nodeId: root.nodeId,
+        selector,
+      });
+      if (!nodeId) continue;
+      await session.send('CSS.forcePseudoState', {
+        nodeId,
+        forcedPseudoClasses: [state],
+      });
+      const styles = await page.locator(selector).evaluate((element, properties) => {
+        const computed = (
+          globalThis as unknown as {
+            getComputedStyle: (node: unknown) => Record<string, unknown>;
+          }
+        ).getComputedStyle(element);
+        return Object.fromEntries(
+          properties.map((property) => [property, String((computed as any)[property] ?? '')]),
+        );
+      }, CAPTURE_STYLE_PROPERTIES);
+      const node = captured.nodes[key];
+      if (node) {
+        node.stateStyles ??= {};
+        node.stateStyles[state] = styles;
+      }
+      await session.send('CSS.forcePseudoState', { nodeId, forcedPseudoClasses: [] });
+    }
+  } finally {
+    await session.detach();
+  }
 }
 
 /** Extract inclusive lower width bounds from the common media-query syntaxes. */
@@ -753,6 +934,11 @@ export function extractMediaMinWidths(queries: string[], rootFontSize = 16): num
     /min-width\s*:\s*(\d*\.?\d+)\s*(px|em|rem)/gi,
     /width\s*>=\s*(\d*\.?\d+)\s*(px|em|rem)/gi,
     /(\d*\.?\d+)\s*(px|em|rem)\s*<=\s*width/gi,
+  ];
+  const maxPatterns = [
+    /max-width\s*:\s*(\d*\.?\d+)\s*(px|em|rem)/gi,
+    /width\s*<=\s*(\d*\.?\d+)\s*(px|em|rem)/gi,
+    /(\d*\.?\d+)\s*(px|em|rem)\s*>=\s*width/gi,
   ];
 
   for (const query of queries) {
@@ -764,6 +950,19 @@ export function extractMediaMinWidths(queries: string[], rootFontSize = 16): num
         const unit = match[2]!.toLowerCase();
         const width = Math.ceil(value * (unit === 'px' ? 1 : rootFontSize));
         if (Number.isFinite(width) && width >= 240 && width <= 4096) widths.add(width);
+      }
+    }
+    for (const pattern of maxPatterns) {
+      pattern.lastIndex = 0;
+      let match: RegExpExecArray | null;
+      while ((match = pattern.exec(query))) {
+        const value = Number(match[1]);
+        const unit = match[2]!.toLowerCase();
+        const maximum = value * (unit === 'px' ? 1 : rootFontSize);
+        const nextWidth = Math.floor(maximum) + 1;
+        if (Number.isFinite(nextWidth) && nextWidth >= 240 && nextWidth <= 4096) {
+          widths.add(nextWidth);
+        }
       }
     }
   }
@@ -1063,10 +1262,18 @@ function extensionForMime(mime: string): string {
       return 'gif';
     case 'image/webp':
       return 'webp';
+    case 'image/avif':
+      return 'avif';
+    case 'image/svg+xml':
+      return 'svg';
     case 'font/woff':
       return 'woff';
     case 'font/woff2':
       return 'woff2';
+    case 'font/ttf':
+      return 'ttf';
+    case 'font/otf':
+      return 'otf';
     default:
       return 'png';
   }
@@ -1081,7 +1288,9 @@ function normalizedAssetMime(
     const signature = data.subarray(0, 4).toString('ascii');
     if (signature === 'wOF2') return 'font/woff2';
     if (signature === 'wOFF') return 'font/woff';
-    throw new Error('font bytes are not WOFF or WOFF2');
+    if (signature === 'OTTO') return 'font/otf';
+    if (data.length >= 4 && data.readUInt32BE(0) === 0x00010000) return 'font/ttf';
+    throw new Error('font bytes are not WOFF, WOFF2, TTF, or OTF');
   }
   if (!SUPPORTED_IMAGE_MIMES.has(declaredMime)) {
     throw new Error(`unsupported image type ${declaredMime || 'unknown'}`);

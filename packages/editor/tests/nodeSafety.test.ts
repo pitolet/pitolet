@@ -45,6 +45,16 @@ describe('canvas DOM safety', () => {
     expect(canNodeContainChildren(createElement({ tag: 'section' }))).toBe(true);
   });
 
+  it('keeps local SVG definitions usable without enabling normal links', () => {
+    expect(safeTag('lineargradient')).toBe('linearGradient');
+    expect(sanitizeAttrs({ id: 'paint', href: '#shape' }, 'linearGradient')).toEqual({
+      id: 'paint',
+      href: '#shape',
+    });
+    expect(sanitizeAttrs({ id: 'page', href: 'https://example.com' }, 'div')).toEqual({});
+    expect(sanitizeAttrs({ href: 'https://example.com' }, 'use')).toEqual({});
+  });
+
   it('keeps links embedded in text out of the editor tab order', () => {
     const rendered = renderSpans([
       { text: 'Documentation', marks: { link: 'https://example.com' } },

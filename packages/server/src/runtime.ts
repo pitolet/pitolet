@@ -544,7 +544,10 @@ async function validateImportedAssets(
         `asset ${assetId} metadata type ${metadata.mime} does not match ${expectedMime}`,
       );
     }
-    if (metadata.fontFace && expectedMime !== 'font/woff' && expectedMime !== 'font/woff2') {
+    if (
+      metadata.fontFace &&
+      !['font/woff', 'font/woff2', 'font/ttf', 'font/otf'].includes(expectedMime)
+    ) {
       throw new Error(`asset ${assetId} declares a font face but is not a supported web font`);
     }
     const stored = await adapter.assets.get(assetId);

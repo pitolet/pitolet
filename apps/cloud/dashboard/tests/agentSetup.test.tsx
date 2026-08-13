@@ -60,6 +60,7 @@ describe('agent setup utilities', () => {
     });
     expect(prompt).toContain('A settings page');
     expect(prompt).toContain('Ask me for the token');
+    expect(prompt).toContain('MCP get_screenshot');
     expect(prompt).not.toContain(secret);
     expect(connectionPrompt('cursor', 'https://example.test/mcp')).not.toContain(secret);
   });
@@ -73,6 +74,20 @@ describe('agent setup utilities', () => {
       expect(setup).toMatch(/PITOLET_TOKEN|Bearer \$PITOLET_TOKEN/);
     },
   );
+
+  it('tells importing agents to report editability and inspect through MCP', () => {
+    const prompt = taskPrompt({
+      client: 'codex',
+      intent: 'import',
+      connected: true,
+      endpoint: 'https://app.pitolet.com/w/product/mcp',
+      destination: 'https://app.pitolet.com/w/product',
+      sourceUrl: 'http://localhost:3000',
+    });
+    expect(prompt).toContain('npx pitolet import');
+    expect(prompt).toContain('editability result');
+    expect(prompt).toContain('MCP get_screenshot');
+  });
 
   it.each<AgentClient>(['codex', 'claude-code', 'cursor', 'other'])(
     'names MCP in the %s connection prompt',

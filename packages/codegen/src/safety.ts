@@ -28,6 +28,36 @@ const ATTRIBUTES = new Set([
   'checked',
   'disabled',
   'selected',
+  'viewbox',
+  'preserveaspectratio',
+  'xmlns',
+  'd',
+  'fill',
+  'fill-rule',
+  'stroke',
+  'stroke-width',
+  'stroke-linecap',
+  'stroke-linejoin',
+  'clip-rule',
+  'clip-path',
+  'mask',
+  'cx',
+  'cy',
+  'r',
+  'rx',
+  'ry',
+  'x',
+  'y',
+  'x1',
+  'y1',
+  'x2',
+  'y2',
+  'width',
+  'height',
+  'points',
+  'offset',
+  'stop-color',
+  'stop-opacity',
 ]);
 const RESERVED_ATTRIBUTES = new Set([
   'style',
@@ -42,8 +72,20 @@ const RESERVED_ATTRIBUTES = new Set([
 ]);
 
 export function safeTag(tag: string, fallback: string): string {
-  return TAGS.has(tag.toLowerCase()) ? tag.toLowerCase() : fallback;
+  const normalized = tag.toLowerCase();
+  const canonical = SVG_TAG_NAMES[normalized] ?? normalized;
+  return TAGS.has(canonical) ? canonical : fallback;
 }
+
+const SVG_TAG_NAMES: Record<string, string> = {
+  lineargradient: 'linearGradient',
+  radialgradient: 'radialGradient',
+  clippath: 'clipPath',
+  fegaussianblur: 'feGaussianBlur',
+  feoffset: 'feOffset',
+  feblend: 'feBlend',
+  fecolormatrix: 'feColorMatrix',
+};
 
 export function safeAttributes(attrs: Record<string, string> | undefined): Array<[string, string]> {
   if (!attrs) return [];

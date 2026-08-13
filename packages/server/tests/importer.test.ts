@@ -11,6 +11,7 @@ import {
   capturedStylesToDecl,
   convertCapture,
   inferConstrainedFillAlignment,
+  parseGradientFills,
   shouldFillAvailableWidth,
 } from '../src/importer/convert.js';
 import type { CapturedNode, CaptureSnapshot, WebCapture } from '../src/importer/types.js';
@@ -194,7 +195,13 @@ describe('responsive website conversion', () => {
     expect(result.document.tokens.color.brand).toBeDefined();
     expect(result.document.tokens.spacing.gutter?.$value).toEqual({ value: 24, unit: 'px' });
     expect(result.rasterizedRegions).toBe(2);
-    expect(result.unsupportedCss).toEqual(['CSS transform']);
+    expect(result.unsupportedCss).toEqual(['CSS transform', 'canvas']);
+    expect(result.compatibilityIssues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ nodeName: 'Pricing card', kind: 'rasterized' }),
+        expect.objectContaining({ nodeName: 'Chart', reason: 'canvas' }),
+      ]),
+    );
     expect(result.unmatchedResponsiveNodes).toBeGreaterThan(0);
 
     const chart = Object.values(result.document.nodes).find((entry) => entry.name === 'Chart')!;
@@ -286,6 +293,103 @@ describe('responsive website conversion', () => {
       type: 'radial',
       stops: [{ position: 0 }, { position: 0.78 }],
     });
+
+    const layered = capturedStylesToDecl(
+      styles({
+        backgroundColor: 'rgb(13, 11, 10)',
+        backgroundImage:
+          'radial-gradient(64% 50% at 50% 96%, rgb(60, 40, 30) 0%, transparent 100%), radial-gradient(ellipse 120% 80% at 50% -16%, rgb(30, 40, 50) 0%, transparent 100%)',
+      }),
+      { x: 0, y: 0, width: 1440, height: 900 },
+      'body',
+    );
+    expect(layered.fills).toHaveLength(3);
+    expect(layered.fills?.[1]).toMatchObject({
+      type: 'radial',
+      shape: 'ellipse',
+      size: { x: { value: 120, unit: '%' }, y: { value: 80, unit: '%' } },
+      position: { x: { value: 50, unit: '%' }, y: { value: -16, unit: '%' } },
+    });
+    expect(layered.fills?.[2]).toMatchObject({
+      type: 'radial',
+      size: { x: { value: 64, unit: '%' }, y: { value: 50, unit: '%' } },
+      position: { x: { value: 50, unit: '%' }, y: { value: 96, unit: '%' } },
+    });
+  });
+
+  it('keeps root effects and ordinary styled DOM editable', () => {
+    const capture = fixture();
+    for (const snapshot of capture.snapshots) {
+      snapshot.nodes.root!.children = snapshot.nodes.root!.children.filter(
+        (child) => child !== 'canvas',
+      );
+      snapshot.nodes.root!.rect.height = 900;
+      delete snapshot.nodes.canvas;
+      snapshot.nodes.root!.styles = styles({
+        position: 'fixed',
+        transform: 'translateX(-50%)',
+        filter: 'blur(8px)',
+        backgroundImage:
+          'radial-gradient(64% 50% at 50% 96%, rgb(60, 40, 30) 0%, transparent 100%), radial-gradient(120% 80% at 50% -16%, rgb(30, 40, 50) 0%, transparent 100%)',
+      });
+    }
+    capture.assets = [];
+    const result = convertCapture(capture);
+    const rootFrame = result.document.nodes[result.document.rootOrder[0]!]!;
+    expect(rootFrame.styles.base).toMatchObject({
+      position: 'fixed',
+      transform: 'translateX(-50%)',
+      filter: 'blur(8px)',
+    });
+    expect(result.rasterizedRegions).toBe(0);
+    expect(result.editableAreaScore).toBe(1);
+    expect(
+      Object.values(result.document.nodes).some((entry) => entry.name === 'Pricing card'),
+    ).toBe(true);
+  });
+
+  it('preserves complete font stacks, typography details, and multiple shadows', () => {
+    const result = capturedStylesToDecl(
+      styles({
+        fontFamily: '"Acme Sans", Inter, system-ui, sans-serif',
+        fontStyle: 'italic',
+        fontOpticalSizing: 'auto',
+        textTransform: 'uppercase',
+        whiteSpace: 'pre-wrap',
+        visibility: 'hidden',
+        boxShadow: 'rgb(0, 0, 0) 0px 2px 4px 0px, rgb(255, 0, 0) 0px 0px 0px 1px inset',
+      }),
+      { x: 0, y: 0, width: 320, height: 80 },
+      'div',
+    );
+    expect(result.fontFamily).toBe('Acme Sans, Inter, system-ui, sans-serif');
+    expect(result).toMatchObject({
+      fontStyle: 'italic',
+      fontOpticalSizing: 'auto',
+      textTransform: 'uppercase',
+      whiteSpace: 'pre-wrap',
+      visibility: 'hidden',
+    });
+    expect(result.shadows).toHaveLength(2);
+    expect(result.shadows?.[1]?.inset).toBe(true);
+  });
+
+  it('imports hover, focus, and active style changes as editable state layers', () => {
+    const capture = fixture();
+    for (const captureSnapshot of capture.snapshots) {
+      captureSnapshot.nodes.card!.stateStyles = {
+        hover: styles({ backgroundColor: 'rgb(20, 40, 60)', transform: 'translateY(-2px)' }),
+        focus: styles({ borderTopWidth: '2px', borderTopStyle: 'solid' }),
+        active: styles({ opacity: '0.8' }),
+      };
+    }
+    const result = convertCapture(capture);
+    const card = Object.values(result.document.nodes).find(
+      (entry) => entry.name === 'Pricing card',
+    )!;
+    expect(card.styles.states?.hover).toMatchObject({ transform: 'translateY(-2px)' });
+    expect(card.styles.states?.focus).toBeDefined();
+    expect(card.styles.states?.active).toMatchObject({ opacity: 0.8 });
   });
 
   it('preserves fill-width intent for centered and max-width content columns', () => {
@@ -465,7 +569,15 @@ describe('responsive website conversion', () => {
         ['(min-width: 640px)', '(48em <= width)', '(width >= 64rem)', '(max-width: 500px)'],
         16,
       ),
-    ).toEqual([640, 768, 1024]);
+    ).toEqual([501, 640, 768, 1024]);
+  });
+
+  it('ignores Chromium none layers after native layered gradients', () => {
+    const fills = parseGradientFills(
+      'radial-gradient(64% 50% at 50% 96%, rgba(109, 40, 217, 0.28), rgba(0, 0, 0, 0) 70%), radial-gradient(120% 80% at 50% -16%, rgba(59, 130, 246, 0.2), rgba(0, 0, 0, 0) 65%), none',
+    );
+    expect(fills).toHaveLength(2);
+    expect(fills.every((fill) => fill.type === 'radial')).toBe(true);
   });
 
   it('decodes percent-encoded and base64 data images with metadata', () => {

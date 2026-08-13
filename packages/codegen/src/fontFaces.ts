@@ -4,6 +4,8 @@ import { escapeCssString, safeCssValue } from './safety.js';
 const FONT_MIME_FORMAT: Record<string, string> = {
   'font/woff': 'woff',
   'font/woff2': 'woff2',
+  'font/ttf': 'truetype',
+  'font/otf': 'opentype',
 };
 
 /**

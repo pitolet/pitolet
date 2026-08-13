@@ -333,6 +333,16 @@ function jsxAttrName(key: string): string {
   if (key === 'rowspan') return 'rowSpan';
   if (key === 'autocomplete') return 'autoComplete';
   if (key === 'inputmode') return 'inputMode';
+  if (key === 'viewbox') return 'viewBox';
+  if (key === 'preserveaspectratio') return 'preserveAspectRatio';
+  if (key === 'fill-rule') return 'fillRule';
+  if (key === 'stroke-width') return 'strokeWidth';
+  if (key === 'stroke-linecap') return 'strokeLinecap';
+  if (key === 'stroke-linejoin') return 'strokeLinejoin';
+  if (key === 'clip-rule') return 'clipRule';
+  if (key === 'clip-path') return 'clipPath';
+  if (key === 'stop-color') return 'stopColor';
+  if (key === 'stop-opacity') return 'stopOpacity';
   return key;
 }
 

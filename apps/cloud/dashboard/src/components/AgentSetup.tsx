@@ -41,6 +41,7 @@ export function AgentSetup({
   description = 'Choose your coding tool, then copy the setup prompt or its manual configuration.',
   compact = false,
   collapseWhenConnected = false,
+  refreshTick,
 }: {
   workspace: WorkspaceSummary;
   onStatusChange?: (status: ConnectionStatus) => void;
@@ -50,6 +51,7 @@ export function AgentSetup({
   description?: string;
   compact?: boolean;
   collapseWhenConnected?: boolean;
+  refreshTick?: number;
 }) {
   const canConnect = workspace.role === 'owner' || workspace.role === 'editor';
   const [tokens, setTokens] = useState<TokenSummary[] | null>(null);
@@ -91,6 +93,13 @@ export function AgentSetup({
     else setTokens([]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workspace.id, canConnect]);
+
+  useEffect(() => {
+    if (refreshTick === undefined || tokens === null || !canConnect) return;
+    void reload();
+    // reload is intentionally scoped to the current workspace values.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshTick]);
 
   useEffect(() => {
     if (tokens !== null) onStatusChange?.(status);

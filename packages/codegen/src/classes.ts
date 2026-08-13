@@ -124,6 +124,25 @@ export function styleDeclToClasses(s: StyleDecl, ctx: ClassContext): string[] {
     if (v) c.push(`tracking-[${len(v)}]`);
   }
   if (s.textAlign) c.push(`text-${s.textAlign}`);
+  if (s.textTransform) {
+    const transforms = {
+      none: 'normal-case',
+      uppercase: 'uppercase',
+      lowercase: 'lowercase',
+      capitalize: 'capitalize',
+    } as const;
+    c.push(transforms[s.textTransform]);
+  }
+  if (s.whiteSpace) c.push(`whitespace-${s.whiteSpace}`);
+  if (s.fontStyle)
+    c.push(
+      s.fontStyle === 'italic'
+        ? 'italic'
+        : s.fontStyle === 'normal'
+          ? 'not-italic'
+          : '[font-style:oblique]',
+    );
+  if (s.fontOpticalSizing) c.push(`[font-optical-sizing:${s.fontOpticalSizing}]`);
   if (s.color !== undefined) c.push(colorClass('text', s.color, maps));
 
   // --- appearance ---
@@ -145,6 +164,10 @@ export function styleDeclToClasses(s: StyleDecl, ctx: ClassContext): string[] {
   if (s.overflow) c.push(`overflow-${s.overflow}`);
   if (s.cursor && safeKeyword(s.cursor)) c.push(`cursor-${s.cursor}`);
   if (s.objectFit) c.push(`object-${s.objectFit}`);
+  if (s.visibility) c.push(s.visibility === 'hidden' ? 'invisible' : s.visibility);
+  if (s.transform) c.push(`[transform:${s.transform.replace(/\s+/g, '_')}]`);
+  if (s.transformOrigin) c.push(`[transform-origin:${s.transformOrigin.replace(/\s+/g, '_')}]`);
+  if (s.filter) c.push(`[filter:${s.filter.replace(/\s+/g, '_')}]`);
 
   return c.filter(Boolean);
 }
@@ -383,10 +406,22 @@ function fillLayerCss(fill: Fill, maps: TokenMaps): string {
         .map((s) => `${color(s.color)} ${round(s.position * 100)}%`)
         .join(', ')})`;
     case 'radial':
-      return `radial-gradient(circle, ${fill.stops
+      return `radial-gradient(${radialDescriptor(fill)}, ${fill.stops
         .map((s) => `${color(s.color)} ${round(s.position * 100)}%`)
         .join(', ')})`;
   }
+}
+
+function radialDescriptor(fill: Extract<Fill, { type: 'radial' }>): string {
+  const parts: string[] = [];
+  if (fill.shape) parts.push(fill.shape);
+  if (fill.size) {
+    parts.push(
+      typeof fill.size === 'string' ? fill.size : `${len(fill.size.x)} ${len(fill.size.y)}`,
+    );
+  }
+  if (fill.position) parts.push(`at ${len(fill.position.x)} ${len(fill.position.y)}`);
+  return parts.join(' ') || 'circle';
 }
 
 function borderClasses(

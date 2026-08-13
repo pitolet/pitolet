@@ -132,8 +132,9 @@ PITOLET_TOKEN=ptl_... pitolet import http://localhost:3000 \
 By default, Pitolet checks the page at 375, 768, and 1440 pixels. It uses the
 mobile result as the base and stores wider layouts as breakpoint overrides.
 Images are copied into Pitolet. Unsupported areas remain visible as image
-nodes, and the report identifies each one. This applies to canvas, SVG,
-iframes, video, and other content that Pitolet cannot edit safely.
+nodes, and the report identifies each one. Raster fallback is reserved for
+canvas, iframes, video, and other opaque content that Pitolet cannot inspect.
+SVG files remain local assets instead of becoming screenshots.
 
 Useful options:
 
@@ -143,12 +144,16 @@ pitolet import https://example.com/dashboard \
   --selector '#app' \
   --storage-state ./playwright-state.json \
   --wait-for '[data-ready=true]' \
+  --hide '.cookie-banner,[data-live-clock]' \
+  --capture-css ./capture.css \
   --report-dir ./import-report
 ```
 
 The first import downloads and caches a compatible Chromium build. Each run
 saves the source capture, the imported result, and a difference image for
-every width. Import does not copy application logic, routing, event handlers,
+every width. The report separates visual similarity from editability and lists
+each rasterized or approximated node. An import that is mostly uneditable is
+not uploaded. Import does not copy application logic, routing, event handlers,
 or live data.
 
 Agent edits use the same validation and history as edits made in the UI. They
@@ -159,7 +164,8 @@ appear on the open canvas with a short highlight and can be undone with ⌘Z.
 - Read documents with `list_documents`, `list_frames`, `get_node`,
   `get_selection`, `get_design_as_code`, `get_tokens`, and `get_screenshot`.
 - Write with `create_frame`, `insert_nodes`, `update_node`, `delete_nodes`,
-  `set_tokens`, `set_selection`, and `create_document`.
+  `set_tokens`, `set_selection`, `create_document`, `rename_document`, and
+  `delete_document`.
 - Work with comments through `add_comment`, `get_comments`, and
   `resolve_comment`.
 - Import CSS custom properties from `theme.css` or `globals.css` with
@@ -168,13 +174,16 @@ appear on the open canvas with a short highlight and can be undone with ⌘Z.
   `check_drift` reports whether each design or code file changed.
 
 `get_screenshot` uses the open editor when one is available. Otherwise, it
-uses the Chromium build cached by the import command. Screenshot requests do
-not download a browser, so run an import first if Chromium is missing.
+uses the Chromium installed with the server runtime. The published Docker
+images include it and verify it during their build. Screenshot requests never
+download a browser. Agents can request a responsive width and force hover,
+focus, or active styles for visual review.
 
 ## The editor
 
 - **Canvas and tools:** Wheel to pan, ⌘ or pinch to zoom, and hold Space to
-  drag. `V` selects, `F` draws a frame, `R` draws a box, and `T` adds text.
+  drag. `V` selects, `H` activates the Hand tool, `F` draws a frame, `R` draws
+  a box, and `T` adds text. Dragging a selection beyond an edge pans the canvas.
 - **Inspector and tokens:** Edit CSS layout and appearance from the inspector.
   Values can be linked to document tokens.
 - **Breakpoints and states:** Choose a width or interaction state from the top

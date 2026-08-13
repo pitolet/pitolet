@@ -272,8 +272,10 @@ describe('document storage limits', () => {
 });
 
 describe('asset endpoint hardening', () => {
-  it('rejects active SVG and raster MIME spoofing before storage', async () => {
-    const put = vi.fn<AssetStorage['put']>();
+  it('accepts validated SVG and rejects raster MIME spoofing before storage', async () => {
+    const put = vi.fn<AssetStorage['put']>().mockResolvedValue({
+      assetId: `${'a'.repeat(64)}.svg`,
+    });
     const assets = {
       put,
       get: vi.fn<AssetStorage['get']>(),
@@ -287,7 +289,11 @@ describe('asset endpoint hardening', () => {
       svgResponse as unknown as http.ServerResponse,
       assets,
     );
-    expect(svgResponse.status).toBe(415);
+    expect(svgResponse.status).toBe(200);
+    expect(put).toHaveBeenCalledWith(
+      Buffer.from('<svg><script>alert(1)</script></svg>'),
+      'image/svg+xml',
+    );
 
     const fakePngResponse = new TestResponse();
     await handleAssetUpload(
@@ -296,7 +302,7 @@ describe('asset endpoint hardening', () => {
       assets,
     );
     expect(fakePngResponse.status).toBe(415);
-    expect(put).not.toHaveBeenCalled();
+    expect(put).toHaveBeenCalledTimes(1);
   });
 
   it('serves internally stored SVG under a restrictive document sandbox', async () => {

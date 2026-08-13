@@ -9,6 +9,7 @@ import {
   Code2,
   FileText,
   Frame,
+  Hand,
   LoaderCircle,
   Maximize,
   MessageSquare,
@@ -29,7 +30,7 @@ import type { CameraController } from '../canvas/CameraController.js';
 import { breakpointDisplayLabel } from '../canvas/responsivePreview.js';
 import { useEditor } from '../store/index.js';
 import { connection } from '../sync/connection.js';
-import { apiUrl } from '../sync/serverBase.js';
+import { apiUrl, isShareSession, serverBase } from '../sync/serverBase.js';
 import { filterDocuments, parseZoomPercent, type DocumentSummary } from './navigation.js';
 import { ActivityButton, AgentBadge } from './ActivityFeed.js';
 import { ContextCoach, hasSeenCoach, markCoachSeen, type CoachVariant } from './ContextCoach.js';
@@ -61,10 +62,17 @@ export function TopBar({
   return (
     <header className="ptl-topbar">
       <div className="ptl-topbar-section">
-        <div className="ptl-logo">
-          <BrandMark size={17} />
-          <span className="ptl-logo-name">Pitolet</span>
-        </div>
+        {serverBase && !isShareSession ? (
+          <a className="ptl-logo ptl-logo--home" aria-label="Back to workspaces" href="/">
+            <BrandMark size={17} />
+            <span className="ptl-logo-name">Pitolet</span>
+          </a>
+        ) : (
+          <div className="ptl-logo" aria-label="Pitolet">
+            <BrandMark size={17} />
+            <span className="ptl-logo-name">Pitolet</span>
+          </div>
+        )}
         <Separator orientation="vertical" />
         <Tooltip content="Select" shortcut="v">
           <IconButton
@@ -73,6 +81,15 @@ export function TopBar({
             onClick={() => onToolChange('select')}
           >
             <MousePointer2 size={15} />
+          </IconButton>
+        </Tooltip>
+        <Tooltip content="Hand" shortcut="h">
+          <IconButton
+            label="Hand"
+            active={activeTool === 'hand'}
+            onClick={() => onToolChange('hand')}
+          >
+            <Hand size={15} />
           </IconButton>
         </Tooltip>
         {/* Insert tools are edit affordances — hidden in read-only mode. */}

@@ -141,6 +141,33 @@ export class FileStorageAdapter implements StorageAdapter {
     this.writeNow(doc);
   }
 
+  async deleteDoc(docId: string): Promise<void> {
+    const file = this.fileForDoc.get(docId);
+    if (!file) throw new Error(`unknown document ${docId}`);
+    const timer = this.saveTimers.get(docId);
+    if (timer) clearTimeout(timer);
+    this.saveTimers.delete(docId);
+    this.pendingDocs.delete(docId);
+    this.liveDocs.delete(docId);
+
+    const path = join(this.dataDir, file);
+    const entry = lstatSync(path);
+    if (entry.isSymbolicLink() || !entry.isFile()) {
+      throw new Error(`document path ${file} is not a regular file`);
+    }
+    this.selfWrites.add(file);
+    const oldSelfWriteTimer = this.selfWriteTimers.get(file);
+    if (oldSelfWriteTimer) clearTimeout(oldSelfWriteTimer);
+    unlinkSync(path);
+    this.fileForDoc.delete(docId);
+    const clear = setTimeout(() => {
+      this.selfWriteTimers.delete(file);
+      this.selfWrites.delete(file);
+    }, 1500);
+    clear.unref?.();
+    this.selfWriteTimers.set(file, clear);
+  }
+
   /**
    * Remove content-addressed assets that are older than the grace period and
    * absent from every valid document on disk and every live/pending document.

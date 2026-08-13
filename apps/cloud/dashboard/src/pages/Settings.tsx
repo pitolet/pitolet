@@ -15,6 +15,21 @@ export function Settings({ workspace }: { workspace: WorkspaceSummary }) {
     >
       <div className="ptl-settings-stack">
         <section className="ptl-settings-section">
+          <div className="ptl-dash-section-head">
+            <div>
+              <h2 className="ptl-dash-section-title">Workspace details</h2>
+              <p className="ptl-dash-subtitle">Used in editor and MCP addresses.</p>
+            </div>
+          </div>
+          <div className="ptl-plan-card">
+            <div>
+              <strong className="ptl-plan-name">{workspace.name}</strong>
+              <span className="ptl-plan-role">/w/{workspace.slug}</span>
+            </div>
+          </div>
+        </section>
+
+        <section className="ptl-settings-section">
           <AgentSetup
             workspace={workspace}
             title="Agent connections"

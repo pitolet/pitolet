@@ -19,7 +19,9 @@ PITOLET_TOKEN=... npx pitolet import http://localhost:3000 \
 ```
 
 Import uses Playwright Core and downloads its matching Chromium build the first
-time it is needed. The browser is cached for later imports.
+time it is needed. The browser is cached for later imports. The report records
+visual similarity and editability separately, with an exact list of rasterized
+and approximated nodes. Mostly uneditable captures are not uploaded.
 
 See [the repository](https://github.com/pitolet/pitolet) for setup, MCP, import,
 self-hosting, and licensing details.

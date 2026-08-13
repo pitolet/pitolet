@@ -14,6 +14,7 @@ import {
   type PitoletNode,
   type PitoletDocument,
   type Fill,
+  type Length,
   type Shadow,
   type StyleDecl,
 } from '@pitolet/schema';
@@ -76,6 +77,37 @@ const INERT_ATTRS = new Set([
   'checked',
   'disabled',
   'selected',
+  'id',
+  'viewbox',
+  'preserveaspectratio',
+  'xmlns',
+  'd',
+  'fill',
+  'fill-rule',
+  'stroke',
+  'stroke-width',
+  'stroke-linecap',
+  'stroke-linejoin',
+  'clip-rule',
+  'clip-path',
+  'mask',
+  'cx',
+  'cy',
+  'r',
+  'rx',
+  'ry',
+  'x',
+  'y',
+  'x1',
+  'y1',
+  'x2',
+  'y2',
+  'width',
+  'height',
+  'points',
+  'offset',
+  'stop-color',
+  'stop-opacity',
 ]);
 
 const MIME_EXT: Record<string, string> = {
@@ -83,8 +115,12 @@ const MIME_EXT: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/gif': 'gif',
   'image/webp': 'webp',
+  'image/avif': 'avif',
+  'image/svg+xml': 'svg',
   'font/woff': 'woff',
   'font/woff2': 'woff2',
+  'font/ttf': 'ttf',
+  'font/otf': 'otf',
 };
 
 export function assetIdFor(data: Buffer, mime: string): string {
@@ -176,22 +212,51 @@ export function convertCapture(capture: WebCapture, name?: string): ImportConver
   const unsupportedCss = [
     ...new Set(
       snapshots.flatMap((snapshot) =>
-        Object.values(snapshot.nodes)
-          .map((node) => node.unsupportedReason)
-          .filter(
-            (reason): reason is string =>
-              !!reason &&
-              [
-                'background image',
-                'CSS transform',
-                'CSS filter',
-                'fixed positioning',
-                'pseudo-element content',
-              ].includes(reason),
-          ),
+        Object.values(snapshot.nodes).flatMap((node) => [
+          ...(node.unsupportedReason ? [node.unsupportedReason] : []),
+          ...(node.approximations ?? []),
+        ]),
       ),
     ),
   ];
+  const issueGroups = new Map<
+    string,
+    {
+      nodeKey: string;
+      nodeName: string;
+      kind: 'rasterized' | 'approximated';
+      reason: string;
+      viewports: Set<number>;
+    }
+  >();
+  for (const snapshot of snapshots) {
+    for (const node of Object.values(snapshot.nodes)) {
+      const record = (kind: 'rasterized' | 'approximated', reason: string): void => {
+        const groupKey = `${kind}\0${node.key}\0${reason}`;
+        const current = issueGroups.get(groupKey) ?? {
+          nodeKey: node.key,
+          nodeName: node.name || node.tag,
+          kind,
+          reason,
+          viewports: new Set<number>(),
+        };
+        current.viewports.add(snapshot.width);
+        issueGroups.set(groupKey, current);
+      };
+      if (node.unsupportedReason) record('rasterized', node.unsupportedReason);
+      for (const approximation of node.approximations ?? []) {
+        record('approximated', approximation);
+      }
+    }
+  }
+  const compatibilityIssues = [...issueGroups.values()]
+    .map((issue) => ({ ...issue, viewports: [...issue.viewports].sort((a, b) => a - b) }))
+    .sort(
+      (left, right) =>
+        left.kind.localeCompare(right.kind) ||
+        left.nodeName.localeCompare(right.nodeName) ||
+        left.reason.localeCompare(right.reason),
+    );
   if (unmatchedResponsiveNodes > 0) {
     capture.warnings.push(
       `${unmatchedResponsiveNodes} nodes were not present at every viewport; visibility overrides were inferred`,
@@ -236,6 +301,8 @@ export function convertCapture(capture: WebCapture, name?: string): ImportConver
   attach(document, null, frame);
 
   let rasterizedRegions = 0;
+  let rasterizedNodeCount = 0;
+  let rasterizedArea = 0;
   const emitted = new Set<string>([rootKey]);
 
   if (rootCapture.unsupportedReason) {
@@ -249,6 +316,8 @@ export function convertCapture(capture: WebCapture, name?: string): ImportConver
     if (rootImages.length === 0) throw new Error('captured root could not be rasterized');
     for (const rootImage of rootImages) attach(document, frame.id, rootImage);
     rasterizedRegions += 1;
+    rasterizedNodeCount += rootImages.length;
+    rasterizedArea += Math.max(0, rootCapture.rect.width * rootCapture.rect.height);
   }
 
   const appendChildren = (parentKey: string, parentId: string): void => {
@@ -268,7 +337,12 @@ export function convertCapture(capture: WebCapture, name?: string): ImportConver
           assetIds,
         );
         for (const rasterNode of rasterNodes) attach(document, parentId, rasterNode);
-        if (rasterNodes.length > 0) rasterizedRegions += 1;
+        if (rasterNodes.length > 0) {
+          rasterizedRegions += 1;
+          rasterizedNodeCount += rasterNodes.length;
+          const areaNode = widest.nodes[childKey] ?? captured;
+          rasterizedArea += Math.max(0, areaNode.rect.width * areaNode.rect.height);
+        }
         continue;
       }
       const pitoletNode = convertNode(captured, childKey, snapshots, breakpointWidths, assetIds);
@@ -285,13 +359,40 @@ export function convertCapture(capture: WebCapture, name?: string): ImportConver
 
   const validated = validateDocument(document);
   const nodeCount = Object.keys(validated.nodes).length;
+  const editableNodeCount = Math.max(0, nodeCount - rasterizedNodeCount);
+  const editabilityScore = nodeCount === 0 ? 0 : editableNodeCount / nodeCount;
+  // The DOM root's bounding rect is commonly only the initial viewport even
+  // for a tall page. Use the captured full-page dimensions so a small fallback
+  // lower down the page cannot incorrectly classify the entire import as
+  // non-editable.
+  const rootArea = Math.max(1, widest.width * widest.fullHeight);
+  const rasterizedAreaRatio = clamp(rasterizedArea / rootArea, 0, 1);
+  const editableAreaScore = 1 - rasterizedAreaRatio;
+  const status =
+    rasterizedRegions === 0 && unsupportedCss.length === 0
+      ? 'editable'
+      : editabilityScore >= 0.8 && editableAreaScore >= 0.8
+        ? 'degraded'
+        : 'failed';
+  if (status === 'failed') {
+    capture.warnings.push(
+      'the import is mostly non-editable; use the report as a reference instead of treating it as a completed migration',
+    );
+  }
   if (nodeCount > 10_000) throw new Error(`captured page has ${nodeCount} nodes; maximum is 10000`);
   return {
     document: validated,
     nodeCount,
     assetCount: Object.keys(validated.assets).length,
     rasterizedRegions,
+    rasterizedNodeCount,
+    editableNodeCount,
+    editabilityScore,
+    editableAreaScore,
+    rasterizedAreaRatio,
+    status,
     unsupportedCss,
+    compatibilityIssues,
     unmatchedResponsiveNodes,
     warnings: [...new Set(capture.warnings)],
   };
@@ -356,6 +457,21 @@ function convertNode(
 
   const attrs = sanitizeAttrs(captured.attrs);
   if (Object.keys(attrs).length > 0) node.attrs = attrs;
+  for (const state of ['hover', 'focus', 'active'] as const) {
+    const stateStyles = captured.stateStyles?.[state];
+    if (!stateStyles) continue;
+    const stateDecl = capturedStylesToDecl(
+      stateStyles,
+      captured.rect,
+      captured.tag,
+      captured.unsupportedReason !== undefined,
+    );
+    const statePatch = diffStyle(styles, stateDecl);
+    if (Object.keys(statePatch).length > 0) {
+      node.styles.states ??= {};
+      node.styles.states[state] = statePatch;
+    }
+  }
   applyResponsiveStyles(node, key, snapshots, breakpointWidths);
   return node;
 }
@@ -575,14 +691,17 @@ export function capturedStylesToDecl(
   const display = displayValue(styles.display);
   const backgroundColor =
     parseColor(styles.backgroundColor || 'transparent') ?? parseColor('transparent')!;
-  const gradient = parseGradientFill(styles.backgroundImage);
-  const fills: Fill[] = gradient
-    ? backgroundColor.alpha === undefined || backgroundColor.alpha > 0
-      ? [{ type: 'solid', color: backgroundColor }, gradient]
-      : [gradient]
-    : [{ type: 'solid', color: backgroundColor }];
-  const position = ['static', 'relative', 'absolute', 'sticky'].includes(styles.position ?? '')
-    ? (styles.position as 'static' | 'relative' | 'absolute' | 'sticky')
+  const gradients = parseGradientFills(styles.backgroundImage);
+  const fills: Fill[] =
+    gradients.length > 0
+      ? backgroundColor.alpha === undefined || backgroundColor.alpha > 0
+        ? [{ type: 'solid', color: backgroundColor }, ...gradients]
+        : gradients
+      : [{ type: 'solid', color: backgroundColor }];
+  const position = ['static', 'relative', 'absolute', 'sticky', 'fixed'].includes(
+    styles.position ?? '',
+  )
+    ? (styles.position as 'static' | 'relative' | 'absolute' | 'sticky' | 'fixed')
     : undefined;
   const decl: StyleDecl = {
     display,
@@ -596,12 +715,16 @@ export function capturedStylesToDecl(
     padding: sides4(styles, 'padding'),
     margin: sides4(styles, 'margin'),
     position,
-    fontFamily: cleanFont(styles.fontFamily),
+    fontFamily: cleanFontStack(styles.fontFamily),
     fontSize: length(styles.fontSize),
     fontWeight: clamp(finiteNumber(styles.fontWeight, 400), 1, 1000),
     lineHeight: lineHeightValue(styles.lineHeight, styles.fontSize),
     letterSpacing: length(styles.letterSpacing),
     textAlign: textAlign(styles.textAlign),
+    textTransform: textTransform(styles.textTransform),
+    whiteSpace: whiteSpace(styles.whiteSpace),
+    fontStyle: fontStyle(styles.fontStyle),
+    fontOpticalSizing: fontOpticalSizing(styles.fontOpticalSizing),
     color: parseColor(styles.color || 'transparent') ?? undefined,
     fills,
     border: borderValue(styles),
@@ -615,6 +738,10 @@ export function capturedStylesToDecl(
     overflow: overflowValue(styles.overflow),
     cursor: styles.cursor || 'auto',
     objectFit: objectFit(styles.objectFit),
+    visibility: visibilityValue(styles.visibility),
+    transform: styles.transform && styles.transform !== 'none' ? styles.transform : undefined,
+    transformOrigin: styles.transformOrigin || undefined,
+    filter: styles.filter && styles.filter !== 'none' ? styles.filter : undefined,
   };
 
   decl.shadows = parseShadows(styles.boxShadow);
@@ -662,7 +789,18 @@ export function capturedStylesToDecl(
   return removeUndefined(decl);
 }
 
-/** Parse the single linear/radial gradients supported by Pitolet fills. */
+/** Parse layered linear/radial backgrounds into bottom-first Pitolet fills. */
+export function parseGradientFills(value?: string): Fill[] {
+  if (!value || value.trim() === 'none') return [];
+  // Chromium keeps a trailing `none` background-image layer when a color is
+  // present in the background shorthand. It is not an unsupported image and
+  // must not invalidate otherwise native layered gradients.
+  const layers = splitCssList(value).filter((layer) => layer.trim().toLowerCase() !== 'none');
+  const parsed = layers.map(parseGradientFill);
+  if (parsed.some((fill) => fill === null)) return [];
+  return (parsed as Fill[]).reverse();
+}
+
 export function parseGradientFill(value?: string): Fill | null {
   const input = value?.trim();
   if (!input || input === 'none') return null;
@@ -680,10 +818,20 @@ export function parseGradientFill(value?: string): Fill | null {
       angle = parsedAngle;
       parts.shift();
     }
-  } else if (!parseGradientStop(parts[0]!)) {
-    // Shapes and positions are not represented in the schema yet. Pitolet's
-    // radial fill is centered and circular, which matches the common case.
-    parts.shift();
+  } else {
+    let descriptor = '';
+    if (!parseGradientStop(parts[0]!)) descriptor = parts.shift()!;
+    const geometry = parseRadialDescriptor(descriptor);
+    const parsedStops = parts.map(parseGradientStop);
+    if (parsedStops.some((stop) => stop === null)) return null;
+    const stops = interpolateStopPositions(
+      parsedStops as Array<{
+        color: NonNullable<ReturnType<typeof parseColor>>;
+        position: number | null;
+      }>,
+    );
+    if (stops.length < 2) return null;
+    return { type: 'radial', stops, ...geometry };
   }
 
   const parsedStops = parts.map(parseGradientStop);
@@ -695,7 +843,67 @@ export function parseGradientFill(value?: string): Fill | null {
     }>,
   );
   if (stops.length < 2) return null;
-  return kind === 'linear' ? { type: 'linear', angle, stops } : { type: 'radial', stops };
+  return { type: 'linear', angle, stops };
+}
+
+function parseRadialDescriptor(
+  value: string,
+): Omit<Extract<Fill, { type: 'radial' }>, 'type' | 'stops'> {
+  if (!value.trim()) return {};
+  const [rawSize, rawPosition] = value.toLowerCase().split(/\s+at\s+/, 2);
+  const sizeTokens = (rawSize ?? '').trim().split(/\s+/).filter(Boolean);
+  const shape: 'circle' | 'ellipse' | undefined =
+    sizeTokens[0] === 'ellipse' || sizeTokens[0] === 'circle'
+      ? (sizeTokens.shift() as 'circle' | 'ellipse')
+      : undefined;
+  const namedSize = sizeTokens[0];
+  const namedSizes = new Set([
+    'closest-side',
+    'closest-corner',
+    'farthest-side',
+    'farthest-corner',
+  ]);
+  let size: Extract<Fill, { type: 'radial' }>['size'];
+  if (namedSize && namedSizes.has(namedSize)) {
+    size = namedSize as Exclude<
+      Extract<Fill, { type: 'radial' }>['size'],
+      { x: Length; y: Length } | undefined
+    >;
+  } else if (sizeTokens.length > 0) {
+    const x = gradientLength(sizeTokens[0]!);
+    const y = gradientLength(sizeTokens[1] ?? sizeTokens[0]!);
+    if (x && y) size = { x, y };
+  }
+  let position: { x: Length; y: Length } | undefined;
+  if (rawPosition) {
+    const tokens = rawPosition.trim().split(/\s+/);
+    const x = gradientPosition(tokens[0] ?? 'center', 'x');
+    const y = gradientPosition(tokens[1] ?? 'center', 'y');
+    if (x && y) position = { x, y };
+  }
+  return {
+    ...(shape ? { shape } : {}),
+    ...(size ? { size } : {}),
+    ...(position ? { position } : {}),
+  };
+}
+
+function gradientLength(value: string): Length | null {
+  const match = /^(-?\d+(?:\.\d+)?)(px|%|rem|em|vw|vh)$/.exec(value.trim());
+  if (!match) return null;
+  return { value: Number(match[1]), unit: match[2] as Length['unit'] };
+}
+
+function gradientPosition(value: string, axis: 'x' | 'y'): Length | null {
+  const mapped: Record<string, number> = {
+    center: 50,
+    left: axis === 'x' ? 0 : 50,
+    right: axis === 'x' ? 100 : 50,
+    top: axis === 'y' ? 0 : 50,
+    bottom: axis === 'y' ? 100 : 50,
+  };
+  if (value in mapped) return { value: mapped[value]!, unit: '%' };
+  return gradientLength(value);
 }
 
 function splitCssList(value: string): string[] {
@@ -954,6 +1162,33 @@ function textAlign(value?: string): NonNullable<StyleDecl['textAlign']> {
   return value === 'center' || value === 'right' || value === 'justify' ? value : 'left';
 }
 
+function textTransform(value?: string): StyleDecl['textTransform'] {
+  return value === 'uppercase' || value === 'lowercase' || value === 'capitalize' ? value : 'none';
+}
+
+function whiteSpace(value?: string): StyleDecl['whiteSpace'] {
+  return value === 'nowrap' ||
+    value === 'pre' ||
+    value === 'pre-wrap' ||
+    value === 'pre-line' ||
+    value === 'break-spaces'
+    ? value
+    : 'normal';
+}
+
+function fontStyle(value?: string): StyleDecl['fontStyle'] {
+  if (value?.startsWith('oblique')) return 'oblique';
+  return value === 'italic' ? 'italic' : 'normal';
+}
+
+function fontOpticalSizing(value?: string): StyleDecl['fontOpticalSizing'] {
+  return value === 'none' ? 'none' : 'auto';
+}
+
+function visibilityValue(value?: string): StyleDecl['visibility'] {
+  return value === 'hidden' || value === 'collapse' ? value : 'visible';
+}
+
 function borderStyle(value?: string): 'solid' | 'dashed' | 'dotted' {
   return value === 'dashed' || value === 'dotted' ? value : 'solid';
 }
@@ -973,6 +1208,14 @@ function cleanFont(value?: string): string {
     .replace(/^['"]|['"]$/g, '');
 }
 
+function cleanFontStack(value?: string): string {
+  return (value ?? 'system-ui')
+    .split(',')
+    .map((family) => family.trim().replace(/^['"]|['"]$/g, ''))
+    .filter(Boolean)
+    .join(', ');
+}
+
 function tracks(value?: string): Array<{ kind: 'px'; value: number }> {
   if (!value || value === 'none') return [];
   return value
@@ -984,27 +1227,31 @@ function tracks(value?: string): Array<{ kind: 'px'; value: number }> {
 
 function parseShadows(value?: string): Shadow[] {
   if (!value || value === 'none') return [];
-  const first = value.match(
-    /^(inset\s+)?(rgba?\([^)]+\)|oklch\([^)]+\)|#[0-9a-fA-F]{3,8})\s+(-?[\d.]+)px\s+(-?[\d.]+)px\s+([\d.]+)px(?:\s+(-?[\d.]+)px)?/,
-  );
-  const alternate = value.match(
-    /^(inset\s+)?(-?[\d.]+)px\s+(-?[\d.]+)px\s+([\d.]+)px(?:\s+(-?[\d.]+)px)?\s+(rgba?\([^)]+\)|oklch\([^)]+\)|#[0-9a-fA-F]{3,8})/,
-  );
-  const match = first ?? alternate;
-  if (!match) return [];
-  const colorText = first ? match[2]! : match[6]!;
-  const color = parseColor(colorText);
-  if (!color) return [];
-  return [
-    {
-      x: finiteNumber(first ? match[3] : match[2], 0),
-      y: finiteNumber(first ? match[4] : match[3], 0),
-      blur: Math.max(0, finiteNumber(first ? match[5] : match[4], 0)),
-      spread: finiteNumber(first ? match[6] : match[5], 0),
-      color,
-      ...(match[1] ? { inset: true as const } : {}),
-    },
-  ];
+  return splitCssList(value).flatMap((layer): Shadow[] => {
+    const inset = /(?:^|\s)inset(?:\s|$)/i.test(layer);
+    const withoutInset = layer.replace(/(?:^|\s)inset(?:\s|$)/i, ' ').trim();
+    const colorPattern =
+      /(rgba?\([^)]+\)|hsla?\([^)]+\)|oklch\([^)]+\)|#[0-9a-fA-F]{3,8}|\b(?:transparent|black|white)\b)/i;
+    const colorMatch = colorPattern.exec(withoutInset);
+    if (!colorMatch) return [];
+    const color = parseColor(colorMatch[1]!);
+    if (!color) return [];
+    const dimensions =
+      `${withoutInset.slice(0, colorMatch.index)} ${withoutInset.slice(colorMatch.index + colorMatch[0].length)}`
+        .match(/-?(?:\d+\.?\d*|\.\d+)px/g)
+        ?.map((entry) => Number.parseFloat(entry)) ?? [];
+    if (dimensions.length < 2) return [];
+    return [
+      {
+        x: dimensions[0]!,
+        y: dimensions[1]!,
+        blur: Math.max(0, dimensions[2] ?? 0),
+        spread: dimensions[3] ?? 0,
+        color,
+        ...(inset ? { inset: true as const } : {}),
+      },
+    ];
+  });
 }
 
 /** Bind exact CSS-variable values, then promote values repeated at least three times. */

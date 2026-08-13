@@ -1,4 +1,11 @@
-import { chmodSync, existsSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import {
+  chmodSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  writeFileSync,
+} from 'node:fs';
 import { isIP } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -21,6 +28,9 @@ interface ImportArgs {
   reportDir?: string;
   json: boolean;
   allowInsecureHttp: boolean;
+  hideSelectors: string[];
+  captureCss?: string;
+  beforeCaptureScript?: string;
 }
 
 export async function runImportCommand(argv: string[]): Promise<void> {
@@ -41,6 +51,9 @@ export async function runImportCommand(argv: string[]): Promise<void> {
     waitFor: args.waitFor,
     viewports: args.viewports,
     allowInsecureHttp: args.allowInsecureHttp,
+    hideSelectors: args.hideSelectors,
+    captureCss: args.captureCss,
+    beforeCaptureScript: args.beforeCaptureScript,
     onBrowserInstall: () => progress(args, 'Chromium is not installed; downloading it once now…'),
   });
 
@@ -63,6 +76,37 @@ export async function runImportCommand(argv: string[]): Promise<void> {
     );
   }
 
+  if (conversion.status === 'failed') {
+    const report: ImportReport = {
+      sourceUrl: safeDisplayUrl(args.url),
+      destination: args.to,
+      documentId: conversion.document.id,
+      documentName: conversion.document.name,
+      uploaded: false,
+      nodeCount: conversion.nodeCount,
+      assetCount: conversion.assetCount,
+      rasterizedRegions: conversion.rasterizedRegions,
+      rasterizedNodeCount: conversion.rasterizedNodeCount,
+      editableNodeCount: conversion.editableNodeCount,
+      editabilityScore: conversion.editabilityScore,
+      editableAreaScore: conversion.editableAreaScore,
+      rasterizedAreaRatio: conversion.rasterizedAreaRatio,
+      status: conversion.status,
+      unsupportedCss: conversion.unsupportedCss,
+      compatibilityIssues: conversion.compatibilityIssues,
+      unmatchedResponsiveNodes: conversion.unmatchedResponsiveNodes,
+      similarities,
+      warnings: [...new Set(conversion.warnings)],
+      reportDir,
+    };
+    writeReport(report);
+    if (args.json) process.stdout.write(`${JSON.stringify(report)}\n`);
+    else printReport(report, false);
+    throw new Error(
+      `import was not uploaded because only ${Math.round(conversion.editabilityScore * 100)}% of nodes and ${Math.round(conversion.editableAreaScore * 100)}% of page area remained editable`,
+    );
+  }
+
   progress(args, `Uploading ${conversion.assetCount} assets…`);
   await uploadAssets(args.to, token, capture, conversion.document.assets);
   progress(args, 'Creating the imported document…');
@@ -74,18 +118,24 @@ export async function runImportCommand(argv: string[]): Promise<void> {
     documentId: imported.docId,
     documentName: conversion.document.name,
     documentUrl,
+    uploaded: true,
     nodeCount: conversion.nodeCount,
     assetCount: conversion.assetCount,
     rasterizedRegions: conversion.rasterizedRegions,
+    rasterizedNodeCount: conversion.rasterizedNodeCount,
+    editableNodeCount: conversion.editableNodeCount,
+    editabilityScore: conversion.editabilityScore,
+    editableAreaScore: conversion.editableAreaScore,
+    rasterizedAreaRatio: conversion.rasterizedAreaRatio,
+    status: conversion.status,
     unsupportedCss: conversion.unsupportedCss,
+    compatibilityIssues: conversion.compatibilityIssues,
     unmatchedResponsiveNodes: conversion.unmatchedResponsiveNodes,
     similarities,
     warnings: [...new Set(conversion.warnings)],
     reportDir,
   };
-  const reportPath = join(reportDir, 'report.json');
-  writeFileSync(reportPath, JSON.stringify(report, null, 2), { mode: 0o600 });
-  chmodSync(reportPath, 0o600);
+  writeReport(report);
 
   if (args.json) {
     process.stdout.write(`${JSON.stringify(report)}\n`);
@@ -120,11 +170,11 @@ function parseImportArgs(argv: string[]): ImportArgs {
     : DEFAULT_VIEWPORTS;
   if (
     viewports.length < 1 ||
-    viewports.length > 5 ||
+    viewports.length > 12 ||
     viewports.some((width) => !Number.isInteger(width) || width < 240 || width > 4096) ||
     new Set(viewports).size !== viewports.length
   ) {
-    throw new Error('--viewports must contain 1–5 unique integer widths from 240 to 4096');
+    throw new Error('--viewports must contain 1–12 unique integer widths from 240 to 4096');
   }
   const rawName = flagValue(argv, '--name');
   const name = rawName?.trim();
@@ -142,6 +192,12 @@ function parseImportArgs(argv: string[]): ImportArgs {
     reportDir: flagValue(argv, '--report-dir'),
     json: argv.includes('--json'),
     allowInsecureHttp,
+    hideSelectors: (flagValue(argv, '--hide') ?? '')
+      .split(',')
+      .map((value) => value.trim())
+      .filter(Boolean),
+    captureCss: readOptionalFile(flagValue(argv, '--capture-css'), '--capture-css'),
+    beforeCaptureScript: readOptionalFile(flagValue(argv, '--before-capture'), '--before-capture'),
   };
 }
 
@@ -154,6 +210,9 @@ function validateOptions(argv: string[]): void {
     '--viewports',
     '--wait-for',
     '--report-dir',
+    '--hide',
+    '--capture-css',
+    '--before-capture',
   ]);
   const seen = new Set<string>();
   for (let i = 0; i < argv.length; i++) {
@@ -166,6 +225,15 @@ function validateOptions(argv: string[]): void {
     if (!value || value.startsWith('--')) throw new Error(`${arg} requires a value`);
     i += 1;
   }
+}
+
+function readOptionalFile(path: string | undefined, flag: string): string | undefined {
+  if (!path) return undefined;
+  const absolute = resolve(path);
+  if (!existsSync(absolute)) throw new Error(`${flag} file not found: ${path}`);
+  const content = readFileSync(absolute, 'utf8');
+  if (content.length > 1_000_000) throw new Error(`${flag} file exceeds 1 MB`);
+  return content;
 }
 
 function flagValue(argv: string[], flag: string): string | undefined {
@@ -365,13 +433,25 @@ function safeDisplayUrl(value: string): string {
 
 function printReport(report: ImportReport, duplicate: boolean): void {
   process.stdout.write(
-    `\n${duplicate ? 'Import already exists' : 'Import complete'}: ${report.documentName}\n` +
-      `  Open: ${report.documentUrl}\n` +
+    `\n${report.uploaded ? (duplicate ? 'Import already exists' : 'Import complete') : 'Import failed quality check'}: ${report.documentName}\n` +
+      (report.documentUrl ? `  Open: ${report.documentUrl}\n` : '') +
       `  Document: ${report.documentId}\n` +
       `  Nodes: ${report.nodeCount}\n` +
       `  Assets: ${report.assetCount}\n` +
+      `  Result: ${report.status}\n` +
+      `  Editable nodes: ${report.editableNodeCount}/${report.nodeCount} (${Math.round(report.editabilityScore * 100)}%)\n` +
+      `  Editable page area: ${Math.round(report.editableAreaScore * 100)}%\n` +
       `  Rasterized regions: ${report.rasterizedRegions}\n` +
       `  Unsupported CSS: ${report.unsupportedCss.join(', ') || 'none'}\n` +
+      (report.compatibilityIssues.length > 0
+        ? `  Compatibility issues (${report.compatibilityIssues.length}):\n${report.compatibilityIssues
+            .slice(0, 20)
+            .map(
+              (issue) =>
+                `    - ${issue.nodeName} (${issue.nodeKey}) ${issue.kind}: ${issue.reason} at ${issue.viewports.join(', ')}px`,
+            )
+            .join('\n')}\n`
+        : '') +
       `  Responsive unmatched nodes: ${report.unmatchedResponsiveNodes}\n` +
       `  Similarity: ${report.similarities.map((s) => `${s.width}px ${Math.round(s.score * 100)}%`).join(' · ') || 'not available'}\n` +
       `  Report: ${report.reportDir}\n` +
@@ -384,6 +464,12 @@ function printReport(report: ImportReport, duplicate: boolean): void {
   );
 }
 
+function writeReport(report: ImportReport): void {
+  const reportPath = join(report.reportDir, 'report.json');
+  writeFileSync(reportPath, JSON.stringify(report, null, 2), { mode: 0o600 });
+  chmodSync(reportPath, 0o600);
+}
+
 const IMPORT_HELP = `Usage:
   pitolet import <url> --to <destination> [options]
 
@@ -392,6 +478,9 @@ Options:
   --selector <css>              Import one matching subtree (default: body)
   --storage-state <file>        Playwright storage-state JSON for authenticated pages
   --viewports <widths>          Comma-separated responsive widths (default: 375,768,1440)
+  --hide <selectors>            Comma-separated selectors to hide before capture
+  --capture-css <file>          Inject CSS before capture
+  --before-capture <file>       Run a local JavaScript file before capture
   --wait-for <css>              Wait for a visible element before capture
   --report-dir <path>           Save source/import/difference images here
   --allow-insecure-http         Allow a non-loopback HTTP source or destination (unsafe)

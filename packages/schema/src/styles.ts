@@ -61,7 +61,18 @@ export type GradientStop = { color: StyleValue<Color>; position: number /* 0..1 
 export type Fill =
   | { type: 'solid'; color: StyleValue<Color> }
   | { type: 'linear'; angle: number /* deg */; stops: GradientStop[] }
-  | { type: 'radial'; stops: GradientStop[] };
+  | {
+      type: 'radial';
+      stops: GradientStop[];
+      shape?: 'circle' | 'ellipse';
+      size?:
+        | 'closest-side'
+        | 'closest-corner'
+        | 'farthest-side'
+        | 'farthest-corner'
+        | { x: Length; y: Length };
+      position?: { x: Length; y: Length };
+    };
 
 export interface Shadow {
   x: number;
@@ -89,7 +100,7 @@ export type FlexWrap = 'wrap' | 'nowrap' | 'wrap-reverse';
 export type AlignValue = 'start' | 'center' | 'end' | 'stretch' | 'baseline';
 export type AlignSelfValue = AlignValue | 'auto';
 export type JustifyValue = 'start' | 'center' | 'end' | 'between' | 'around' | 'evenly';
-export type Position = 'static' | 'relative' | 'absolute' | 'sticky';
+export type Position = 'static' | 'relative' | 'absolute' | 'sticky' | 'fixed';
 export type TextAlign = 'left' | 'center' | 'right' | 'justify';
 export type Overflow = 'visible' | 'hidden' | 'auto' | 'scroll';
 export type ObjectFit = 'cover' | 'contain' | 'fill' | 'none';
@@ -133,6 +144,10 @@ export interface StyleDecl {
   lineHeight?: StyleValue<number | Length>;
   letterSpacing?: StyleValue<Length>;
   textAlign?: TextAlign;
+  textTransform?: 'none' | 'uppercase' | 'lowercase' | 'capitalize';
+  whiteSpace?: 'normal' | 'nowrap' | 'pre' | 'pre-wrap' | 'pre-line' | 'break-spaces';
+  fontStyle?: 'normal' | 'italic' | 'oblique';
+  fontOpticalSizing?: 'auto' | 'none';
   color?: StyleValue<Color>;
 
   // Appearance
@@ -158,6 +173,10 @@ export interface StyleDecl {
   overflow?: Overflow;
   cursor?: string;
   objectFit?: ObjectFit;
+  visibility?: 'visible' | 'hidden' | 'collapse';
+  transform?: string;
+  transformOrigin?: string;
+  filter?: string;
 }
 
 // ---------------------------------------------------------------------------

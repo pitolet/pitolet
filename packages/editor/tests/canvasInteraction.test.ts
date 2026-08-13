@@ -18,6 +18,7 @@ import {
   setInteractionCancel,
 } from '../src/canvas/interaction/interactionState.js';
 import { marqueeContains } from '../src/canvas/interaction/marquee.js';
+import { marqueeAutoPanVelocity } from '../src/canvas/interaction/selectTool.js';
 import {
   chainTo,
   resolveClickTarget,
@@ -109,6 +110,14 @@ describe('canvas marquee', () => {
     expect(marqueeContains(selection, { left: 120, top: 20, right: 140, bottom: 80 }, true)).toBe(
       false,
     );
+  });
+
+  it('pans toward canvas edges and stops in the middle', () => {
+    expect(marqueeAutoPanVelocity(0, 1000)).toBeGreaterThan(0);
+    expect(marqueeAutoPanVelocity(24, 1000)).toBeGreaterThan(0);
+    expect(marqueeAutoPanVelocity(500, 1000)).toBe(0);
+    expect(marqueeAutoPanVelocity(976, 1000)).toBeLessThan(0);
+    expect(marqueeAutoPanVelocity(1000, 1000)).toBeLessThan(0);
   });
 });
 

@@ -16,7 +16,7 @@ import { overlaySync } from '../canvas/overlaySync.js';
 
 enablePatches();
 
-export type Tool = 'select' | 'frame' | 'text' | 'element' | 'image';
+export type Tool = 'select' | 'hand' | 'frame' | 'text' | 'element' | 'image';
 
 export interface OutgoingPatch {
   patchId: string;
@@ -727,9 +727,10 @@ export const useEditor = create<EditorState>((set, get) => ({
   },
   setTool: (tool) => {
     const state = get();
+    const mutatesDocument = tool !== 'select' && tool !== 'hand';
     set({
       activeTool:
-        tool !== 'select' && (state.readOnly || !state.connected || state.switchingDocument)
+        mutatesDocument && (state.readOnly || !state.connected || state.switchingDocument)
           ? 'select'
           : tool,
     });

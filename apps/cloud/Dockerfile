@@ -49,13 +49,14 @@ RUN pnpm deploy --legacy --filter ./apps/cloud --prod /out \
        fi
 
 # Runtime image
-FROM node:22-alpine AS runtime
+FROM node:22-bookworm-slim AS runtime
 WORKDIR /app
 ENV NODE_ENV=production \
     PITOLET_CLOUD_PORT=8080 \
     PITOLET_CLOUD_DATA=/data \
     PITOLET_EDITOR_DIST=/app/editor \
-    PITOLET_DASHBOARD_DIST=/app/dashboard
+    PITOLET_DASHBOARD_DIST=/app/dashboard \
+    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
 COPY --from=build /out .
 
@@ -70,7 +71,10 @@ RUN test -f /app/dashboard/index.html \
     && grep -qE 'src="/assets/[^" ]+\.js"' /app/dashboard/index.html \
     && node -e "Promise.all([import('@sentry/node'), import('playwright-core')])"
 
-RUN mkdir -p /data && chown node:node /data
+RUN node node_modules/playwright-core/cli.js install --with-deps chromium \
+    && mkdir -p /data \
+    && chown -R node:node /data /ms-playwright \
+    && node -e "import('playwright-core').then(async ({chromium})=>{const b=await chromium.launch({headless:true});await b.close()})"
 USER node
 VOLUME /data
 EXPOSE 8080

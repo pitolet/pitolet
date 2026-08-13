@@ -440,8 +440,10 @@ describe('scoped contexts (custom hooks)', () => {
       'set_tokens',
       'set_selection',
       'create_document',
+      'delete_document',
       'add_comment',
       'resolve_comment',
+      'rename_document',
       'import_design_system',
       'export_project',
     ]) {

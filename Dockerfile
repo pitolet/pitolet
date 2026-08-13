@@ -27,16 +27,20 @@ RUN pnpm deploy --legacy --filter ./packages/server --prod /out \
     && cp -r packages/server/dist /out/dist
 
 # ---- runtime: minimal image serving the built app ----
-FROM node:22-alpine AS runtime
+FROM node:22-bookworm-slim AS runtime
 WORKDIR /app
 ENV NODE_ENV=production \
     PITOLET_PORT=4517 \
     PITOLET_HOST=0.0.0.0 \
-    PITOLET_DATA=/data
+    PITOLET_DATA=/data \
+    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
 COPY --from=build /out .
 
-RUN mkdir -p /data && chown node:node /data
+RUN node node_modules/playwright-core/cli.js install --with-deps chromium \
+    && mkdir -p /data \
+    && chown -R node:node /data /ms-playwright \
+    && node -e "import('playwright-core').then(async ({chromium})=>{const b=await chromium.launch({headless:true});await b.close()})"
 USER node
 VOLUME /data
 EXPOSE 4517

@@ -22,6 +22,7 @@ import {
   type NodeId,
   type StyleDecl,
   type StyleSheet,
+  type StateName,
   type TextSpan,
 } from '@pitolet/schema';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -60,54 +61,57 @@ interface NodeSpec {
   children?: NodeSpec[];
 }
 
-const nodeSpecSchemas = new Map<number, z.ZodType<NodeSpec>>();
-
-function nodeSpecSchema(depth: number): z.ZodType<NodeSpec> {
-  const existing = nodeSpecSchemas.get(depth);
-  if (existing) return existing;
-  const children =
-    depth < DOCUMENT_LIMITS.maxDepth
-      ? z
-          .array(z.lazy(() => nodeSpecSchema(depth + 1)))
-          .max(DOCUMENT_LIMITS.maxNodes)
-          .optional()
-      : z.array(z.never()).max(0).optional();
-  const schema = z
-    .object({
-      type: z.enum(['element', 'text', 'image', 'frame']).optional(),
-      tag: z.string().optional(),
-      name: z.string().optional(),
-      text: z.string().optional(),
-      src: z.string().optional(),
-      alt: z.string().optional(),
-      styles: zStyleDecl.optional(),
-      children,
-    })
-    .strict() as z.ZodType<NodeSpec>;
-  nodeSpecSchemas.set(depth, schema);
-  return schema;
-}
-
+// Keep the public MCP schema deliberately shallow. Expanding the recursive
+// children schema to DOCUMENT_LIMITS.maxDepth produced a ~1.8 MB tools/list
+// response and made some MCP clients close during discovery. The complete
+// recursive validation still happens below before a mutation is applied.
 const zNodeSpecs = z
-  .array(nodeSpecSchema(1))
+  .array(z.record(z.string(), z.unknown()))
   .min(1)
   .max(DOCUMENT_LIMITS.maxNodes)
-  .superRefine((roots, context) => {
-    const stack = [...roots];
-    let count = 0;
-    while (stack.length > 0) {
-      const current = stack.pop()!;
-      count += 1;
-      if (count > DOCUMENT_LIMITS.maxNodes) {
-        context.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `node subtree exceeds ${DOCUMENT_LIMITS.maxNodes} nodes`,
-        });
-        return;
-      }
-      stack.push(...(current.children ?? []));
+  .describe(
+    'Node objects with optional type, tag, name, text, src, alt, styles, and recursive children',
+  );
+
+const zNodeSpecFields = z
+  .object({
+    type: z.enum(['element', 'text', 'image', 'frame']).optional(),
+    tag: z.string().max(80).optional(),
+    name: z.string().max(500).optional(),
+    text: z.string().max(1_000_000).optional(),
+    src: z.string().max(2_000_000).optional(),
+    alt: z.string().max(10_000).optional(),
+    styles: zStyleDecl.optional(),
+    children: z.array(z.unknown()).max(DOCUMENT_LIMITS.maxNodes).optional(),
+  })
+  .strict();
+
+function parseNodeSpecs(input: unknown): NodeSpec[] {
+  if (!Array.isArray(input) || input.length === 0) throw new Error('nodes must not be empty');
+  let count = 0;
+  const visit = (value: unknown, depth: number): NodeSpec => {
+    if (depth > DOCUMENT_LIMITS.maxDepth) {
+      throw new Error(`node subtree exceeds the maximum depth of ${DOCUMENT_LIMITS.maxDepth}`);
     }
-  });
+    count += 1;
+    if (count > DOCUMENT_LIMITS.maxNodes) {
+      throw new Error(`node subtree exceeds ${DOCUMENT_LIMITS.maxNodes} nodes`);
+    }
+    const parsed = zNodeSpecFields.safeParse(value);
+    if (!parsed.success) {
+      const issue = parsed.error.issues[0];
+      throw new Error(
+        `invalid node${issue?.path.length ? ` at ${issue.path.join('.')}` : ''}: ${issue?.message ?? 'invalid value'}`,
+      );
+    }
+    const { children, ...fields } = parsed.data;
+    return {
+      ...fields,
+      children: children?.map((child) => visit(child, depth + 1)),
+    };
+  };
+  return input.map((root) => visit(root, 1));
+}
 
 export function registerTools(
   server: McpServer,
@@ -288,25 +292,49 @@ export function registerTools(
     'get_screenshot',
     {
       description:
-        'Rasterize a frame as a JPEG image. Uses the open editor when available, with a local headless-browser fallback.',
+        'Render a frame as a JPEG for visual review. Set viewportWidth to inspect a responsive breakpoint and state to force hover, focus, or active styling.',
       inputSchema: {
         docId: docIdParam,
         frameId: z.string(),
         maxSize: z.number().int().min(100).max(2000).default(800).optional(),
+        viewportWidth: z
+          .number()
+          .int()
+          .min(240)
+          .max(4096)
+          .optional()
+          .describe('Browser viewport width in pixels; defaults to the frame width'),
+        state: z
+          .enum(['hover', 'focus', 'active'])
+          .optional()
+          .describe('Force this interaction state on rendered elements'),
       },
     },
-    async ({ docId, frameId, maxSize }) => {
+    async ({ docId, frameId, maxSize, viewportWidth, state }) => {
       const { doc, id } = requireDoc(docId);
       let dataUrl: string;
-      if (hub.hasEditorFor(id)) {
+      if (hub.hasEditorFor(id) && viewportWidth === undefined && state === undefined) {
         dataUrl = await hub.requestScreenshot(id, frameId, maxSize ?? 800);
       } else {
-        dataUrl = await headlessScreenshot(doc, frameId, maxSize ?? 800, adapter.assets);
+        dataUrl = await headlessScreenshot(
+          doc,
+          frameId,
+          maxSize ?? 800,
+          adapter.assets,
+          viewportWidth,
+          state,
+        );
       }
       const match = dataUrl.match(/^data:(image\/\w+);base64,(.+)$/);
       if (!match) throw new Error('screenshot produced invalid image data');
       return {
-        content: [{ type: 'image' as const, mimeType: match[1]!, data: match[2]! }],
+        content: [
+          {
+            type: 'text' as const,
+            text: `Rendered ${doc.name} at ${viewportWidth ?? 'the frame width'}${state ? ` with :${state} forced` : ''}. Inspect the image before deciding the design is finished.`,
+          },
+          { type: 'image' as const, mimeType: match[1]!, data: match[2]! },
+        ],
       };
     },
   );
@@ -423,6 +451,7 @@ export function registerTools(
         if (parent.type !== 'frame' && parent.type !== 'element')
           throw new Error(`${parentId} is a ${parent.type}, not a container`);
 
+        const specs = parseNodeSpecs(nodes);
         const rootIds: string[] = [];
         store.applyRecipe(
           id,
@@ -441,7 +470,7 @@ export function registerTools(
             };
             const target = draft.nodes[parentId]!;
             const insertAt = Math.min(index ?? target.children.length, target.children.length);
-            const created = nodes.map((spec) => expand(spec, parentId));
+            const created = specs.map((spec) => expand(spec, parentId));
             target.children.splice(insertAt, 0, ...created);
             rootIds.push(...created);
           },
@@ -458,6 +487,54 @@ export function registerTools(
 
   if (canWrite)
     server.registerTool(
+      'rename_document',
+      {
+        description: 'Rename a Pitolet document. Returns the updated name and revision.',
+        inputSchema: {
+          docId: docIdParam,
+          name: z.string().trim().min(1).max(120),
+        },
+      },
+      ({ docId, name }) => {
+        const { doc, id } = requireDoc(docId, 'doc:write');
+        const nextName = name.trim();
+        const rev = store.applyRecipe(
+          id,
+          'mcp',
+          `MCP: rename document to "${nextName}"`,
+          (draft) => {
+            draft.name = nextName;
+          },
+          actor,
+        );
+        return text({ docId: id, previousName: doc.name, name: nextName, revision: rev });
+      },
+    );
+
+  if (canWrite && adapter.deleteDoc)
+    server.registerTool(
+      'delete_document',
+      {
+        description:
+          'Delete a document created by mistake or a failed attempt. Requires its exact current name and refuses while an editor has it open.',
+        inputSchema: {
+          docId: z.string().describe('Document id to delete'),
+          confirmName: z.string().describe('Exact current document name'),
+        },
+      },
+      async ({ docId, confirmName }) => {
+        const { doc, id } = requireDoc(docId, 'doc:write');
+        if (confirmName !== doc.name) throw new Error('confirmation does not match document name');
+        if (hub.hasEditorFor(id))
+          throw new Error('close this document in the editor before deleting it');
+        await adapter.deleteDoc!(id);
+        store.unload(id);
+        return text({ deleted: true, docId: id, name: doc.name });
+      },
+    );
+
+  if (canWrite)
+    server.registerTool(
       'update_node',
       {
         description:
@@ -467,14 +544,21 @@ export function registerTools(
           nodeId: z.string(),
           set: z
             .object({
-              name: z.string().optional(),
-              tag: z.string().optional(),
+              name: z.string().max(500).optional(),
+              tag: z.string().max(80).optional(),
               visible: z.boolean().optional(),
-              text: z.string().optional().describe('Replace text content (text nodes only)'),
-              styles: zStyleSheet
-                .partial()
+              text: z
+                .string()
+                .max(1_000_000)
                 .optional()
-                .describe('Merged per-layer into existing styles'),
+                .describe('Replace text content (text nodes only)'),
+              // As with insert_nodes, keep discovery compact and run the full
+              // nested schema at execution time. This avoids publishing the
+              // style schema repeatedly for every breakpoint/state branch.
+              styles: z
+                .record(z.string(), z.unknown())
+                .optional()
+                .describe('StyleSheet patch with base, breakpoints, and states layers'),
             })
             .strict(),
         },
@@ -482,6 +566,14 @@ export function registerTools(
       ({ docId, nodeId, set }) => {
         const { doc, id } = requireDoc(docId, 'doc:write');
         if (!doc.nodes[nodeId]) throw new Error(`no node ${nodeId}`);
+        const parsedStyles =
+          set.styles === undefined ? undefined : zStyleSheet.partial().safeParse(set.styles);
+        if (parsedStyles && !parsedStyles.success) {
+          const issue = parsedStyles.error.issues[0];
+          throw new Error(
+            `invalid styles${issue?.path.length ? ` at ${issue.path.join('.')}` : ''}: ${issue?.message ?? 'invalid value'}`,
+          );
+        }
         store.applyRecipe(
           id,
           'mcp',
@@ -494,7 +586,7 @@ export function registerTools(
             if (set.text !== undefined && node.type === 'text') {
               node.content = [{ text: set.text }] as TextSpan[];
             }
-            if (set.styles) mergeStyles(node.styles as StyleSheet, set.styles);
+            if (parsedStyles?.success) mergeStyles(node.styles as StyleSheet, parsedStyles.data);
           },
           actor,
         );
@@ -848,8 +940,8 @@ function mergeStyles(target: StyleSheet, patch: Partial<StyleSheet>): void {
 
 /**
  * Screenshot without an editor: render the frame's generated HTML in headless
- * Chromium. The CLI ships Playwright Core; the browser binary is installed on
- * first website import and is reused here. We do not trigger a surprise
+ * Chromium. Docker runtimes install the matching browser during the image
+ * build; local operators can install it explicitly. We never trigger a
  * browser download from an MCP read operation.
  */
 async function headlessScreenshot(
@@ -857,11 +949,13 @@ async function headlessScreenshot(
   frameId: NodeId,
   maxSize: number,
   assets: StorageAdapter['assets'],
+  viewportWidth?: number,
+  state?: StateName,
 ): Promise<string> {
   const frame = doc.nodes[frameId];
   if (!frame || frame.type !== 'frame') throw new Error(`no frame ${frameId}`);
 
-  const width = frame.canvas.width;
+  const width = viewportWidth ?? frame.canvas.width;
   const height = frame.canvas.height === 'auto' ? 800 : frame.canvas.height;
   if (width > 16_384 || height > 16_384) {
     throw new Error('frame is too large for a safe headless screenshot');
@@ -871,7 +965,7 @@ async function headlessScreenshot(
   const { chromium } = await import('playwright-core');
   const browser = await launchChromium(chromium, undefined, async () => {
     throw new Error(
-      'Playwright Chromium is not installed. Open the frame in the Pitolet editor, or run a website import once to install the compatible browser.',
+      'Playwright Chromium is not installed in the Pitolet runtime. Install it with `npx playwright-core install chromium`, or ask the server operator to include the compatible browser.',
     );
   });
   try {
@@ -908,11 +1002,20 @@ async function headlessScreenshot(
         await route.fulfill({ status: 500, body: 'asset read failed' });
       }
     });
-    const html = buildPreviewHtml(doc, frameId).replace(
+    let html = buildPreviewHtml(doc, frameId).replace(
       '<head>',
       '<head>\n<base href="http://pitolet.local/">',
     );
+    if (state) {
+      const forceClass = `pitolet-force-${state}`;
+      html = html.replace(new RegExp(`:${state}(?![a-z-])`, 'g'), `:is(:${state}, .${forceClass})`);
+    }
     await page.setContent(html, { waitUntil: 'load' });
+    if (state) {
+      await page.locator('body *').evaluateAll((elements, forcedState) => {
+        for (const element of elements) element.classList.add(`pitolet-force-${forcedState}`);
+      }, state);
+    }
     const buffer = await page.screenshot({
       type: 'jpeg',
       quality: 85,

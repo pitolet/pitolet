@@ -40,14 +40,6 @@ export async function handleAssetUpload(
       res.end(JSON.stringify({ error: `unsupported asset type ${mime}` }));
       return;
     }
-    // Active SVG documents are not accepted from untrusted HTTP clients. The
-    // importer may still place SVG in the content-addressed store internally;
-    // those files are served below under a restrictive sandbox.
-    if (mime === 'image/svg+xml') {
-      res.writeHead(415, { 'content-type': 'application/json' });
-      res.end(JSON.stringify({ error: 'SVG uploads are not supported; upload a raster image' }));
-      return;
-    }
     const chunks: Buffer[] = [];
     let size = 0;
     for await (const chunk of req) {
@@ -134,10 +126,24 @@ function matchesAssetSignature(data: Buffer, mime: string): boolean {
         data.subarray(0, 4).toString('ascii') === 'RIFF' &&
         data.subarray(8, 12).toString('ascii') === 'WEBP'
       );
+    case 'image/avif':
+      return (
+        data.length >= 12 &&
+        data.subarray(4, 8).toString('ascii') === 'ftyp' &&
+        ['avif', 'avis'].includes(data.subarray(8, 12).toString('ascii'))
+      );
+    case 'image/svg+xml': {
+      const prefix = data.subarray(0, Math.min(data.length, 4096)).toString('utf8').trimStart();
+      return prefix.startsWith('<svg') || /^<\?xml[^>]*>\s*<svg[\s>]/i.test(prefix);
+    }
     case 'font/woff':
       return data.length >= 4 && data.subarray(0, 4).toString('ascii') === 'wOFF';
     case 'font/woff2':
       return data.length >= 4 && data.subarray(0, 4).toString('ascii') === 'wOF2';
+    case 'font/ttf':
+      return data.length >= 4 && data.readUInt32BE(0) === 0x00010000;
+    case 'font/otf':
+      return data.length >= 4 && data.subarray(0, 4).toString('ascii') === 'OTTO';
     default:
       return false;
   }

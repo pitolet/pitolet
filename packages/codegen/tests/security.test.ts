@@ -193,6 +193,26 @@ describe('safe deterministic code generation', () => {
     }
   });
 
+  it('emits imported TTF and OTF font formats', () => {
+    const doc = createDocument({ name: 'Additional font formats' });
+    const page = attach(doc, null, createFrame({ name: 'Page' }));
+    for (const [extension, mime] of [
+      ['ttf', 'font/ttf'],
+      ['otf', 'font/otf'],
+    ] as const) {
+      doc.assets[`${'b'.repeat(64)}.${extension}`] = {
+        fileName: `interface.${extension}`,
+        mime,
+        width: 0,
+        height: 0,
+        fontFace: { family: `Interface ${extension.toUpperCase()}` },
+      };
+    }
+    const html = generateSelection(doc, page.id, 'html');
+    expect(html).toContain("format('truetype')");
+    expect(html).toContain("format('opentype')");
+  });
+
   it('encodes annotation values so they cannot inject source lines', () => {
     const doc = createDocument({ id: 'doc\nexport const owned = true', name: 'Annotations' });
     const frame = attach(doc, null, createFrame({ name: 'Page' }));

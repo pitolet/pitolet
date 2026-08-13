@@ -141,7 +141,8 @@ export function CanvasViewport({
   }, []);
 
   const onPointerDown = (e: React.PointerEvent) => {
-    const panDrag = e.button === 1 || (e.button === 0 && spaceDown.current);
+    const panDrag =
+      e.button === 1 || (e.button === 0 && (spaceDown.current || activeTool === 'hand'));
     if (!panDrag) {
       if (e.button === 0 && viewportRef.current) {
         onContentPointerDown?.(e.nativeEvent, viewportRef.current);

@@ -93,6 +93,10 @@ export function styleToCssProps(s: StyleDecl, ctx: CssContext = {}): CssProps {
   }
   if (s.letterSpacing !== undefined) css.letterSpacing = len(s.letterSpacing as Length);
   if (s.textAlign) css.textAlign = s.textAlign;
+  if (s.textTransform) css.textTransform = s.textTransform;
+  if (s.whiteSpace) css.whiteSpace = s.whiteSpace;
+  if (s.fontStyle) css.fontStyle = s.fontStyle;
+  if (s.fontOpticalSizing) css.fontOpticalSizing = s.fontOpticalSizing;
   if (s.color !== undefined) css.color = colorToCss(s.color as Color);
 
   // --- Appearance ---
@@ -125,6 +129,10 @@ export function styleToCssProps(s: StyleDecl, ctx: CssContext = {}): CssProps {
   if (s.overflow) css.overflow = s.overflow;
   if (s.cursor) css.cursor = s.cursor;
   if (s.objectFit) css.objectFit = s.objectFit;
+  if (s.visibility) css.visibility = s.visibility;
+  if (s.transform) css.transform = s.transform;
+  if (s.transformOrigin) css.transformOrigin = s.transformOrigin;
+  if (s.filter) css.filter = s.filter;
 
   return css;
 }
@@ -246,8 +254,20 @@ function fillLayer(fill: Fill): string {
     case 'linear':
       return `linear-gradient(${trim(fill.angle)}deg, ${gradientStops(fill.stops)})`;
     case 'radial':
-      return `radial-gradient(circle, ${gradientStops(fill.stops)})`;
+      return `radial-gradient(${radialDescriptor(fill)}, ${gradientStops(fill.stops)})`;
   }
+}
+
+function radialDescriptor(fill: Extract<Fill, { type: 'radial' }>): string {
+  const parts: string[] = [];
+  if (fill.shape) parts.push(fill.shape);
+  if (fill.size) {
+    parts.push(
+      typeof fill.size === 'string' ? fill.size : `${len(fill.size.x)} ${len(fill.size.y)}`,
+    );
+  }
+  if (fill.position) parts.push(`at ${len(fill.position.x)} ${len(fill.position.y)}`);
+  return parts.join(' ') || 'circle';
 }
 
 function gradientStops(stops: { color: unknown; position: number }[]): string {

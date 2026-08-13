@@ -178,6 +178,13 @@ export const COMMANDS: Command[] = [
     run: () => useEditor.getState().setTool('select'),
   },
   {
+    id: 'tool-hand',
+    title: 'Hand tool',
+    shortcut: 'h',
+    group: 'create',
+    run: () => useEditor.getState().setTool('hand'),
+  },
+  {
     id: 'tool-frame',
     title: 'Frame tool',
     shortcut: 'f',

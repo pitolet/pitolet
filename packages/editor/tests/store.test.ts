@@ -128,6 +128,8 @@ describe('editor store', () => {
     store.setEditingText(frameId);
     expect(useEditor.getState().activeTool).toBe('select');
     expect(useEditor.getState().editingTextId).toBeNull();
+    store.setTool('hand');
+    expect(useEditor.getState().activeTool).toBe('hand');
     store.setReadOnly(false);
   });
 

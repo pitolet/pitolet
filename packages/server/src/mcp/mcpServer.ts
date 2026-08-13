@@ -16,6 +16,16 @@ import { registerTools } from './tools.js';
  */
 export const MAX_MCP_BODY_BYTES = 2 * 1024 * 1024;
 
+export const MCP_INSTRUCTIONS = `Pitolet is a live visual editor for pages built with an agent.
+
+Use list_documents, inspect the relevant document, then make small structured edits. After creating a page or making a substantial visual change, call get_screenshot, inspect the result, and refine it. A successful write is not visual verification.
+
+To bring an existing website into Pitolet, use the local CLI rather than rebuilding it node by node through MCP:
+PITOLET_TOKEN=<write-token> npx pitolet import <source-url> --to <workspace-url>
+Ask the user for the source URL, workspace URL, and token if needed. Keep the token out of repositories and command arguments. import_design_system imports CSS tokens only; it does not import a website.
+
+Use rename_document and delete_document to clean up documents created by failed attempts. delete_document requires the exact current document name as confirmation.`;
+
 export function createMcpHandler(
   store: DocumentStore,
   hub: WsHub,
@@ -43,7 +53,10 @@ export function createMcpHandler(
       return;
     }
 
-    const server = new McpServer({ name: 'pitolet', version: '0.1.0' });
+    const server = new McpServer(
+      { name: 'pitolet', version: '0.1.0' },
+      { instructions: MCP_INSTRUCTIONS },
+    );
     registerTools(server, store, hub, adapter, { ctx, auth });
     const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
     res.on('close', () => {

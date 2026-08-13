@@ -91,6 +91,24 @@
   gap: 6px;
   color: var(--ptl-accent);
   padding: 0 var(--ptl-space-2);
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-decoration: none;
+}
+
+.ptl-logo--home {
+  cursor: pointer;
+  border-radius: var(--ptl-radius-sm);
+}
+
+.ptl-logo--home:hover {
+  background: var(--ptl-bg-2);
+}
+
+.ptl-logo--home:focus-visible {
+  outline: 2px solid var(--ptl-accent);
+  outline-offset: 2px;
 }
 
 .ptl-logo-name {

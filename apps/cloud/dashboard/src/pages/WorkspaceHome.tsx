@@ -33,6 +33,8 @@ export function WorkspaceHome({ workspace }: { workspace: WorkspaceSummary }) {
   });
   const [brief, setBrief] = useState('');
   const [sourceUrl, setSourceUrl] = useState('http://localhost:3000');
+  const [refreshTick, setRefreshTick] = useState(0);
+  const connected = connection === 'connected';
 
   const loadDocuments = useCallback(async () => {
     setDocumentsError(null);
@@ -49,6 +51,26 @@ export function WorkspaceHome({ workspace }: { workspace: WorkspaceSummary }) {
   }, [loadDocuments]);
 
   useEffect(() => {
+    const refresh = () => {
+      if (document.visibilityState !== 'visible') return;
+      void loadDocuments();
+      setRefreshTick((value) => value + 1);
+    };
+    const interval = window.setInterval(refresh, connected ? 20_000 : 5_000);
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') refresh();
+    };
+    const onFocus = () => refresh();
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    window.addEventListener('focus', onFocus);
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, [connected, loadDocuments]);
+
+  useEffect(() => {
     trackProductEvent(
       { name: 'workspace_opened', source: 'dashboard', workspaceId: workspace.id },
       `workspace-opened.${workspace.id}`,
@@ -58,7 +80,6 @@ export function WorkspaceHome({ workspace }: { workspace: WorkspaceSummary }) {
   const origin = typeof window === 'undefined' ? 'https://app.pitolet.com' : window.location.origin;
   const endpoint = mcpUrl(origin, workspace);
   const destination = workspaceUrl(origin, workspace);
-  const connected = connection === 'connected';
   const priority = workspaceHomePriority({
     canEdit,
     connection,
@@ -110,6 +131,7 @@ export function WorkspaceHome({ workspace }: { workspace: WorkspaceSummary }) {
               }
               compact
               collapseWhenConnected
+              refreshTick={refreshTick}
             />
           </section>
 

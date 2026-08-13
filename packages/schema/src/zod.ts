@@ -60,7 +60,20 @@ const zFill = z.discriminatedUnion('type', [
       stops: z.array(zGradientStop).min(2),
     })
     .strict(),
-  z.object({ type: z.literal('radial'), stops: z.array(zGradientStop).min(2) }).strict(),
+  z
+    .object({
+      type: z.literal('radial'),
+      stops: z.array(zGradientStop).min(2),
+      shape: z.enum(['circle', 'ellipse']).optional(),
+      size: z
+        .union([
+          z.enum(['closest-side', 'closest-corner', 'farthest-side', 'farthest-corner']),
+          z.object({ x: zLength, y: zLength }).strict(),
+        ])
+        .optional(),
+      position: z.object({ x: zLength, y: zLength }).strict().optional(),
+    })
+    .strict(),
 ]);
 
 const zShadow = z
@@ -118,7 +131,7 @@ export const zStyleDecl = z
     maxWidth: sv(zSize),
     minHeight: sv(zSize),
     maxHeight: sv(zSize),
-    position: z.enum(['static', 'relative', 'absolute', 'sticky']),
+    position: z.enum(['static', 'relative', 'absolute', 'sticky', 'fixed']),
     inset: zSidesLength.partial(),
     zIndex: z.number().int(),
     fontFamily: sv(z.string()),
@@ -127,6 +140,10 @@ export const zStyleDecl = z
     lineHeight: sv(z.union([z.number().finite(), zLength])),
     letterSpacing: sv(zLength),
     textAlign: z.enum(['left', 'center', 'right', 'justify']),
+    textTransform: z.enum(['none', 'uppercase', 'lowercase', 'capitalize']),
+    whiteSpace: z.enum(['normal', 'nowrap', 'pre', 'pre-wrap', 'pre-line', 'break-spaces']),
+    fontStyle: z.enum(['normal', 'italic', 'oblique']),
+    fontOpticalSizing: z.enum(['auto', 'none']),
     color: sv(zColor),
     fills: z.array(zFill),
     border: z
@@ -150,6 +167,19 @@ export const zStyleDecl = z
     overflow: z.enum(['visible', 'hidden', 'auto', 'scroll']),
     cursor: z.string(),
     objectFit: z.enum(['cover', 'contain', 'fill', 'none']),
+    visibility: z.enum(['visible', 'hidden', 'collapse']),
+    transform: z
+      .string()
+      .max(1_000)
+      .regex(/^[^;{}[\]]+$/),
+    transformOrigin: z
+      .string()
+      .max(200)
+      .regex(/^[^;{}[\]]+$/),
+    filter: z
+      .string()
+      .max(1_000)
+      .regex(/^[^;{}[\]]+$/),
   })
   .partial()
   .strict();

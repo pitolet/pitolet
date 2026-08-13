@@ -82,7 +82,7 @@ export const NodeRenderer = memo(function NodeRenderer({
     style: css,
     tabIndex: isCanvasFocusableTag(node.tag) ? -1 : undefined,
     draggable: false,
-    ...sanitizeAttrs(node.attrs),
+    ...sanitizeAttrs(node.attrs, node.tag),
   };
 
   switch (node.type) {
@@ -194,14 +194,50 @@ const ALLOWED_TAGS = new Set([
   'th',
   'details',
   'summary',
+  'svg',
+  'g',
+  'defs',
+  'path',
+  'circle',
+  'ellipse',
+  'rect',
+  'line',
+  'polyline',
+  'polygon',
+  'linearGradient',
+  'radialGradient',
+  'stop',
+  'clipPath',
+  'mask',
+  'pattern',
+  'symbol',
+  'use',
+  'text',
+  'tspan',
+  'filter',
+  'feGaussianBlur',
+  'feOffset',
+  'feBlend',
+  'feColorMatrix',
   'br',
   'hr',
 ]);
 
 export function safeTag(tag: string): string {
   const normalized = tag.toLowerCase();
-  return ALLOWED_TAGS.has(normalized) ? normalized : 'div';
+  const canonical = SVG_TAG_NAMES[normalized] ?? normalized;
+  return ALLOWED_TAGS.has(canonical) ? canonical : 'div';
 }
+
+const SVG_TAG_NAMES: Record<string, string> = {
+  lineargradient: 'linearGradient',
+  radialgradient: 'radialGradient',
+  clippath: 'clipPath',
+  fegaussianblur: 'feGaussianBlur',
+  feoffset: 'feOffset',
+  feblend: 'feBlend',
+  fecolormatrix: 'feColorMatrix',
+};
 
 /** Text nodes must always render through an element that accepts children. */
 export function safeTextTag(tag: string): string {
@@ -210,12 +246,21 @@ export function safeTextTag(tag: string): string {
 }
 
 /** Only carry through inert attributes; navigation/interactivity stays dead in-editor. */
-export function sanitizeAttrs(attrs?: Record<string, string>): Record<string, string | boolean> {
+export function sanitizeAttrs(
+  attrs?: Record<string, string>,
+  tag?: string,
+): Record<string, string | boolean> {
   if (!attrs) return {};
   const out: Record<string, string | boolean> = {};
+  const svg = tag ? SVG_TAGS.has(safeTag(tag)) : false;
   for (const [key, value] of Object.entries(attrs)) {
     const normalized = key.toLowerCase();
-    if (normalized.startsWith('on') || BLOCKED_CANVAS_ATTRS.has(normalized)) continue;
+    if (normalized.startsWith('on')) continue;
+    if (BLOCKED_CANVAS_ATTRS.has(normalized)) {
+      const safeSvgReference = svg && normalized === 'href' && value.startsWith('#');
+      const safeSvgId = svg && normalized === 'id';
+      if (!safeSvgReference && !safeSvgId) continue;
+    }
     if (normalized === 'data-node-id') continue;
     const reactKey = REACT_ATTRS[normalized] ?? key;
     out[reactKey] = BOOLEAN_ATTRS.has(normalized) ? value !== 'false' && value !== '0' : value;
@@ -231,6 +276,16 @@ const REACT_ATTRS: Record<string, string> = {
   autocomplete: 'autoComplete',
   inputmode: 'inputMode',
   readonly: 'readOnly',
+  viewbox: 'viewBox',
+  preserveaspectratio: 'preserveAspectRatio',
+  'fill-rule': 'fillRule',
+  'stroke-width': 'strokeWidth',
+  'stroke-linecap': 'strokeLinecap',
+  'stroke-linejoin': 'strokeLinejoin',
+  'clip-rule': 'clipRule',
+  'clip-path': 'clipPath',
+  'stop-color': 'stopColor',
+  'stop-opacity': 'stopOpacity',
 };
 
 const BOOLEAN_ATTRS = new Set([
@@ -271,6 +326,34 @@ const BLOCKED_CANVAS_ATTRS = new Set([
   'tabindex',
   'target',
   'for',
+]);
+
+const SVG_TAGS = new Set([
+  'svg',
+  'g',
+  'defs',
+  'path',
+  'circle',
+  'ellipse',
+  'rect',
+  'line',
+  'polyline',
+  'polygon',
+  'linearGradient',
+  'radialGradient',
+  'stop',
+  'clipPath',
+  'mask',
+  'pattern',
+  'symbol',
+  'use',
+  'text',
+  'tspan',
+  'filter',
+  'feGaussianBlur',
+  'feOffset',
+  'feBlend',
+  'feColorMatrix',
 ]);
 
 function isCanvasFocusableTag(tag: string): boolean {

@@ -3,6 +3,9 @@
   flex-direction: column;
   height: 100%;
   position: relative;
+  /* Keep horizontal trackpad gestures inside the editor. Dashboard pages do
+     not load this rule, so normal browser navigation remains available there. */
+  overscroll-behavior: none;
 }
 
 .ptl-app-body {

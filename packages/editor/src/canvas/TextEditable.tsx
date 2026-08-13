@@ -43,7 +43,7 @@ export function TextEditable({ node, css }: { node: TextNode; css: CSSProperties
   return createElement(
     safeTextTag(node.tag),
     {
-      ...sanitizeAttrs(node.attrs),
+      ...sanitizeAttrs(node.attrs, node.tag),
       ref,
       'data-node-id': nodeId,
       style: css,

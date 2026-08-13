@@ -19,6 +19,19 @@ import {
 } from './selection.js';
 
 const MARQUEE_SLOP_PX = 4;
+const MARQUEE_EDGE_PX = 48;
+const MARQUEE_MAX_PAN_PX = 18;
+
+/** Screen-space pan velocity while a marquee pointer sits near an edge. */
+export function marqueeAutoPanVelocity(position: number, size: number): number {
+  if (position < MARQUEE_EDGE_PX) {
+    return MARQUEE_MAX_PAN_PX * (1 - Math.max(0, position) / MARQUEE_EDGE_PX);
+  }
+  if (position > size - MARQUEE_EDGE_PX) {
+    return -MARQUEE_MAX_PAN_PX * (1 - Math.max(0, size - position) / MARQUEE_EDGE_PX);
+  }
+  return 0;
+}
 
 /**
  * Select-tool pointer behavior:
@@ -91,7 +104,7 @@ export function onSelectPointerDown(
 
   const previousSelection = store.selection;
   if (!e.shiftKey) store.select([]);
-  startMarquee(e, viewport, previousSelection);
+  startMarquee(e, viewport, previousSelection, camera);
 }
 
 export function onSelectDoubleClick(e: MouseEvent): void {
@@ -111,26 +124,49 @@ export function onSelectDoubleClick(e: MouseEvent): void {
   }
 }
 
-function startMarquee(e: PointerEvent, viewport: HTMLElement, previousSelection: NodeId[]): void {
-  const viewportRect = viewport.getBoundingClientRect();
-  const start = { x: e.clientX - viewportRect.left, y: e.clientY - viewportRect.top };
+function startMarquee(
+  e: PointerEvent,
+  viewport: HTMLElement,
+  previousSelection: NodeId[],
+  camera: CameraController,
+): void {
+  let viewportRect = viewport.getBoundingClientRect();
+  const startScreen = { x: e.clientX - viewportRect.left, y: e.clientY - viewportRect.top };
+  const startWorld = camera.toWorld(startScreen);
   const baseSelection = e.shiftKey ? previousSelection : [];
   let started = false;
+  let lastPointer = { x: e.clientX, y: e.clientY };
+  let autoPanFrame = 0;
 
-  const onMove = (ev: PointerEvent) => {
-    const current = { x: ev.clientX - viewportRect.left, y: ev.clientY - viewportRect.top };
-    if (!started && Math.hypot(current.x - start.x, current.y - start.y) <= MARQUEE_SLOP_PX) {
-      return;
-    }
+  const update = (clientX: number, clientY: number) => {
+    viewportRect = viewport.getBoundingClientRect();
+    const raw = { x: clientX - viewportRect.left, y: clientY - viewportRect.top };
+    const current = {
+      x: Math.max(0, Math.min(viewportRect.width, raw.x)),
+      y: Math.max(0, Math.min(viewportRect.height, raw.y)),
+    };
+    const currentWorld = camera.toWorld(current);
+    const start = camera.toScreen(startWorld);
+    if (!started && Math.hypot(current.x - start.x, current.y - start.y) <= MARQUEE_SLOP_PX) return;
     if (!started) {
       started = true;
       setDragging(true, 'marquee');
     }
+    const worldMin = {
+      x: Math.min(startWorld.x, currentWorld.x),
+      y: Math.min(startWorld.y, currentWorld.y),
+    };
+    const worldMax = {
+      x: Math.max(startWorld.x, currentWorld.x),
+      y: Math.max(startWorld.y, currentWorld.y),
+    };
+    const topLeft = camera.toScreen(worldMin);
+    const bottomRight = camera.toScreen(worldMax);
     const rect = {
-      x: Math.min(start.x, current.x),
-      y: Math.min(start.y, current.y),
-      width: Math.abs(current.x - start.x),
-      height: Math.abs(current.y - start.y),
+      x: topLeft.x,
+      y: topLeft.y,
+      width: bottomRight.x - topLeft.x,
+      height: bottomRight.y - topLeft.y,
     };
     setMarquee(rect);
 
@@ -142,7 +178,7 @@ function startMarquee(e: PointerEvent, viewport: HTMLElement, previousSelection:
       right: rect.x + rect.width,
       bottom: rect.y + rect.height,
     };
-    const crossing = current.x < start.x;
+    const crossing = currentWorld.x < startWorld.x;
     const hits: NodeId[] = [];
     for (const id of doc.rootOrder) {
       const node = doc.nodes[id];
@@ -161,12 +197,29 @@ function startMarquee(e: PointerEvent, viewport: HTMLElement, previousSelection:
     useEditor.getState().select([...new Set([...baseSelection, ...hits])]);
   };
 
+  const autoPan = () => {
+    viewportRect = viewport.getBoundingClientRect();
+    const localX = lastPointer.x - viewportRect.left;
+    const localY = lastPointer.y - viewportRect.top;
+    const dx = marqueeAutoPanVelocity(localX, viewportRect.width);
+    const dy = marqueeAutoPanVelocity(localY, viewportRect.height);
+    if (started && (dx !== 0 || dy !== 0)) camera.panBy(dx, dy);
+    update(lastPointer.x, lastPointer.y);
+    autoPanFrame = requestAnimationFrame(autoPan);
+  };
+
+  const onMove = (ev: PointerEvent) => {
+    lastPointer = { x: ev.clientX, y: ev.clientY };
+    update(ev.clientX, ev.clientY);
+  };
+
   const finish = (cancelled: boolean) => {
     window.removeEventListener('pointermove', onMove);
     window.removeEventListener('pointerup', onUp);
     window.removeEventListener('pointercancel', cancel);
     window.removeEventListener('blur', cancel);
     clearInteractionCancel(cancel);
+    cancelAnimationFrame(autoPanFrame);
     setMarquee(null);
     if (started) setDragging(false);
     if (cancelled) useEditor.getState().select(previousSelection);
@@ -176,6 +229,7 @@ function startMarquee(e: PointerEvent, viewport: HTMLElement, previousSelection:
   const cancel = () => finish(true);
 
   setInteractionCancel(cancel);
+  autoPanFrame = requestAnimationFrame(autoPan);
   window.addEventListener('pointermove', onMove);
   window.addEventListener('pointerup', onUp);
   window.addEventListener('pointercancel', cancel);

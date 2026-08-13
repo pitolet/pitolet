@@ -455,6 +455,12 @@ describe('color', () => {
     expect(c.space).toBe('oklch');
     expect(colorToCss(c)).toMatch(/^oklch\(/);
   });
+
+  it('clamps converted white colors to the schema range', () => {
+    const c = parseColor('rgb(255, 255, 255)')!;
+    expect(c.l).toBeLessThanOrEqual(1);
+    expect(c.l).toBeGreaterThanOrEqual(0);
+  });
 });
 
 describe('traverse', () => {
